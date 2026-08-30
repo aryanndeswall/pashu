@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Production Build
+dist/
+build/
+*.local
+
+# Android Build Outputs
+.gradle/
+**/build/
+*.apk
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Environment and IDE
+.env
+.env.*
+!.env.example
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS Files
+.DS_Store
+Thumbs.db
