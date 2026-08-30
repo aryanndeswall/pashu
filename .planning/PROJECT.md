@@ -12,11 +12,9 @@ The single non-negotiable priority: **Immediate, reliable early-warning outbreak
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] **REQ-01: Offline-First Android APK:** Standalone Android APK (Capacitor 6 + React 19 + Tailwind v4 + Native SQLite) booting instantly with zero network and preserving data against OS cache eviction. (Validated in Phase 1: Project Scaffolding & Native Android APK Foundation)
 
 ### Active
-
-- [ ] **REQ-01: Offline-First Android APK:** Standalone Android APK (Capacitor 6 + React 19 + Tailwind v4 + React Bits + Native SQLite) booting instantly with zero network and preserving data against OS cache eviction.
 - [ ] **REQ-02: 8 Standard Syndromic Categories:** Standardized field entry taxonomy (VSS, NSLS, HSDS, AROS, CMSS, SARF, HES, NAS) replacing error-prone freeform text entry.
 - [ ] **REQ-03: Zero-Tolerance Anthrax / Zoonotic Lockout:** Instant edge rule flagging sudden death with unclotted bleeding, displaying local-dialect biohazard warnings ("DO NOT OPEN CARCASS"), and triggering automated IDSP (Human Health) alerts.
 - [ ] **REQ-04: Gemini 3.7 Flash Multimodal Triage:** Cloud-based multimodal pipeline parsing colloquial Marathi/Hindi voice recordings and lesion photos into structured clinical JSON in <800ms.
@@ -54,7 +52,7 @@ The single non-negotiable priority: **Immediate, reliable early-warning outbreak
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| **Capacitor 6 Android APK over Pure React Native** | Allows 100% native execution of React Bits, Tailwind v4, and Stitch web design tokens while producing a real installable `.apk` with native SQLite and hardware sensors. | — Pending |
+| **Capacitor 6 Android APK over Pure React Native** | Allows 100% native execution of React Bits, Tailwind v4, and Stitch web design tokens while producing a real installable `.apk` with native SQLite and hardware sensors. | ✓ Validated in Phase 1 |
 | **3-Tier Neuro-Symbolic Triage over Pure ML Model** | Guarantees zero-tolerance Anthrax safety on the edge, leverages Gemini 3.7 Flash for vernacular voice/photo perception, and uses PostGIS SaTScan for explainable spatial epidemiology. | — Pending |
 | **Two-Phase Delta Synchronization** | Prevents large image uploads from choking 2G connections; critical telemetry (<2KB) syncs immediately. | — Pending |
 | **PostgreSQL 16 + PostGIS + Uber H3** | O(1) hexagonal spatial indexing at Resolution 7/8 eliminates slow spatial polygon intersections during high-frequency surveillance surges. | — Pending |

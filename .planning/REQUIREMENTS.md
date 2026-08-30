@@ -8,8 +8,8 @@
 Requirements for initial production-grade release and SIH hackathon demonstration.
 
 ### Mobile Android APK & Offline Core (APK)
-- [ ] **APK-01**: User can install and launch standalone Android APK (`.apk`) on Android 9.0–14.0 devices with instant (<180ms) offline boot from embedded assets.
-- [ ] **APK-02**: User can create, store, and query health reports locally in encrypted native Android SQLite (`@capawesome-team/capacitor-sqlite`) with zero loss during app termination or OS cache cleaning.
+- [x] **APK-01**: User can install and launch standalone Android APK (`.apk`) on Android 9.0–14.0 devices with instant (<180ms) offline boot from embedded assets.
+- [x] **APK-02**: User can create, store, and query health reports locally in encrypted native Android SQLite (`@capacitor-community/sqlite`) with zero loss during app termination or OS cache cleaning.
 - [ ] **APK-03**: User receives tactile physical haptic vibrations (`@capacitor/haptics`) upon offline saves and high-risk outbreak alerts.
 
 ### 8 Standard Syndromic Categories & Field Reporting (SYN)
@@ -81,8 +81,8 @@ Which phases cover which requirements. (Populated during roadmap creation).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| APK-01 | Phase 1 | Pending |
-| APK-02 | Phase 1 | Pending |
+| APK-01 | Phase 1 | Complete |
+| APK-02 | Phase 1 | Complete |
 | APK-03 | Phase 2 | Pending |
 | SYN-01 | Phase 2 | Pending |
 | SYN-02 | Phase 3 | Pending |

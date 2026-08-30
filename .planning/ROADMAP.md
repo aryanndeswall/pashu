@@ -8,7 +8,7 @@ Pashu-Suraksha is built in 10 sequential, highly focused phases adhering to the 
 
 ## Phases
 
-- [ ] **Phase 1: Project Scaffolding & Native Android APK Foundation** - Initialize Capacitor 6 + React 19 + Tailwind v4 + Native SQLite container.
+- [x] **Phase 1: Project Scaffolding & Native Android APK Foundation** - Initialize Capacitor 6 + React 19 + Tailwind v4 + Native SQLite container. (completed 2026-08-30)
 - [ ] **Phase 2: Mobile UI, Design System & React Bits Micro-Interactions** - Implement Stitch layouts, UI-UXmax rural ergonomics, and React Bits animations.
 - [ ] **Phase 3: Hardware Sensor Bridges (Camera, GPS, Voice)** - On-device WebP camera compression, GPS geotagging with LGD snapping, and native audio recording.
 - [ ] **Phase 4: 8-Syndrome Decision Tree & Zero-Tolerance Anthrax Lockout** - Deterministic offline edge rules, Anthrax biohazard screen, and Marathi voice warnings.
@@ -34,8 +34,8 @@ Pashu-Suraksha is built in 10 sequential, highly focused phases adhering to the 
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Scaffold Vite + React 19 + TypeScript + Tailwind v4 project and configure Capacitor 6 native Android container.
-- [ ] 01-02: Integrate `@capawesome-team/capacitor-sqlite` with local schema migrations and verify offline persistence.
+- [x] 01-01: Scaffold Vite + React 19 + TypeScript + Tailwind v4 project and configure Capacitor 6 native Android container.
+- [x] 01-02: Integrate `@capawesome-team/capacitor-sqlite` with local schema migrations and verify offline persistence.
 
 ---
 
@@ -190,7 +190,7 @@ Phases execute sequentially in numeric order: 1 → 2 → 3 → 4 → 5 → 6 �
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Scaffolding & Native Android APK | 0/2 | Not started | - |
+| 1. Scaffolding & Native Android APK | 2/2 | Complete    | 2026-08-30 |
 | 2. Mobile UI & React Bits | 0/2 | Not started | - |
 | 3. Hardware Sensor Bridges | 0/2 | Not started | - |
 | 4. Decision Tree & Anthrax Lockout | 0/2 | Not started | - |
