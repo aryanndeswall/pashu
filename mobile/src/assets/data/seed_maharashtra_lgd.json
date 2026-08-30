@@ -1,0 +1,210 @@
+[
+  {
+    "lgd_code": 558291,
+    "village_name": "Bodhegaon",
+    "block_name": "Shevgaon",
+    "district_name": "Ahmednagar",
+    "latitude": 19.3482,
+    "longitude": 75.3194
+  },
+  {
+    "lgd_code": 558292,
+    "village_name": "Ghevra",
+    "block_name": "Shevgaon",
+    "district_name": "Ahmednagar",
+    "latitude": 19.3621,
+    "longitude": 75.3421
+  },
+  {
+    "lgd_code": 558293,
+    "village_name": "Khamgaon",
+    "block_name": "Shevgaon",
+    "district_name": "Ahmednagar",
+    "latitude": 19.3245,
+    "longitude": 75.2891
+  },
+  {
+    "lgd_code": 558294,
+    "village_name": "Miri",
+    "block_name": "Shevgaon",
+    "district_name": "Ahmednagar",
+    "latitude": 19.3812,
+    "longitude": 75.2514
+  },
+  {
+    "lgd_code": 558300,
+    "village_name": "Ashwi Khurd",
+    "block_name": "Sangamner",
+    "district_name": "Ahmednagar",
+    "latitude": 19.6105,
+    "longitude": 74.3211
+  },
+  {
+    "lgd_code": 558301,
+    "village_name": "Ashwi Budruk",
+    "block_name": "Sangamner",
+    "district_name": "Ahmednagar",
+    "latitude": 19.6234,
+    "longitude": 74.3356
+  },
+  {
+    "lgd_code": 558302,
+    "village_name": "Chandanapuri",
+    "block_name": "Sangamner",
+    "district_name": "Ahmednagar",
+    "latitude": 19.5412,
+    "longitude": 74.1982
+  },
+  {
+    "lgd_code": 558310,
+    "village_name": "Nighoj",
+    "block_name": "Parner",
+    "district_name": "Ahmednagar",
+    "latitude": 18.9723,
+    "longitude": 74.3512
+  },
+  {
+    "lgd_code": 558311,
+    "village_name": "Takali Dhokeshwar",
+    "block_name": "Parner",
+    "district_name": "Ahmednagar",
+    "latitude": 19.0821,
+    "longitude": 74.3829
+  },
+  {
+    "lgd_code": 558320,
+    "village_name": "Shirdi Rural",
+    "block_name": "Rahata",
+    "district_name": "Ahmednagar",
+    "latitude": 19.7645,
+    "longitude": 74.4762
+  },
+  {
+    "lgd_code": 558321,
+    "village_name": "Sakuri",
+    "block_name": "Rahata",
+    "district_name": "Ahmednagar",
+    "latitude": 19.7891,
+    "longitude": 74.4512
+  },
+  {
+    "lgd_code": 556101,
+    "village_name": "Malegaon Budruk",
+    "block_name": "Baramati",
+    "district_name": "Pune",
+    "latitude": 18.1512,
+    "longitude": 74.5821
+  },
+  {
+    "lgd_code": 556102,
+    "village_name": "Songaon",
+    "block_name": "Baramati",
+    "district_name": "Pune",
+    "latitude": 18.1189,
+    "longitude": 74.6123
+  },
+  {
+    "lgd_code": 556103,
+    "village_name": "Pandare",
+    "block_name": "Baramati",
+    "district_name": "Pune",
+    "latitude": 18.1894,
+    "longitude": 74.4521
+  },
+  {
+    "lgd_code": 556110,
+    "village_name": "Shikrapur",
+    "block_name": "Shirur",
+    "district_name": "Pune",
+    "latitude": 18.6923,
+    "longitude": 74.1284
+  },
+  {
+    "lgd_code": 556111,
+    "village_name": "Sanaswadi",
+    "block_name": "Shirur",
+    "district_name": "Pune",
+    "latitude": 18.6651,
+    "longitude": 74.0892
+  },
+  {
+    "lgd_code": 556120,
+    "village_name": "Otur",
+    "block_name": "Junnar",
+    "district_name": "Pune",
+    "latitude": 19.2612,
+    "longitude": 73.9821
+  },
+  {
+    "lgd_code": 556121,
+    "village_name": "Narayangaon",
+    "block_name": "Junnar",
+    "district_name": "Pune",
+    "latitude": 19.1234,
+    "longitude": 73.9782
+  },
+  {
+    "lgd_code": 556130,
+    "village_name": "Chakan Rural",
+    "block_name": "Khed",
+    "district_name": "Pune",
+    "latitude": 18.7562,
+    "longitude": 73.8541
+  },
+  {
+    "lgd_code": 556131,
+    "village_name": "Alandi Rural",
+    "block_name": "Khed",
+    "district_name": "Pune",
+    "latitude": 18.6789,
+    "longitude": 73.8964
+  },
+  {
+    "lgd_code": 551001,
+    "village_name": "Musalgaon",
+    "block_name": "Sinnar",
+    "district_name": "Nashik",
+    "latitude": 19.8512,
+    "longitude": 73.9982
+  },
+  {
+    "lgd_code": 551002,
+    "village_name": "Dodi Budruk",
+    "block_name": "Sinnar",
+    "district_name": "Nashik",
+    "latitude": 19.7891,
+    "longitude": 74.0512
+  },
+  {
+    "lgd_code": 551010,
+    "village_name": "Andarsul",
+    "block_name": "Yeola",
+    "district_name": "Nashik",
+    "latitude": 20.0421,
+    "longitude": 74.5213
+  },
+  {
+    "lgd_code": 551011,
+    "village_name": "Nagarsul",
+    "block_name": "Yeola",
+    "district_name": "Nashik",
+    "latitude": 20.0892,
+    "longitude": 74.4891
+  },
+  {
+    "lgd_code": 551020,
+    "village_name": "Pimpalgaon Baswant",
+    "block_name": "Niphad",
+    "district_name": "Nashik",
+    "latitude": 20.1723,
+    "longitude": 73.9892
+  },
+  {
+    "lgd_code": 551021,
+    "village_name": "Lasalgaon",
+    "block_name": "Niphad",
+    "district_name": "Nashik",
+    "latitude": 20.1489,
+    "longitude": 74.2256
+  }
+]
