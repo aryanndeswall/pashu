@@ -9,7 +9,7 @@ Pashu-Suraksha is built in 10 sequential, highly focused phases adhering to the 
 ## Phases
 
 - [x] **Phase 1: Project Scaffolding & Native Android APK Foundation** - Initialize Capacitor 6 + React 19 + Tailwind v4 + Native SQLite container. (completed 2026-08-30)
-- [ ] **Phase 2: Mobile UI, Design System & React Bits Micro-Interactions** - Implement Stitch layouts, UI-UXmax rural ergonomics, and React Bits animations.
+- [x] **Phase 2: Mobile UI, Design System & React Bits Micro-Interactions** - Implement Stitch layouts, UI-UXmax rural ergonomics, and React Bits animations. (completed 2026-08-31)
 - [ ] **Phase 3: Hardware Sensor Bridges (Camera, GPS, Voice)** - On-device WebP camera compression, GPS geotagging with LGD snapping, and native audio recording.
 - [ ] **Phase 4: 8-Syndrome Decision Tree & Zero-Tolerance Anthrax Lockout** - Deterministic offline edge rules, Anthrax biohazard screen, and Marathi voice warnings.
 - [ ] **Phase 5: Two-Phase Delta Synchronization Engine** - Event-sourced SQLite queue, network state monitor, and low-bandwidth telemetry sync.
@@ -50,8 +50,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Build Stitch-based mobile navigation shell with UI-UXmax high-contrast sunlight tokens and 52px touch targets.
-- [ ] 02-02: Integrate React Bits animated hazard cards, pulsating GPS radar sweeps, and the 8-syndrome visual selector.
+- [x] 02-01: Build Stitch-based mobile navigation shell with UI-UXmax high-contrast sunlight tokens and 52px touch targets.
+- [x] 02-02: Integrate React Bits animated hazard cards, pulsating GPS radar sweeps, and the 8-syndrome visual selector.
 
 ---
 

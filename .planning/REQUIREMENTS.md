@@ -10,10 +10,10 @@ Requirements for initial production-grade release and SIH hackathon demonstratio
 ### Mobile Android APK & Offline Core (APK)
 - [x] **APK-01**: User can install and launch standalone Android APK (`.apk`) on Android 9.0–14.0 devices with instant (<180ms) offline boot from embedded assets.
 - [x] **APK-02**: User can create, store, and query health reports locally in encrypted native Android SQLite (`@capacitor-community/sqlite`) with zero loss during app termination or OS cache cleaning.
-- [ ] **APK-03**: User receives tactile physical haptic vibrations (`@capacitor/haptics`) upon offline saves and high-risk outbreak alerts.
+- [x] **APK-03**: User receives tactile physical haptic vibrations (`@capacitor/haptics`) upon offline saves and high-risk outbreak alerts.
 
 ### 8 Standard Syndromic Categories & Field Reporting (SYN)
-- [ ] **SYN-01**: User can select from 8 standardized syndromic categories (VSS, NSLS, HSDS, AROS, CMSS, SARF, HES, NAS) via an intuitive, icon-first visual selector.
+- [x] **SYN-01**: User can select from 8 standardized syndromic categories (VSS, NSLS, HSDS, AROS, CMSS, SARF, HES, NAS) via an intuitive, icon-first visual selector.
 - [ ] **SYN-02**: User can record 15–30 second vernacular audio notes (Marathi, Hindi) directly inside the mobile reporting flow.
 - [ ] **SYN-03**: User can capture lesion photos with automatic on-device WebP compression (<300 KB, 1280x720) to prevent bandwidth saturation.
 - [ ] **SYN-04**: User can capture high-accuracy GPS coordinates with automatic snapping to the nearest Local Government Directory (LGD) village unit.
@@ -83,8 +83,8 @@ Which phases cover which requirements. (Populated during roadmap creation).
 |-------------|-------|--------|
 | APK-01 | Phase 1 | Complete |
 | APK-02 | Phase 1 | Complete |
-| APK-03 | Phase 2 | Pending |
-| SYN-01 | Phase 2 | Pending |
+| APK-03 | Phase 2 | Complete |
+| SYN-01 | Phase 2 | Complete |
 | SYN-02 | Phase 3 | Pending |
 | SYN-03 | Phase 3 | Pending |
 | SYN-04 | Phase 3 | Pending |
