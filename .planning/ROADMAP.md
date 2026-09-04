@@ -147,8 +147,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: Implement Google GenAI SDK integration with Gemini 3.7 Flash using structured JSON schema output.
-- [ ] 07-02: Build the multimodal triage endpoint ingesting WebP lesion photos and audio transcripts with vernacular advisory generation.
+- [x] 07-01: Implement Google GenAI SDK integration with Gemini 3.7 Flash using structured JSON schema output.
+- [x] 07-02: Build the multimodal triage endpoint ingesting WebP lesion photos and audio transcripts with vernacular advisory generation.
 
 ---
 

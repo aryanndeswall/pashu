@@ -6,6 +6,13 @@ from app.schemas.animal import (
     VaccinationResponse,
     VaccinationStatus,
 )
+from app.schemas.triage import (
+    TriageRequest,
+    TriageResponse,
+    SyndromeCode,
+    BiohazardAlert,
+    SYNDROME_METADATA,
+)
 
 __all__ = [
     "AnimalCreate",
@@ -14,4 +21,9 @@ __all__ = [
     "VaccinationCreate",
     "VaccinationResponse",
     "VaccinationStatus",
+    "TriageRequest",
+    "TriageResponse",
+    "SyndromeCode",
+    "BiohazardAlert",
+    "SYNDROME_METADATA",
 ]

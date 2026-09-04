@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./pashu_cloud.db"
     DPDP_PHONE_SALT: str = "pashu_dpdp_secret_salt_2026"
     CORS_ORIGINS: List[str] = ["*"]
+
+    # Google Gemini 3.7 / 2.5 Flash Settings
+    GEMINI_API_KEY: Optional[str] = None
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    AI_INFERENCE_TIMEOUT_SECONDS: float = 3.0
 
     model_config = SettingsConfigDict(
         env_file=".env",
