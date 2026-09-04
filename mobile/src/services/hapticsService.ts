@@ -86,6 +86,18 @@ class HapticsService {
       // Graceful fallback
     }
   }
+
+  async triggerSelection(): Promise<void> {
+    await this.hapticLight();
+  }
+
+  async triggerNotification(): Promise<void> {
+    await this.hapticMedium();
+  }
+
+  async triggerError(): Promise<void> {
+    await this.hapticError();
+  }
 }
 
 export const hapticsService = new HapticsService();
