@@ -1,6 +1,7 @@
 import React from 'react';
 import { DecisionTreeResult } from '../../types/syndromes';
 import { useAuthStore } from '../../store/authStore';
+import { useLanguageStore } from '../../store/languageStore';
 import { Stethoscope, ShieldAlert, PhoneCall, AlertTriangle, FileText } from 'lucide-react';
 
 interface ClinicalGuidanceCardProps {
@@ -9,6 +10,7 @@ interface ClinicalGuidanceCardProps {
 
 export const ClinicalGuidanceCard: React.FC<ClinicalGuidanceCardProps> = ({ result }) => {
   const activeRole = useAuthStore((state) => state.activeRole);
+  const { currentLanguage, t } = useLanguageStore();
   const isClinicalUser = activeRole === 'doctor' || activeRole === 'admin';
 
   if (isClinicalUser) {
@@ -25,8 +27,8 @@ export const ClinicalGuidanceCard: React.FC<ClinicalGuidanceCardProps> = ({ resu
               <div className="text-xs font-bold text-blue-950 dark:text-blue-200 font-mono">
                 {result.primaryDifferential.diseaseName}
               </div>
-              <div className="text-[11px] font-semibold text-blue-800 dark:text-blue-300 lang-devanagari">
-                {result.primaryDifferential.diseaseNameMarathi}
+              <div className={`text-[11px] font-semibold text-blue-800 dark:text-blue-300 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {currentLanguage === 'hi' ? (result.primaryDifferential.diseaseNameHindi || result.primaryDifferential.diseaseNameMarathi) : result.primaryDifferential.diseaseNameMarathi}
               </div>
             </div>
           </div>
@@ -66,7 +68,11 @@ export const ClinicalGuidanceCard: React.FC<ClinicalGuidanceCardProps> = ({ resu
             Field Sample & Treatment Protocol:
           </div>
           <p className="text-[11px] leading-snug">
-            {result.primaryDifferential.recommendedAction}
+            {currentLanguage === 'en'
+              ? result.primaryDifferential.recommendedAction
+              : currentLanguage === 'hi'
+              ? (result.primaryDifferential.recommendedActionHindi || result.primaryDifferential.recommendedActionMarathi)
+              : result.primaryDifferential.recommendedActionMarathi}
           </p>
         </div>
 
@@ -89,17 +95,19 @@ export const ClinicalGuidanceCard: React.FC<ClinicalGuidanceCardProps> = ({ resu
           <ShieldAlert className="w-4 h-4" />
         </div>
         <div>
-          <h4 className="text-xs font-bold text-emerald-950 dark:text-emerald-200 lang-devanagari">
-            पशुपालकांसाठी महत्त्वाची काळजी (Farmer Advisory)
+          <h4 className={`text-xs font-bold text-emerald-950 dark:text-emerald-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+            {t('farmerAdvisoryTitle', 'पशुपालकांसाठी महत्त्वाची काळजी (Farmer Advisory)')}
           </h4>
           <p className="text-[10px] text-emerald-700 dark:text-emerald-400">
-            संशयित आजार: {result.primaryDifferential.diseaseNameMarathi}
+            {t('suspectedDisease', 'संशयित आजार:')} {currentLanguage === 'en' ? result.primaryDifferential.diseaseName : currentLanguage === 'hi' ? (result.primaryDifferential.diseaseNameHindi || result.primaryDifferential.diseaseNameMarathi) : result.primaryDifferential.diseaseNameMarathi}
           </p>
         </div>
       </div>
 
-      <p className="text-xs text-emerald-900 dark:text-emerald-200 lang-devanagari leading-relaxed">
-        {result.farmerAdvisory}
+      <p className={`text-xs text-emerald-900 dark:text-emerald-200 leading-relaxed ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+        {currentLanguage === 'en'
+          ? (result.farmerAdvisoryEnglish || result.primaryDifferential.recommendedAction || result.farmerAdvisory)
+          : result.farmerAdvisory}
       </p>
 
       <div className="pt-1 flex items-center justify-between">
@@ -108,10 +116,10 @@ export const ClinicalGuidanceCard: React.FC<ClinicalGuidanceCardProps> = ({ resu
           className="field-touch-target px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs"
         >
           <PhoneCall className="w-3.5 h-3.5" />
-          <span>पशु सखी हेल्पलाइन (१९६२)</span>
+          <span>{t('helplineBtn', 'पशु सखी हेल्पलाइन (१९६२)')}</span>
         </a>
         <span className="text-[10px] text-slate-500 dark:text-slate-400">
-          टोल-फ्री २४x७ सेवा
+          {t('helpline24x7', 'टोल-फ्री २४x७ सेवा')}
         </span>
       </div>
     </div>

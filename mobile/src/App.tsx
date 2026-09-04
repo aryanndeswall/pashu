@@ -12,6 +12,7 @@ import { LabReferralView } from './views/LabReferralView';
 import { RoleSelectionView } from './views/RoleSelectionView';
 import { SyncQueueDrawer } from './components/sync/SyncQueueDrawer';
 import { useSyncStore } from './store/syncStore';
+import { useLanguageStore } from './store/languageStore';
 import { Users } from 'lucide-react';
 
 const queryClient = new QueryClient({
@@ -26,6 +27,7 @@ const queryClient = new QueryClient({
 export function App() {
   const activeTab = useNavigationStore((state) => state.activeTab);
   const { activeRole, userProfile, initSession } = useAuthStore();
+  const { currentLanguage, t } = useLanguageStore();
   const [showRoleSelector, setShowRoleSelector] = useState(false);
 
   useEffect(() => {
@@ -63,6 +65,32 @@ export function App() {
     }
   };
 
+  const getGreetingText = () => {
+    if (currentLanguage === 'en') {
+      return `Welcome, ${userProfile.name}`;
+    }
+    if (currentLanguage === 'hi') {
+      return `स्वागत है, ${userProfile.nameHindi || userProfile.nameMarathi || userProfile.name}`;
+    }
+    return `स्वागत आहे, ${userProfile.nameMarathi}`;
+  };
+
+  const getBlockText = () => {
+    if (currentLanguage === 'en') {
+      return userProfile.block;
+    }
+    if (currentLanguage === 'hi') {
+      if (userProfile.block === 'Rahuri Khurd') return 'राहुरी खुर्द';
+      if (userProfile.block === 'Rahuri & Sangamner') return 'राहुरी व संगमनेर';
+      if (userProfile.block === 'District Headquarters') return 'जिला मुख्यालय';
+      return userProfile.block;
+    }
+    if (userProfile.block === 'Rahuri Khurd') return 'राहुरी खुर्द';
+    if (userProfile.block === 'Rahuri & Sangamner') return 'राहुरी व संगमनेर';
+    if (userProfile.block === 'District Headquarters') return 'जिल्हा मुख्यालय';
+    return userProfile.block;
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
@@ -73,11 +101,11 @@ export function App() {
         <div className={`border-b px-4 py-2 text-xs transition-colors ${getRoleBannerStyle()}`}>
           <div className="max-w-md mx-auto flex items-center justify-between">
             <div className="flex items-center gap-1.5 truncate">
-              <span className="font-bold lang-devanagari">
-                स्वागत आहे, {userProfile.nameMarathi}
+              <span className={`font-bold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {getGreetingText()}
               </span>
               <span className="opacity-75 text-[11px] truncate">
-                ({userProfile.block})
+                ({getBlockText()})
               </span>
             </div>
             <button
@@ -87,7 +115,7 @@ export function App() {
               className="field-touch-target text-[11px] font-bold underline flex items-center gap-1 opacity-90 hover:opacity-100 flex-shrink-0"
             >
               <Users className="w-3.5 h-3.5" />
-              <span>{showRoleSelector ? 'अ‍ॅपवर जा' : 'भूमिका बदला'}</span>
+              <span>{showRoleSelector ? t('goToApp', 'Go to App') : t('switchRole', 'Switch Role')}</span>
             </button>
           </div>
         </div>

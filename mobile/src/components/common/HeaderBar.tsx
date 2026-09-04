@@ -13,7 +13,7 @@ export const HeaderBar: React.FC = () => {
   const toggleDarkMode = useNavigationStore((state) => state.toggleDarkMode);
   const { activeRole, switchRole } = useAuthStore();
   const { pendingCount, isSyncing, setDrawerOpen } = useSyncStore();
-  const { currentLanguage, setSelectorOpen } = useLanguageStore();
+  const { currentLanguage, setSelectorOpen, t } = useLanguageStore();
   const [isRoleDrawerOpen, setIsRoleDrawerOpen] = useState(false);
 
   const activeLanguage =
@@ -43,17 +43,17 @@ export const HeaderBar: React.FC = () => {
     switch (activeRole) {
       case 'consumer':
         return {
-          label: '👨‍🌾 पशुपालक',
+          label: `👨‍🌾 ${t('roleConsumer', 'Farmer')}`,
           badgeClass: 'bg-emerald-800/80 text-emerald-100 border-emerald-600/70 hover:bg-emerald-800',
         };
       case 'doctor':
         return {
-          label: '🩺 पशुवैद्य',
+          label: `🩺 ${t('roleDoctor', 'Veterinarian')}`,
           badgeClass: 'bg-blue-900/80 text-blue-100 border-blue-600/70 hover:bg-blue-800',
         };
       case 'admin':
         return {
-          label: '🏛️ अधिकारी',
+          label: `🏛️ ${t('roleAdmin', 'Officer')}`,
           badgeClass: 'bg-purple-900/80 text-purple-100 border-purple-600/70 hover:bg-purple-800',
         };
     }
@@ -61,28 +61,28 @@ export const HeaderBar: React.FC = () => {
 
   const currentPill = getRolePill();
 
-  const roleOptions: { role: UserRole; titleMarathi: string; titleEnglish: string; subtitle: string; icon: string; bg: string }[] = [
+  const roleOptions: { role: UserRole; title: string; titleEnglish: string; subtitle: string; icon: string; bg: string }[] = [
     {
       role: 'consumer',
-      titleMarathi: 'पशुपालक (Farmer / Consumer)',
-      titleEnglish: 'Livestock Owner',
-      subtitle: `${DEMO_PERSONAS.consumer.nameMarathi} • ${DEMO_PERSONAS.consumer.block}`,
+      title: currentLanguage === 'en' ? 'Livestock Owner / Farmer' : currentLanguage === 'hi' ? 'पशुपालक (किसान)' : 'पशुपालक (Farmer / Consumer)',
+      titleEnglish: 'Livestock Owner / Farmer',
+      subtitle: currentLanguage === 'en' ? `${DEMO_PERSONAS.consumer.name} • ${DEMO_PERSONAS.consumer.block}` : `${DEMO_PERSONAS.consumer.nameMarathi} • राहुरी खुर्द`,
       icon: '👨‍🌾',
       bg: 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20',
     },
     {
       role: 'doctor',
-      titleMarathi: 'पशुवैद्य (Veterinarian / Doctor)',
+      title: currentLanguage === 'en' ? 'Field Veterinarian & Para-vet' : currentLanguage === 'hi' ? 'पशु चिकित्सक / पैरा-वेट' : 'पशुवैद्य (Veterinarian / Doctor)',
       titleEnglish: 'Field Veterinarian & Para-vet',
-      subtitle: `${DEMO_PERSONAS.doctor.nameMarathi} • ${DEMO_PERSONAS.doctor.block}`,
+      subtitle: currentLanguage === 'en' ? `${DEMO_PERSONAS.doctor.name} • ${DEMO_PERSONAS.doctor.block}` : `${DEMO_PERSONAS.doctor.nameMarathi} • राहुरी व संगमनेर`,
       icon: '🩺',
       bg: 'border-blue-500/30 bg-blue-50/50 dark:bg-blue-950/20',
     },
     {
       role: 'admin',
-      titleMarathi: 'जिल्हा अधिकारी (District Admin)',
+      title: currentLanguage === 'en' ? 'District Animal Husbandry Officer' : currentLanguage === 'hi' ? 'जिला पशुपालन अधिकारी' : 'जिल्हा अधिकारी (District Admin)',
       titleEnglish: 'District Animal Husbandry Officer',
-      subtitle: `${DEMO_PERSONAS.admin.nameMarathi} • ${DEMO_PERSONAS.admin.district}`,
+      subtitle: currentLanguage === 'en' ? `${DEMO_PERSONAS.admin.name} • ${DEMO_PERSONAS.admin.district}` : `${DEMO_PERSONAS.admin.nameMarathi} • अहमदनगर`,
       icon: '🏛️',
       bg: 'border-purple-500/30 bg-purple-50/50 dark:bg-purple-950/20',
     },
@@ -99,13 +99,13 @@ export const HeaderBar: React.FC = () => {
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
-                पशु सुरक्षा{' '}
+                {currentLanguage === 'en' ? 'Pashu-Suraksha' : 'पशु सुरक्षा'}{' '}
                 <span className="text-[9px] bg-emerald-700/80 text-emerald-100 font-semibold px-1.5 py-0.2 rounded-full uppercase tracking-wider">
                   Suraksha
                 </span>
               </h1>
               <p className="text-[10px] text-emerald-300/80 dark:text-emerald-400">
-                National Livestock Surveillance
+                {t('appSubtitle', 'National Livestock Surveillance')}
               </p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export const HeaderBar: React.FC = () => {
               {isSyncing ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-300" />
-                  <span className="text-[10px] hidden xs:inline">सिंक...</span>
+                  <span className="text-[10px] hidden xs:inline">{t('syncing', 'Sync...')}</span>
                 </>
               ) : pendingCount > 0 ? (
                 <>
@@ -160,7 +160,7 @@ export const HeaderBar: React.FC = () => {
             {/* Offline Core Status Pill */}
             <div className="hidden sm:flex items-center gap-1 bg-emerald-900/70 border border-emerald-700/50 px-2 py-1 rounded-full text-[11px] text-emerald-200">
               <WifiOff className="w-3 h-3 text-amber-400" />
-              <span className="font-semibold text-[10px]">Offline</span>
+              <span className="font-semibold text-[10px]">{t('offlineStatus', 'Offline')}</span>
             </div>
 
             {/* Multi-Lingual Language Selector Button */}
@@ -195,11 +195,11 @@ export const HeaderBar: React.FC = () => {
       <FluidDrawer
         isOpen={isRoleDrawerOpen}
         onClose={() => setIsRoleDrawerOpen(false)}
-        title="भूमिका बदला (SIH Demo Role Switcher)"
+        title={currentLanguage === 'en' ? 'Switch Role (SIH Demo Role Switcher)' : currentLanguage === 'hi' ? 'भूमिका बदलें (SIH Demo Role Switcher)' : 'भूमिका बदला (SIH Demo Role Switcher)'}
       >
         <div className="space-y-3 pt-2">
-          <p className="text-xs text-slate-500 dark:text-slate-400 lang-devanagari">
-            सादरीकरणासाठी १-क्लिक मध्ये भूमिका बदला (Switch roles instantly for live demo):
+          <p className={`text-xs text-slate-500 dark:text-slate-400 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+            {t('roleDemoInstruction', 'Switch roles instantly for live demo:')}
           </p>
 
           <div className="space-y-2.5">
@@ -219,8 +219,8 @@ export const HeaderBar: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{opt.icon}</span>
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white lang-devanagari">
-                        {opt.titleMarathi}
+                      <h4 className={`text-xs font-bold text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                        {opt.title}
                       </h4>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400">
                         {opt.subtitle}
@@ -231,7 +231,7 @@ export const HeaderBar: React.FC = () => {
                   {isCurrent ? (
                     <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>सक्रिय</span>
+                      <span>{t('activeBadge', 'Active')}</span>
                     </div>
                   ) : (
                     <button
@@ -243,7 +243,7 @@ export const HeaderBar: React.FC = () => {
                       }}
                       className="field-touch-target px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 flex items-center gap-1"
                     >
-                      <span>निवडा</span>
+                      <span>{t('select', 'Select')}</span>
                       <ArrowRight className="w-3 h-3" />
                     </button>
                   )}

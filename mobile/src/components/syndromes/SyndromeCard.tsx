@@ -4,6 +4,7 @@ import { SyndromeDefinition } from '../../types/syndromes';
 import { AnatomicalBadge } from './AnatomicalBadge';
 import { HazardBorder } from '../animations/HazardBorder';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface SyndromeCardProps {
   syndrome: SyndromeDefinition;
@@ -16,6 +17,7 @@ export const SyndromeCard: React.FC<SyndromeCardProps> = ({
   isSelected = false,
   onSelect,
 }) => {
+  const { currentLanguage, t } = useLanguageStore();
   const isHSDS = syndrome.code === 'HSDS';
 
   const handleClick = () => {
@@ -33,35 +35,87 @@ export const SyndromeCard: React.FC<SyndromeCardProps> = ({
         return (
           <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-600 text-white flex items-center gap-1 uppercase tracking-wider animate-pulse">
             <AlertOctagon className="w-3 h-3" />
-            आपत्कालीन
+            {t('severityEmergency', 'EMERGENCY')}
           </span>
         );
       case 'HIGH_CONTAGION':
         return (
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white uppercase tracking-wider">
-            तीव्र संसर्ग
+            {t('severityContagion', 'HIGH CONTAGION')}
           </span>
         );
       case 'ELEVATED':
         return (
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-600 text-white uppercase tracking-wider">
-            लक्ष्य
+            {t('severityTarget', 'TARGET')}
           </span>
         );
       case 'ROUTINE_ENDEMIC':
         return (
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-600 text-white uppercase tracking-wider">
-            सामान्य
+            {t('severityRoutine', 'ROUTINE')}
           </span>
         );
     }
+  };
+
+  const getPrimaryTitle = () => {
+    if (currentLanguage === 'en') return syndrome.nameEnglish;
+    if (currentLanguage === 'hi') return syndrome.nameHindi || syndrome.nameMarathi;
+    return syndrome.nameMarathi;
+  };
+
+  const getColloquialSubtitle = () => {
+    if (currentLanguage === 'en') return syndrome.colloquialEnglish || syndrome.nameEnglish;
+    if (currentLanguage === 'hi') return syndrome.colloquialHindi || syndrome.colloquialMarathi;
+    return syndrome.colloquialMarathi;
+  };
+
+  const getSecondaryFootnote = () => {
+    if (currentLanguage === 'en') {
+      const parts: Record<string, string> = {
+        mouth_hoof: 'Mouth & Hooves',
+        skin_lumps: 'Skin & Nodules',
+        sudden_death_blood: 'Sudden Hemorrhage',
+        respiratory: 'Respiratory & Cough',
+        swollen_quarter: 'Muscle Swelling',
+        reproductive: 'Reproductive Failure',
+        enteric: 'Enteric & Diarrhea',
+        neurological: 'Neurological & Rabies',
+      };
+      return `${syndrome.code} • ${parts[syndrome.anatomicalPart] || 'Clinical Surveillance'}`;
+    }
+    if (currentLanguage === 'hi') {
+      const partsHindi: Record<string, string> = {
+        mouth_hoof: 'मुंह व खुर',
+        skin_lumps: 'त्वचा व गांठें',
+        sudden_death_blood: 'अचानक रक्तस्राव',
+        respiratory: 'श्वसन व खांसी',
+        swollen_quarter: 'मांसपेशी सूजन',
+        reproductive: 'प्रजनन विफलता',
+        enteric: 'दस्त व पेचिश',
+        neurological: 'तंत्रिका व रेबीज',
+      };
+      return `${syndrome.code} • ${partsHindi[syndrome.anatomicalPart] || 'रोग निगरानी'}`;
+    }
+    const partsMarathi: Record<string, string> = {
+      mouth_hoof: 'तोंड व खुर',
+      skin_lumps: 'त्वचा व गाठी',
+      sudden_death_blood: 'अचानक रक्तस्राव',
+      respiratory: 'श्वसन व खोकला',
+      swollen_quarter: 'स्नायू सूज',
+      reproductive: 'प्रजनन समस्या',
+      enteric: 'हगवण व जुलाब',
+      neurological: 'मज्जासंस्था व पिसाळणे',
+    };
+    return `${syndrome.code} • ${partsMarathi[syndrome.anatomicalPart] || 'आरोग्य पाळत'}`;
   };
 
   const cardContent = (
     <button
       type="button"
       onClick={handleClick}
-      aria-label={`${syndrome.nameMarathi} (${syndrome.code})`}
+      aria-label={`${getPrimaryTitle()} (${syndrome.code})`}
       className={`field-touch-target w-full text-left p-3.5 rounded-2xl border transition-all duration-200 flex flex-col justify-between h-full bg-white dark:bg-slate-900 shadow-sm hover:shadow-md active:scale-98 ${
         isSelected
           ? 'border-emerald-600 dark:border-emerald-500 ring-2 ring-emerald-500/30'
@@ -84,20 +138,20 @@ export const SyndromeCard: React.FC<SyndromeCardProps> = ({
         </div>
       </div>
 
-      {/* Center content: Marathi Name and Colloquial Name */}
+      {/* Center content: Primary Localized Name and Colloquial Subtitle */}
       <div className="flex-1 mb-2">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white lang-devanagari leading-snug">
-          {syndrome.nameMarathi}
+        <h3 className={`text-sm font-bold text-slate-900 dark:text-white leading-snug ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+          {getPrimaryTitle()}
         </h3>
-        <p className="text-[11px] text-emerald-800 dark:text-emerald-400 font-medium lang-devanagari mt-0.5 line-clamp-1">
-          ({syndrome.colloquialMarathi})
+        <p className={`text-[11px] text-emerald-800 dark:text-emerald-400 font-medium mt-0.5 line-clamp-1 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+          ({getColloquialSubtitle()})
         </p>
       </div>
 
-      {/* Bottom row: English title subtitle */}
+      {/* Bottom row: Alternative Language Subtitle */}
       <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
         <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-          {syndrome.nameEnglish}
+          {getSecondaryFootnote()}
         </p>
       </div>
     </button>

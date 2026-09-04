@@ -3,6 +3,7 @@ import { MapPin, Navigation, RefreshCw, AlertTriangle, CheckCircle2, ChevronDown
 import { locationService, LocationCoordinates, SnappedLgdResult } from '../../services/locationService';
 import { LgdVillageRecord } from '../../database/seedLgd';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 
 export interface LocationPickerCardProps {
   coordinates: LocationCoordinates | null;
@@ -15,6 +16,7 @@ export const LocationPickerCard: React.FC<LocationPickerCardProps> = ({
   snappedVillage,
   onLocationUpdate,
 }) => {
+  const { currentLanguage, t } = useLanguageStore();
   const [isLoading, setIsLoading] = useState(false);
   const [allVillages, setAllVillages] = useState<LgdVillageRecord[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -89,12 +91,12 @@ export const LocationPickerCard: React.FC<LocationPickerCardProps> = ({
     <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 lang-devanagari flex items-center gap-2">
+          <h3 className={`text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
             <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>स्थान व LGD गाव (Location & LGD Village)</span>
+            <span>{t('locationCardTitle', 'स्थान व LGD गाव (Location & LGD Village)')}</span>
           </h3>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            स्थानिक ग्रामपंचायत मॅपिंग
+            {t('locationCardSubtitle', 'स्थानिक ग्रामपंचायत मॅपिंग')}
           </p>
         </div>
 
@@ -103,7 +105,7 @@ export const LocationPickerCard: React.FC<LocationPickerCardProps> = ({
           disabled={isLoading}
           onClick={refreshGps}
           className="field-touch-target p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title="GPS रीफ्रेश करा"
+          title="GPS Refresh"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-emerald-600' : ''}`} />
         </button>
@@ -120,8 +122,8 @@ export const LocationPickerCard: React.FC<LocationPickerCardProps> = ({
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
             </div>
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 lang-devanagari">
-              GPS अचूकता: ±{coordinates?.accuracy ? Math.round(coordinates.accuracy) : 10}m
+            <span className={`text-xs font-bold text-slate-800 dark:text-slate-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+              {t('gpsAccuracy', 'GPS अचूकता')}: ±{coordinates?.accuracy ? Math.round(coordinates.accuracy) : 10}m
             </span>
           </div>
 
@@ -132,13 +134,13 @@ export const LocationPickerCard: React.FC<LocationPickerCardProps> = ({
                 : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
             }`}
           >
-            {isGpsAccurate ? '✓ चांगला सिग्नल' : '⚠ कमजोर सिग्नल'}
+            {isGpsAccurate ? t('goodSignal', '✓ चांगला सिग्नल') : t('weakSignal', '⚠ कमजोर सिग्नल')}
           </span>
         </div>
 
         {coordinates && (
           <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-            अक्षांश: {coordinates.latitude.toFixed(4)}°N, रेखांश: {coordinates.longitude.toFixed(4)}°E
+            {t('latLabel', 'अक्षांश')}: {coordinates.latitude.toFixed(4)}°N, {t('lngLabel', 'रेखांश')}: {coordinates.longitude.toFixed(4)}°E
           </p>
         )}
       </div>
@@ -149,24 +151,24 @@ export const LocationPickerCard: React.FC<LocationPickerCardProps> = ({
           <div className="space-y-0.5">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200 lang-devanagari">
-                गाव: {snappedVillage.village_name}
+              <p className={`text-xs font-bold text-emerald-900 dark:text-emerald-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('villageLabel', 'गाव')}: {snappedVillage.village_name}
               </p>
             </div>
-            <p className="text-[11px] text-emerald-700/90 dark:text-emerald-300/80 pl-5.5 lang-devanagari">
-              ता. {snappedVillage.block_name}, जि. {snappedVillage.district_name}
+            <p className={`text-[11px] text-emerald-700/90 dark:text-emerald-300/80 pl-5.5 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+              {t('blockPrefix', 'ता.')} {snappedVillage.block_name}, {t('districtPrefix', 'जि.')} {snappedVillage.district_name}
             </p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 pl-5.5 font-mono">
-              LGD कोड: {snappedVillage.lgd_code} {snappedVillage.distanceKm > 0 ? `• अंतर: ${snappedVillage.distanceKm} km` : ''}
+              LGD #{snappedVillage.lgd_code} {snappedVillage.distanceKm > 0 ? `• ${snappedVillage.distanceKm} km` : ''}
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="field-touch-target px-2.5 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold flex items-center gap-1 hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors lang-devanagari shrink-0"
+            className={`field-touch-target px-2.5 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold flex items-center gap-1 hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors shrink-0 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
           >
-            <span>गाव बदला</span>
+            <span>{t('changeVillage', 'गाव बदला')}</span>
             <ChevronDown className="w-3 h-3" />
           </button>
         </div>
@@ -181,8 +183,8 @@ export const LocationPickerCard: React.FC<LocationPickerCardProps> = ({
               type="text"
               value={villageSearch}
               onChange={(e) => setVillageSearch(e.target.value)}
-              placeholder="गाव किंवा तालुका शोधा (Search village)..."
-              className="w-full pl-8.5 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 lang-devanagari"
+              placeholder={t('searchVillage', 'गाव किंवा तालुका शोधा (Search village)...')}
+              className={`w-full pl-8.5 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
             />
           </div>
 
@@ -195,11 +197,11 @@ export const LocationPickerCard: React.FC<LocationPickerCardProps> = ({
                 className="w-full text-left p-2 rounded-lg hover:bg-white dark:hover:bg-slate-900 transition-colors flex items-center justify-between"
               >
                 <div>
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 lang-devanagari">
+                  <p className={`text-xs font-semibold text-slate-800 dark:text-slate-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                     {village.village_name}
                   </p>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 lang-devanagari">
-                    ता. {village.block_name}, जि. {village.district_name}
+                  <p className={`text-[10px] text-slate-500 dark:text-slate-400 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                    {t('blockPrefix', 'ता.')} {village.block_name}, {t('districtPrefix', 'जि.')} {village.district_name}
                   </p>
                 </div>
                 <span className="text-[10px] font-mono text-slate-400">

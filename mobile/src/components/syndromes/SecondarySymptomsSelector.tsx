@@ -2,6 +2,7 @@ import React from 'react';
 import { SyndromeCategory } from '../../types/syndromes';
 import { SECONDARY_SYMPTOMS_BY_SYNDROME } from '../../services/decisionTreeService';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 import { Check, AlertCircle } from 'lucide-react';
 
 interface SecondarySymptomsSelectorProps {
@@ -15,6 +16,7 @@ export const SecondarySymptomsSelector: React.FC<SecondarySymptomsSelectorProps>
   selectedSymptomIds,
   onToggleSymptom,
 }) => {
+  const { currentLanguage, t } = useLanguageStore();
   const secondarySymptoms = SECONDARY_SYMPTOMS_BY_SYNDROME[syndromeCode] || [];
 
   const handleToggle = async (symptomId: string) => {
@@ -27,17 +29,23 @@ export const SecondarySymptomsSelector: React.FC<SecondarySymptomsSelectorProps>
   return (
     <div className="bg-slate-100/80 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700/60 space-y-2.5">
       <div className="flex items-center justify-between">
-        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 lang-devanagari flex items-center gap-1.5">
-          <span>तपशीलवार लक्षणे निवडा (Select Observed Symptoms):</span>
+        <h4 className={`text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+          <span>{t('selectObservedSymptoms', 'तपशीलवार लक्षणे निवडा (Select Observed Symptoms):')}</span>
         </h4>
         <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-          {selectedSymptomIds.length} निवडले
+          {selectedSymptomIds.length} {t('selectedCount', 'निवडले')}
         </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {secondarySymptoms.map((symptom) => {
           const isSelected = selectedSymptomIds.includes(symptom.id);
+          const primaryName =
+            currentLanguage === 'en'
+              ? symptom.nameEnglish
+              : currentLanguage === 'hi'
+              ? (symptom.nameHindi || symptom.nameMarathi)
+              : symptom.nameMarathi;
 
           return (
             <button
@@ -67,12 +75,14 @@ export const SecondarySymptomsSelector: React.FC<SecondarySymptomsSelectorProps>
                 </div>
 
                 <div className="pr-1">
-                  <div className="font-bold lang-devanagari leading-snug">
-                    {symptom.nameMarathi}
+                  <div className={`font-bold leading-snug ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                    {primaryName}
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                    {symptom.nameEnglish}
-                  </div>
+                  {currentLanguage !== 'en' && (
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                      {symptom.nameEnglish}
+                    </div>
+                  )}
                 </div>
               </div>
 

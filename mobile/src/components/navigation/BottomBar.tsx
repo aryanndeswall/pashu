@@ -144,8 +144,10 @@ export const BottomBar: React.FC = () => {
         ? tab.labelHindi
         : tab.labelEnglish;
 
-    const secondaryLabel =
-      currentLanguage === 'en' ? tab.labelMarathi : tab.labelEnglish;
+    const ariaLabel =
+      currentLanguage === 'mr'
+        ? `${tab.labelMarathi} (${tab.labelEnglish})`
+        : primaryLabel;
 
     return (
       <button
@@ -153,7 +155,7 @@ export const BottomBar: React.FC = () => {
         type="button"
         onClick={() => handleTabClick(tab.id)}
         aria-selected={isActive}
-        aria-label={`${primaryLabel} (${secondaryLabel})`}
+        aria-label={ariaLabel}
         className={`field-touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
           isActive
             ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
@@ -161,11 +163,8 @@ export const BottomBar: React.FC = () => {
         }`}
       >
         <IconComponent className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
-        <span className="text-[11px] mt-0.5 tracking-tight lang-devanagari font-medium">
+        <span className={`text-[11px] mt-0.5 tracking-tight font-medium ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
           {primaryLabel}
-        </span>
-        <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider -mt-0.5">
-          {secondaryLabel}
         </span>
       </button>
     );

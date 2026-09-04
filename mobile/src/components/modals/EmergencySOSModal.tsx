@@ -1,12 +1,14 @@
 import React from 'react';
 import { AlertOctagon, Skull, PhoneCall, X, ShieldAlert } from 'lucide-react';
 import { useNavigationStore } from '../../store/navigationStore';
+import { useLanguageStore } from '../../store/languageStore';
 import { hapticsService } from '../../services/hapticsService';
 import { HazardBorder } from '../animations/HazardBorder';
 
 export const EmergencySOSModal: React.FC = () => {
   const isOpen = useNavigationStore((state) => state.isEmergencyModalOpen);
   const setOpen = useNavigationStore((state) => state.setEmergencyModalOpen);
+  const { currentLanguage, t } = useLanguageStore();
 
   if (!isOpen) return null;
 
@@ -17,7 +19,13 @@ export const EmergencySOSModal: React.FC = () => {
 
   const handleConfirmAlert = async () => {
     await hapticsService.hapticError();
-    alert('आपत्कालीन सूचना नोंदवली आहे. IDSP व पशुसंवर्धन विभागाला तातडीने सतर्क केले जाईल.');
+    alert(
+      currentLanguage === 'en'
+        ? 'Emergency biohazard report recorded. IDSP & State Animal Husbandry notified.'
+        : currentLanguage === 'hi'
+        ? 'आपातकालीन बायोहाज़ार्ड रिपोर्ट दर्ज की गई है। IDSP व पशुपालन विभाग को सतर्क किया गया है।'
+        : 'आपत्कालीन सूचना नोंदवली आहे. IDSP व पशुसंवर्धन विभागाला तातडीने सतर्क केले जाईल.'
+    );
     setOpen(false);
   };
 
@@ -38,8 +46,8 @@ export const EmergencySOSModal: React.FC = () => {
             <div className="flex items-center justify-between border-b border-red-100 dark:border-red-900/40 pb-3 mb-4">
               <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                 <AlertOctagon className="w-6 h-6 animate-pulse" />
-                <h2 className="text-base font-black uppercase tracking-wider lang-devanagari">
-                  अति-तातडीक इशारा (BIOHAZARD)
+                <h2 className={`text-base font-black uppercase tracking-wider ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                  {t('emergencyBiohazardTitle', 'अति-तातडीक इशारा (BIOHAZARD)')}
                 </h2>
               </div>
               <button
@@ -55,26 +63,26 @@ export const EmergencySOSModal: React.FC = () => {
             {/* Prominent Anthrax Warning Callout (WCAG AAA) */}
             <div className="bg-red-600 text-white p-4 rounded-xl mb-4 shadow-md text-center">
               <Skull className="w-10 h-10 mx-auto mb-1 text-red-100 animate-bounce" />
-              <h3 className="text-xl font-black tracking-tight lang-devanagari">
-                शव विच्छेदन करू नका!
+              <h3 className={`text-xl font-black tracking-tight ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('doNotCutTitle', 'शव विच्छेदन करू नका!')}
               </h3>
               <p className="text-xs font-bold text-red-100 uppercase tracking-widest mt-0.5">
-                DO NOT CUT CARCASS
+                {t('doNotCutSubtitle', 'DO NOT CUT CARCASS')}
               </p>
             </div>
 
             {/* Biohazard Advisory Explanation */}
-            <div className="space-y-2.5 text-xs text-slate-700 dark:text-slate-300 lang-devanagari mb-5">
+            <div className={`space-y-2.5 text-xs text-slate-700 dark:text-slate-300 mb-5 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
               <p className="flex items-start gap-2">
                 <ShieldAlert className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                 <span>
-                  <strong>काळपुळी (Anthrax) संशय:</strong> जनावराचे रक्त न गोठल्यास किंवा अचानक मृत्यू झाल्यास मृतदेह उघडू नका. मानवाला गंभीर संसर्ग होण्याचा धोका आहे.
+                  {t('anthraxSuspectDesc', 'काळपुळी (Anthrax) संशय: जनावराचे रक्त न गोठल्यास किंवा अचानक मृत्यू झाल्यास मृतदेह उघडू नका. मानवाला गंभीर संसर्ग होण्याचा धोका आहे.')}
                 </span>
               </p>
               <p className="flex items-start gap-2">
                 <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <span>
-                  स्थानिक पशुवैद्यकीय अधिकारी किंवा १९६२ हेल्पलाईनवर संपर्क साधा. मृतदेहाभोवती चुना पसरवून ठेवा.
+                  {t('contactVetDesc', 'स्थानिक पशुवैद्यकीय अधिकारी किंवा १९६२ हेल्पलाईनवर संपर्क साधा. मृतदेहाभोवती चुना पसरवून ठेवा.')}
                 </span>
               </p>
             </div>
@@ -84,18 +92,18 @@ export const EmergencySOSModal: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConfirmAlert}
-                className="field-touch-target w-full bg-red-600 hover:bg-red-700 active:scale-98 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-red-900/30 flex items-center justify-center gap-2 lang-devanagari text-sm transition-transform"
+                className={`field-touch-target w-full bg-red-600 hover:bg-red-700 active:scale-98 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-red-900/30 flex items-center justify-center gap-2 text-sm transition-transform ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
               >
                 <AlertOctagon className="w-5 h-5" />
-                तातडीक बायोहॅझार्ड अहवाल नोंदवा
+                {t('submitBiohazardBtn', 'तातडीक बायोहॅझार्ड अहवाल नोंदवा')}
               </button>
 
               <a
                 href="tel:1962"
-                className="field-touch-target w-full border-2 border-emerald-600 dark:border-emerald-500 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 active:scale-98 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 lang-devanagari text-sm transition-transform"
+                className={`field-touch-target w-full border-2 border-emerald-600 dark:border-emerald-500 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 active:scale-98 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm transition-transform ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
               >
                 <PhoneCall className="w-4 h-4" />
-                १९६२ पशु हेल्पलाईनला कॉल करा
+                {t('callHelplineBtn', '१९६२ पशु हेल्पलाईनला कॉल करा')}
               </a>
             </div>
           </div>

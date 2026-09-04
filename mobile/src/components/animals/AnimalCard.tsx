@@ -2,6 +2,7 @@ import React from 'react';
 import { ShieldCheck, AlertTriangle, AlertOctagon, HeartPulse, User, MapPin, Phone } from 'lucide-react';
 import { LocalAnimal, formatTagNumber } from '../../services/animalService';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface AnimalCardProps {
   animal: LocalAnimal;
@@ -10,6 +11,8 @@ interface AnimalCardProps {
 }
 
 export const AnimalCard: React.FC<AnimalCardProps> = ({ animal, onSelect, selected }) => {
+  const { currentLanguage, t } = useLanguageStore();
+
   const getSpeciesEmoji = (species: string) => {
     const s = species.toLowerCase();
     if (s.includes('cow') || s.includes('गाय') || s.includes('bovine')) return '🐄';
@@ -46,7 +49,7 @@ export const AnimalCard: React.FC<AnimalCardProps> = ({ animal, onSelect, select
           </div>
           <div>
             <span className="text-[10px] font-mono tracking-wider uppercase text-slate-400 font-semibold block">
-              पशू आधार (RFID Tag)
+              {t('pashuAadhaarTitle', 'पशू आधार १२-अंकी टॅग')}
             </span>
             <span className="text-sm font-black font-mono tracking-wide text-slate-900 dark:text-white">
               {formatTagNumber(animal.tagNumber)}
@@ -58,19 +61,19 @@ export const AnimalCard: React.FC<AnimalCardProps> = ({ animal, onSelect, select
         {animal.vaccinationStatus === 'UP_TO_DATE' && (
           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/40">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>लस पूर्ण</span>
+            <span>{t('vaccinesComplete', 'लस पूर्ण')}</span>
           </span>
         )}
         {animal.vaccinationStatus === 'BOOSTER_DUE' && (
           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300/50 animate-pulse">
             <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-            <span>बूस्टर वेळ</span>
+            <span>{t('boosterDue', 'बूस्टर वेळ')}</span>
           </span>
         )}
         {animal.vaccinationStatus === 'OVERDUE' && (
           <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-red-600 text-white shadow-sm">
             <AlertOctagon className="w-3.5 h-3.5" />
-            <span>लस थकीत</span>
+            <span>{t('vaccineOverdue', 'लस थकीत')}</span>
           </span>
         )}
       </div>
@@ -78,15 +81,15 @@ export const AnimalCard: React.FC<AnimalCardProps> = ({ animal, onSelect, select
       {/* Details Grid */}
       <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800/80">
         <div>
-          <span className="text-[10px] text-slate-400 font-medium block">प्रजाती व जात</span>
+          <span className="text-[10px] text-slate-400 font-medium block">{t('speciesBreed', 'प्रजाती व जात')}</span>
           <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">
             {animal.breed || animal.species}
           </span>
         </div>
         <div>
-          <span className="text-[10px] text-slate-400 font-medium block">वय</span>
+          <span className="text-[10px] text-slate-400 font-medium block">{t('age', 'वय')}</span>
           <span className="font-bold text-slate-800 dark:text-slate-200 block">
-            {animal.ageMonths} महिने ({Math.floor(animal.ageMonths / 12)} वर्षे)
+            {animal.ageMonths} {t('months', 'महिने')} ({Math.floor(animal.ageMonths / 12)} {t('years', 'वर्षे')})
           </span>
         </div>
       </div>

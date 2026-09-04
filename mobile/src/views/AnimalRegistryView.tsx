@@ -21,10 +21,12 @@ import { AnimalCard } from '../components/animals/AnimalCard';
 import { VaccinationTimeline } from '../components/animals/VaccinationTimeline';
 import { NewAnimalModal } from '../components/animals/NewAnimalModal';
 import { hapticsService } from '../services/hapticsService';
+import { useLanguageStore } from '../store/languageStore';
 
 type PassbookTab = 'MY_CATTLE' | 'TAG_LOOKUP';
 
 export const AnimalRegistryView: React.FC = () => {
+  const { currentLanguage, t } = useLanguageStore();
   const [activeTab, setActiveTab] = useState<PassbookTab>('MY_CATTLE');
   const [animals, setAnimals] = useState<LocalAnimal[]>([]);
   const [selectedAnimal, setSelectedAnimal] = useState<LocalAnimal | null>(null);
@@ -72,7 +74,13 @@ export const AnimalRegistryView: React.FC = () => {
     } else {
       setSelectedAnimal(null);
       setSelectedVaccines([]);
-      setSearchError(`पशू आधार क्र. ${formatTagNumber(cleaned)} सापडला नाही (Not found locally).`);
+      setSearchError(
+        currentLanguage === 'en'
+          ? `Tag #${formatTagNumber(cleaned)} not found locally.`
+          : currentLanguage === 'hi'
+          ? `पशु आधार क्र. ${formatTagNumber(cleaned)} स्थानीय रूप से नहीं मिला।`
+          : `पशू आधार क्र. ${formatTagNumber(cleaned)} सापडला नाही (Not found locally).`
+      );
     }
   };
 
@@ -104,10 +112,12 @@ export const AnimalRegistryView: React.FC = () => {
         <div>
           <h1 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-1.5">
             <Tag className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <span>पशू आधार पासबुक (Cattle Registry)</span>
+            <span className={currentLanguage !== 'en' ? 'lang-devanagari' : ''}>
+              {t('cattlePassbookTitle', 'पशू आधार पासबुक (Cattle Registry)')}
+            </span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Offline Digital Health Passbook & RFID Records
+            {t('cattlePassbookSubtitle', 'Offline Digital Health Passbook & RFID Records')}
           </p>
         </div>
 
@@ -121,22 +131,24 @@ export const AnimalRegistryView: React.FC = () => {
           data-testid="btn-open-new-animal"
         >
           <Plus className="w-4 h-4" />
-          <span>+ नवीन नोंदणी</span>
+          <span className={currentLanguage !== 'en' ? 'lang-devanagari' : ''}>
+            {t('newRegistration', '+ नवीन नोंदणी')}
+          </span>
         </button>
       </div>
 
       {/* Stats Cards Row */}
       <div className="grid grid-cols-3 gap-2">
         <div className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
-          <span className="text-[10px] text-slate-400 block">एकूण पशु</span>
+          <span className="text-[10px] text-slate-400 block">{t('totalAnimals', 'एकूण पशु')}</span>
           <span className="text-sm font-black text-slate-900 dark:text-white">{totalCount}</span>
         </div>
         <div className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
-          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-medium">लस पूर्ण</span>
+          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-medium">{t('vaccinesComplete', 'लस पूर्ण')}</span>
           <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{upToDateCount}</span>
         </div>
         <div className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
-          <span className="text-[10px] text-amber-600 dark:text-amber-400 block font-medium">बूस्टर वेळ</span>
+          <span className="text-[10px] text-amber-600 dark:text-amber-400 block font-medium">{t('boosterDue', 'बूस्टर वेळ')}</span>
           <span className="text-sm font-black text-amber-600 dark:text-amber-400">{boosterDueCount}</span>
         </div>
       </div>
@@ -157,7 +169,9 @@ export const AnimalRegistryView: React.FC = () => {
           data-testid="tab-my-cattle"
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>माझे पशु ({totalCount})</span>
+          <span className={currentLanguage !== 'en' ? 'lang-devanagari' : ''}>
+            {t('myCattle', 'माझे पशु')} ({totalCount})
+          </span>
         </button>
         <button
           type="button"
@@ -173,7 +187,9 @@ export const AnimalRegistryView: React.FC = () => {
           data-testid="tab-tag-lookup"
         >
           <Search className="w-3.5 h-3.5" />
-          <span>पशु आधार शोध (Search)</span>
+          <span className={currentLanguage !== 'en' ? 'lang-devanagari' : ''}>
+            {t('searchTag', 'टॅग क्रमांक शोधा')}
+          </span>
         </button>
       </div>
 

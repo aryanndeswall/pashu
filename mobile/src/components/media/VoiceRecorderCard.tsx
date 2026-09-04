@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Mic, Square, Play, Pause, RotateCcw, Volume2, CheckCircle2 } from 'lucide-react';
 import { voiceService, RecordedAudioResult } from '../../services/voiceService';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 
 export interface VoiceRecorderCardProps {
   recordedAudio: RecordedAudioResult | null;
@@ -12,6 +13,7 @@ export const VoiceRecorderCard: React.FC<VoiceRecorderCardProps> = ({
   recordedAudio,
   onAudioChanged,
 }) => {
+  const { currentLanguage, t } = useLanguageStore();
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -76,12 +78,12 @@ export const VoiceRecorderCard: React.FC<VoiceRecorderCardProps> = ({
     <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 lang-devanagari flex items-center gap-2">
+          <h3 className={`text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
             <Mic className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>२. स्थानिक व्हॉइस नोट (Vernacular Audio Note)</span>
+            <span>{t('voiceCardTitle', '२. स्थानिक व्हॉइस नोट (Vernacular Audio Note)')}</span>
           </h3>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            मराठी किंवा हिंदीमध्ये लक्षणे सांगा (Max 30s)
+            {t('voiceCardSubtitle', 'मराठी किंवा हिंदीमध्ये लक्षणे सांगा (Max 30s)')}
           </p>
         </div>
 
@@ -114,18 +116,18 @@ export const VoiceRecorderCard: React.FC<VoiceRecorderCardProps> = ({
             <p className="text-lg font-mono font-bold text-red-600 dark:text-red-400">
               {formatTime(duration)} / 00:30.0
             </p>
-            <p className="text-[11px] text-red-700/80 dark:text-red-300/80 lang-devanagari">
-              रेकॉर्डिंग सुरू आहे... पूर्ण झाल्यावर थांबवा
+            <p className={`text-[11px] text-red-700/80 dark:text-red-300/80 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+              {t('recordingInProgress', 'रेकॉर्डिंग सुरू आहे... पूर्ण झाल्यावर थांबवा')}
             </p>
           </div>
 
           <button
             type="button"
             onClick={handleStopRecord}
-            className="field-touch-target px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-red-900/20 lang-devanagari transition-all"
+            className={`field-touch-target px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-red-900/20 transition-all ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
           >
             <Square className="w-4 h-4 fill-white" />
-            <span>थांबवा (Stop Recording)</span>
+            <span>{t('stopRecording', 'थांबवा (Stop Recording)')}</span>
           </button>
         </div>
       )}
@@ -142,11 +144,11 @@ export const VoiceRecorderCard: React.FC<VoiceRecorderCardProps> = ({
               <Mic className="w-5 h-5" />
             </div>
             <div className="text-left">
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 lang-devanagari">
-                व्हॉइस नोट रेकॉर्ड करा (Record Voice Note)
+              <p className={`text-xs font-bold text-slate-800 dark:text-slate-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('recordVoiceNote', 'व्हॉइस नोट रेकॉर्ड करा (Record Voice Note)')}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                लक्षणे बोलून सांगा (कमाल ३० सेकंद)
+                {t('speakSymptoms', 'लक्षणे बोलून सांगा (कमाल ३० सेकंद)')}
               </p>
             </div>
           </button>
@@ -162,11 +164,11 @@ export const VoiceRecorderCard: React.FC<VoiceRecorderCardProps> = ({
                 <Volume2 className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 lang-devanagari">
-                  रेकॉर्ड केलेला ऑडिओ (Audio Ready)
+                <p className={`text-xs font-bold text-slate-800 dark:text-slate-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                  {t('audioReady', 'रेकॉर्ड केलेला ऑडिओ (Audio Ready)')}
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  कालावधी: {recordedAudio.durationSeconds.toFixed(1)} सेकंद • {recordedAudio.mimeType}
+                  {t('durationSec', 'कालावधी')}: {recordedAudio.durationSeconds.toFixed(1)}s • {recordedAudio.mimeType}
                 </p>
               </div>
             </div>
@@ -174,17 +176,17 @@ export const VoiceRecorderCard: React.FC<VoiceRecorderCardProps> = ({
             <button
               type="button"
               onClick={handleTogglePlay}
-              className="field-touch-target px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform lang-devanagari"
+              className={`field-touch-target px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
             >
               {isPlaying ? (
                 <>
                   <Pause className="w-3.5 h-3.5 fill-white" />
-                  <span>थांबवा</span>
+                  <span>{t('pause', 'थांबवा')}</span>
                 </>
               ) : (
                 <>
                   <Play className="w-3.5 h-3.5 fill-white" />
-                  <span>ऐका (Play)</span>
+                  <span>{t('play', 'ऐका (Play)')}</span>
                 </>
               )}
             </button>
@@ -194,10 +196,10 @@ export const VoiceRecorderCard: React.FC<VoiceRecorderCardProps> = ({
             <button
               type="button"
               onClick={handleResetRecord}
-              className="field-touch-target px-3 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 lang-devanagari transition-colors"
+              className={`field-touch-target px-3 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition-colors ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
             >
               <RotateCcw className="w-3 h-3 text-slate-400" />
-              <span>पुन्हा रेकॉर्ड करा (Re-record)</span>
+              <span>{t('rerecord', 'पुन्हा रेकॉर्ड करा (Re-record)')}</span>
             </button>
           </div>
         </div>
@@ -205,3 +207,4 @@ export const VoiceRecorderCard: React.FC<VoiceRecorderCardProps> = ({
     </div>
   );
 };
+

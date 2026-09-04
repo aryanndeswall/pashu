@@ -17,6 +17,7 @@ import { useSyncStore } from '../store/syncStore';
 import { SecondarySymptomsSelector } from '../components/syndromes/SecondarySymptomsSelector';
 import { ClinicalGuidanceCard } from '../components/syndromes/ClinicalGuidanceCard';
 import { AnthraxBiohazardModal } from '../components/modals/AnthraxBiohazardModal';
+import { useLanguageStore } from '../store/languageStore';
 import { Skull } from 'lucide-react';
 
 export interface ReportWizardViewProps {
@@ -24,6 +25,7 @@ export interface ReportWizardViewProps {
 }
 
 export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSaved }) => {
+  const { currentLanguage, t } = useLanguageStore();
   // Wizard step state (1, 2, or 3)
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
@@ -157,13 +159,13 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
       {/* 3-Step Wizard Progress Bar */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 lang-devanagari">
-            {currentStep === 1 && 'टप्पा १/३: लक्षण निवड (Syndrome Selection)'}
-            {currentStep === 2 && 'टप्पा २/३: पुरावे जोडणी (फोटो व आवाज)'}
-            {currentStep === 3 && 'टप्पा ३/३: स्थान व पशू आधार'}
+          <span className={`text-xs font-bold text-slate-800 dark:text-slate-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+            {currentStep === 1 && t('step1Title', 'टप्पा १/३: लक्षण निवड (Syndrome Selection)')}
+            {currentStep === 2 && t('step2Title', 'टप्पा २/३: पुरावे जोडणी (फोटो व आवाज)')}
+            {currentStep === 3 && t('step3Title', 'टप्पा ३/३: स्थान व पशू आधार')}
           </span>
           <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-            {currentStep === 1 ? '33%' : currentStep === 2 ? '66%' : '100%'} Complete
+            {currentStep === 1 ? '33%' : currentStep === 2 ? '66%' : '100%'} {t('complete', 'Complete')}
           </span>
         </div>
         <div className="grid grid-cols-3 gap-2">
@@ -202,11 +204,11 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
               <div className="flex items-center gap-2">
                 <Skull className="w-5 h-5 text-red-400 animate-pulse" />
                 <div>
-                  <div className="text-xs font-bold lang-devanagari">
-                    ॲन्थ्रॅक्स शून्य-सहनशीलता लॉकआऊट सक्रिय!
+                  <div className={`text-xs font-bold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                    {t('anthraxLockoutTitle', 'ॲन्थ्रॅक्स शून्य-सहनशीलता लॉकआऊट सक्रिय!')}
                   </div>
                   <div className="text-[10px] text-red-200">
-                    शव विच्छेदन करण्यास सक्त मनाई आहे.
+                    {t('anthraxLockoutSubtitle', 'शव विच्छेदन करण्यास सक्त मनाई आहे.')}
                   </div>
                 </div>
               </div>
@@ -215,7 +217,7 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
                 onClick={() => setIsAnthraxModalOpen(true)}
                 className="field-touch-target px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-sm"
               >
-                इशारा उघडा
+                {t('openAlert', 'इशारा उघडा')}
               </button>
             </div>
           )}
@@ -226,23 +228,23 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
               <button
                 type="button"
                 onClick={() => setIsAnthraxModalOpen(true)}
-                className="field-touch-target w-full py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 lang-devanagari text-sm transition-all shadow-md bg-red-600 hover:bg-red-700 text-white"
+                className={`field-touch-target w-full py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition-all shadow-md bg-red-600 hover:bg-red-700 text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
               >
                 <Skull className="w-4 h-4" />
-                <span>ॲन्थ्रॅक्स लॉकआऊट प्रोटोकॉल उघडा (Anthrax Lockout)</span>
+                <span>{t('openLockoutProtocol', 'ॲन्थ्रॅक्स लॉकआऊट प्रोटोकॉल उघडा (Anthrax Lockout)')}</span>
               </button>
             ) : (
               <button
                 type="button"
                 disabled={!selectedSyndrome}
                 onClick={handleProceedToStep2}
-                className={`field-touch-target w-full py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 lang-devanagari text-sm transition-all shadow-md ${
+                className={`field-touch-target w-full py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 text-sm transition-all shadow-md ${currentLanguage !== 'en' ? 'lang-devanagari' : ''} ${
                   selectedSyndrome
                     ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white shadow-emerald-900/30'
                     : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                 }`}
               >
-                <span>पुढे जा: पुरावे जोडा (Next: Add Evidence)</span>
+                <span>{t('nextEvidence', 'पुढे जा: पुरावे जोडा (Next: Add Evidence)')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}
@@ -262,20 +264,20 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
                   severity={selectedSyndrome.severity}
                 />
                 <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-white lang-devanagari">
-                    {selectedSyndrome.code} — {selectedSyndrome.nameMarathi}
+                  <p className={`text-xs font-bold text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                    {selectedSyndrome.code} — {currentLanguage === 'en' ? selectedSyndrome.nameEnglish : currentLanguage === 'hi' ? (selectedSyndrome.nameHindi || selectedSyndrome.nameMarathi) : selectedSyndrome.nameMarathi}
                   </p>
                   <p className="text-[11px] text-emerald-700 dark:text-emerald-300">
-                    स्थानिक नाव: {selectedSyndrome.colloquialMarathi}
+                    {t('localNameLabel', 'स्थानिक नाव:')} {currentLanguage === 'en' ? (selectedSyndrome.colloquialEnglish || selectedSyndrome.nameEnglish) : currentLanguage === 'hi' ? (selectedSyndrome.colloquialHindi || selectedSyndrome.colloquialMarathi) : selectedSyndrome.colloquialMarathi}
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setCurrentStep(1)}
-                className="text-xs text-emerald-700 dark:text-emerald-300 underline font-semibold lang-devanagari"
+                className={`text-xs text-emerald-700 dark:text-emerald-300 underline font-semibold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
               >
-                बदला
+                {t('changeSyndrome', 'बदला')}
               </button>
             </div>
           )}
@@ -297,18 +299,18 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
-              className="field-touch-target px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 lang-devanagari hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className={`field-touch-target px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>मागे (Back)</span>
+              <span>{t('back', 'मागे (Back)')}</span>
             </button>
 
             <button
               type="button"
               onClick={handleProceedToStep3}
-              className="field-touch-target flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 lang-devanagari shadow-md shadow-emerald-900/20 transition-transform"
+              className={`field-touch-target flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-900/20 transition-transform ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
             >
-              <span>पुढे जा: स्थान व टॅग (Next: Location)</span>
+              <span>{t('nextLocation', 'पुढे जा: स्थान व टॅग (Next: Location)')}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -331,11 +333,11 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
           {/* Pashu Aadhaar RFID Ear-Tag Card */}
           <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-2.5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 lang-devanagari flex items-center gap-2">
+              <h3 className={`text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                 <Tag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>पशू आधार १२-अंकी टॅग (Pashu Aadhaar Tag)</span>
+                <span>{t('pashuAadhaarTitle', 'पशू आधार १२-अंकी टॅग (Pashu Aadhaar Tag)')}</span>
               </h3>
-              <span className="text-[10px] text-slate-400 font-semibold uppercase">ऐच्छिक (Optional)</span>
+              <span className="text-[10px] text-slate-400 font-semibold uppercase">{t('optional', 'ऐच्छिक (Optional)')}</span>
             </div>
 
             <div className="relative">
@@ -343,13 +345,13 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
                 type="text"
                 value={pashuAadhaar}
                 onChange={handleAadhaarChange}
-                placeholder="उदा. १२३४-५६७८-९०१२"
+                placeholder={t('tagPlaceholder', 'उदा. १२३४-५६७८-९०१२')}
                 maxLength={14}
                 className="field-touch-target w-full px-3.5 py-2.5 text-sm font-mono tracking-wider rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
               />
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 lang-devanagari">
-              जनावराच्या कानातील पिवळ्या RFID टॅगचा १२-अंकी क्रमांक टाका.
+            <p className={`text-[11px] text-slate-500 dark:text-slate-400 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+              {t('tagHelp', 'जनावराच्या कानातील पिवळ्या RFID टॅगचा १२-अंकी क्रमांक टाका.')}
             </p>
           </div>
 
@@ -358,20 +360,20 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
             <button
               type="button"
               onClick={() => setCurrentStep(2)}
-              className="field-touch-target px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 lang-devanagari hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className={`field-touch-target px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>मागे (Back)</span>
+              <span>{t('back', 'मागे (Back)')}</span>
             </button>
 
             <button
               type="button"
               disabled={isSubmitting}
               onClick={handleSaveReport}
-              className="field-touch-target flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 lang-devanagari shadow-lg shadow-emerald-900/30 transition-transform"
+              className={`field-touch-target flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-transform ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
             >
               <Check className="w-4 h-4" />
-              <span>{isSubmitting ? 'जतन करत आहे...' : 'अहवाल जतन करा (Save Offline Report)'}</span>
+              <span>{isSubmitting ? t('saving', 'जतन करत आहे...') : t('saveOfflineReport', 'अहवाल जतन करा (Save Offline Report)')}</span>
             </button>
           </div>
         </div>
@@ -386,29 +388,29 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white lang-devanagari">
-                अहवाल यशस्वीरित्या जतन झाला!
+              <h3 className={`text-base font-bold text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('reportSuccessTitle', 'अहवाल यशस्वीरित्या जतन झाला!')}
               </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 lang-devanagari">
-                स्थानिक SQLite रांगेमध्ये अहवाल सुरक्षित ठेवण्यात आला आहे.
+              <p className={`text-xs text-slate-600 dark:text-slate-300 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('reportSuccessSubtitle', 'स्थानिक SQLite रांगेमध्ये अहवाल सुरक्षित ठेवण्यात आला आहे.')}
               </p>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-left text-xs space-y-1">
-              <p className="font-semibold text-slate-800 dark:text-slate-200 lang-devanagari">
-                लक्षण: {selectedSyndrome?.nameMarathi} ({selectedSyndrome?.code})
+              <p className={`font-semibold text-slate-800 dark:text-slate-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('syndromeLabel', 'लक्षण')}: {currentLanguage === 'en' ? selectedSyndrome?.nameEnglish : currentLanguage === 'hi' ? (selectedSyndrome?.nameHindi || selectedSyndrome?.nameMarathi) : selectedSyndrome?.nameMarathi} ({selectedSyndrome?.code})
               </p>
-              <p className="text-slate-500 dark:text-slate-400 lang-devanagari">
-                गाव: {snappedVillage?.village_name || 'राहुरी खुर्द'}
+              <p className={`text-slate-500 dark:text-slate-400 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('villageLabel', 'गाव')}: {snappedVillage?.village_name || (currentLanguage === 'en' ? 'Rahuri Khurd' : 'राहुरी खुर्द')}
               </p>
               {capturedPhoto && (
                 <p className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px]">
-                  ✓ WebP फोटो जोडला ({capturedPhoto.sizeKB} KB)
+                  {t('photoAttachedLabel', '✓ WebP फोटो जोडला')} ({capturedPhoto.sizeKB} KB)
                 </p>
               )}
               {recordedAudio && (
                 <p className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px]">
-                  ✓ व्हॉइस नोट जोडली ({recordedAudio.durationSeconds.toFixed(1)}s)
+                  {t('voiceAttachedLabel', '✓ व्हॉइस नोट जोडली')} ({recordedAudio.durationSeconds.toFixed(1)}s)
                 </p>
               )}
             </div>
@@ -416,9 +418,9 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
             <button
               type="button"
               onClick={resetWizard}
-              className="field-touch-target w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs lang-devanagari shadow-md shadow-emerald-900/20"
+              className={`field-touch-target w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md shadow-emerald-900/20 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
             >
-              नवीन अहवाल नोंदवा (New Report)
+              {t('newReportBtn', 'नवीन अहवाल नोंदवा (New Report)')}
             </button>
           </div>
         </div>

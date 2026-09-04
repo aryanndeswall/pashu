@@ -9,11 +9,14 @@ export interface UserProfile {
   id: string;
   name: string;
   nameMarathi: string;
+  nameHindi?: string;
   role: UserRole;
   mobileNumberMasked: string;
   district: string;
   block: string;
   titleMarathi: string;
+  titleHindi?: string;
+  titleEnglish?: string;
   licenseOrId?: string;
 }
 
@@ -22,8 +25,11 @@ export const DEMO_PERSONAS: Record<UserRole, UserProfile> = {
     id: 'usr_farmer_01',
     name: 'Ramesh Patil',
     nameMarathi: 'रमेश पाटील',
+    nameHindi: 'रमेश पाटिल',
     role: 'consumer',
     titleMarathi: 'पशुपालक (दुग्ध उत्पादक)',
+    titleHindi: 'पशुपालक (दुग्ध उत्पादक)',
+    titleEnglish: 'Livestock Owner (Dairy Farmer)',
     mobileNumberMasked: '+91 9822X-XX412',
     district: 'Ahmednagar',
     block: 'Rahuri Khurd',
@@ -32,8 +38,11 @@ export const DEMO_PERSONAS: Record<UserRole, UserProfile> = {
     id: 'usr_vet_02',
     name: 'Dr. Anjali Deshmukh',
     nameMarathi: 'डॉ. अंजली देशमुख',
+    nameHindi: 'डॉ. अंजलि देशमुख',
     role: 'doctor',
     titleMarathi: 'पशुधन विकास अधिकारी (LDO)',
+    titleHindi: 'पशुधन विकास अधिकारी (LDO)',
+    titleEnglish: 'Livestock Development Officer (LDO)',
     mobileNumberMasked: '+91 9423X-XX819',
     district: 'Ahmednagar',
     block: 'Rahuri & Sangamner',
@@ -43,8 +52,11 @@ export const DEMO_PERSONAS: Record<UserRole, UserProfile> = {
     id: 'usr_dvo_03',
     name: 'Dr. S. K. Kulkarni',
     nameMarathi: 'डॉ. एस. के. कुलकर्णी',
+    nameHindi: 'डॉ. एस. के. कुलकर्णी',
     role: 'admin',
     titleMarathi: 'जिल्हा पशुसंवर्धन अधिकारी (DVO)',
+    titleHindi: 'जिला पशुपालन अधिकारी (DVO)',
+    titleEnglish: 'District Veterinary Officer (DVO)',
     mobileNumberMasked: '+91 9158X-XX001',
     district: 'Ahmednagar',
     block: 'District Headquarters',
