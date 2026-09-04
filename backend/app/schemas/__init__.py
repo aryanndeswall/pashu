@@ -13,6 +13,13 @@ from app.schemas.triage import (
     BiohazardAlert,
     SYNDROME_METADATA,
 )
+from app.schemas.cluster import (
+    IncidentCreate,
+    ClusterEvaluationRequest,
+    ClusterEvaluationResponse,
+    ClusterSummary,
+    OutbreakStatus,
+)
 
 __all__ = [
     "AnimalCreate",
@@ -26,4 +33,9 @@ __all__ = [
     "SyndromeCode",
     "BiohazardAlert",
     "SYNDROME_METADATA",
+    "IncidentCreate",
+    "ClusterEvaluationRequest",
+    "ClusterEvaluationResponse",
+    "ClusterSummary",
+    "OutbreakStatus",
 ]

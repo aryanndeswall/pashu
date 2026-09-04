@@ -12,13 +12,14 @@ Pashu-Suraksha is built in 10 sequential, highly focused phases adhering to the 
 - [x] **Phase 2: Mobile UI, Design System & React Bits Micro-Interactions** - Implement Stitch layouts, UI-UXmax rural ergonomics, and React Bits animations. (completed 2026-08-31)
 - [x] **Phase 3: Hardware Sensor Bridges (Camera, GPS, Voice)** - On-device WebP camera compression, GPS geotagging with LGD snapping, and native audio recording. (completed 2026-09-03)
 - [x] **Phase 3.1: Multi-Role Authentication Shell (Doctor, Consumer, Admin) & SIH Demo Role-Switcher** - Login screen, persistent auth store, SIH demo role-switcher header, and role-filtered navigation. (completed 2026-09-03)
-- [ ] **Phase 4: 8-Syndrome Decision Tree & Zero-Tolerance Anthrax Lockout** - Deterministic offline edge rules, Anthrax biohazard screen, and Marathi voice warnings.
-- [ ] **Phase 5: Two-Phase Delta Synchronization Engine** - Event-sourced SQLite queue, network state monitor, and low-bandwidth telemetry sync.
-- [ ] **Phase 6: Livestock Registry, Pashu Aadhaar & Cloud Persistence** - FastAPI backend, PostgreSQL 16 + PostGIS 3.4 schema, TimescaleDB, and 12-digit tag records.
-- [ ] **Phase 7: Google Gemini 3.7 Flash Multimodal Triage Pipeline** - Cloud multimodal perception parsing lesion photos and colloquial Marathi audio in <800ms.
-- [ ] **Phase 8: Spatio-Temporal SaTScan Outbreak Detection & Dynamic Buffers** - PostGIS 5 km / 72h Poisson Attack Rate algorithm and 1-5-10 km geodetic containment rings.
+- [x] **Phase 4: 8-Syndrome Decision Tree & Zero-Tolerance Anthrax Lockout** - Deterministic offline edge rules, Anthrax biohazard screen, and Marathi voice warnings. (completed 2026-09-03)
+- [x] **Phase 5: Two-Phase Delta Synchronization Engine** - Event-sourced SQLite queue, network state monitor, and low-bandwidth telemetry sync. (completed 2026-09-03)
+- [x] **Phase 6: Livestock Registry, Pashu Aadhaar & Cloud Persistence** - FastAPI backend, PostgreSQL 16 + PostGIS 3.4 schema, TimescaleDB, and 12-digit tag records. (completed 2026-09-04)
+- [x] **Phase 7: Google Gemini 3.7 Flash Multimodal Triage Pipeline** - Cloud multimodal perception parsing lesion photos and colloquial Marathi audio in <800ms. (completed 2026-09-04)
+- [x] **Phase 8: Spatio-Temporal SaTScan Outbreak Detection & Dynamic Buffers** - PostGIS 5 km / 72h Poisson Attack Rate algorithm and 1-5-10 km geodetic containment rings. (completed 2026-09-04)
 - [ ] **Phase 9: Diagnostic Lab Referral & Cold-Chain Tracking (e-LRF)** - QR chain-of-custody tracking, 48-hour cold-chain shelf-life timers, and closed-loop result verification.
 - [ ] **Phase 10: Web-GIS Command Center, IDSP Bridge & SIH Demo Simulation** - MapLibre GL executive dashboard, automated IDSP bridge, and Ahmednagar outbreak presentation script.
+
 
 ---
 
@@ -213,11 +214,12 @@ Phases execute sequentially in numeric order: 1 → 2 → 3 → 4 → 5 → 6 �
 | 3.1. Multi-Role Auth Shell | 2/2 | Complete | 2026-09-03 |
 | 4. Decision Tree & Anthrax Lockout | 2/2 | Complete | 2026-09-03 |
 | 5. Two-Phase Delta Sync | 2/2 | Complete | 2026-09-03 |
-| 6. Livestock Registry & Cloud DB | 0/2 | Not started | - |
-| 7. Gemini 3.7 Flash Triage | 0/2 | Not started | - |
-| 8. PostGIS SaTScan & Buffers | 0/2 | Not started | - |
+| 6. Livestock Registry & Cloud DB | 2/2 | Complete | 2026-09-04 |
+| 7. Gemini 3.7 Flash Triage | 2/2 | Complete | 2026-09-04 |
+| 8. PostGIS SaTScan & Buffers | 2/2 | Complete | 2026-09-04 |
 | 9. Lab Referral & Cold-Chain | 0/2 | Not started | - |
 | 10. Web-GIS Dashboard & SIH Demo | 0/2 | Not started | - |
+
 
 ---
 *Roadmap created: 2026-08-30*
