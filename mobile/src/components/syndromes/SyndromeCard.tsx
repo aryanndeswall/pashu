@@ -18,11 +18,11 @@ export const SyndromeCard: React.FC<SyndromeCardProps> = ({
 }) => {
   const isHSDS = syndrome.code === 'HSDS';
 
-  const handleClick = async () => {
+  const handleClick = () => {
     if (isHSDS) {
-      await hapticsService.hapticError();
+      hapticsService.hapticError();
     } else {
-      await hapticsService.hapticMedium();
+      hapticsService.hapticMedium();
     }
     onSelect(syndrome);
   };

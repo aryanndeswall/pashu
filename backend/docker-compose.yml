@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  timescaledb-postgis:
+    image: timescale/timescaledb-ha:pg16
+    container_name: pashu_timescale_postgis
+    environment:
+      POSTGRES_DB: pashu_db
+      POSTGRES_USER: pashu
+      POSTGRES_PASSWORD: pashu_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/home/postgres/pgdata/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pashu -d pashu_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local

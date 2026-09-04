@@ -10,7 +10,8 @@ Pashu-Suraksha is built in 10 sequential, highly focused phases adhering to the 
 
 - [x] **Phase 1: Project Scaffolding & Native Android APK Foundation** - Initialize Capacitor 6 + React 19 + Tailwind v4 + Native SQLite container. (completed 2026-08-30)
 - [x] **Phase 2: Mobile UI, Design System & React Bits Micro-Interactions** - Implement Stitch layouts, UI-UXmax rural ergonomics, and React Bits animations. (completed 2026-08-31)
-- [ ] **Phase 3: Hardware Sensor Bridges (Camera, GPS, Voice)** - On-device WebP camera compression, GPS geotagging with LGD snapping, and native audio recording.
+- [x] **Phase 3: Hardware Sensor Bridges (Camera, GPS, Voice)** - On-device WebP camera compression, GPS geotagging with LGD snapping, and native audio recording. (completed 2026-09-03)
+- [x] **Phase 3.1: Multi-Role Authentication Shell (Doctor, Consumer, Admin) & SIH Demo Role-Switcher** - Login screen, persistent auth store, SIH demo role-switcher header, and role-filtered navigation. (completed 2026-09-03)
 - [ ] **Phase 4: 8-Syndrome Decision Tree & Zero-Tolerance Anthrax Lockout** - Deterministic offline edge rules, Anthrax biohazard screen, and Marathi voice warnings.
 - [ ] **Phase 5: Two-Phase Delta Synchronization Engine** - Event-sourced SQLite queue, network state monitor, and low-bandwidth telemetry sync.
 - [ ] **Phase 6: Livestock Registry, Pashu Aadhaar & Cloud Persistence** - FastAPI backend, PostgreSQL 16 + PostGIS 3.4 schema, TimescaleDB, and 12-digit tag records.
@@ -66,14 +67,30 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: Implement `@capacitor/camera` capture with HTML5 Canvas WebP compression and `@capacitor-community/voice-recorder` audio capture.
-- [ ] 03-02: Implement `@capacitor/geolocation` service with local LGD spatial distance calculation.
+- [x] 03-01: Implement `@capacitor/camera` capture with HTML5 Canvas WebP compression and `@capacitor-community/voice-recorder` audio capture.
+- [x] 03-02: Implement `@capacitor/geolocation` service with local LGD spatial distance calculation.
+
+---
+
+### Phase 3.1: Multi-Role Authentication Shell (Doctor, Consumer, Admin) & SIH Demo Role-Switcher
+**Goal**: Implement the 3-role authentication shell (Consumer/Farmer, Doctor/Vet, Admin/DVO) with instant demo role-switcher, persistent auth state in SQLite, and dynamic role-filtered navigation.  
+**Depends on**: Phase 3  
+**Requirements**: APK-03, AUTH-01  
+**Success Criteria**:
+1. User can select or switch between 3 distinct roles (Consumer, Doctor, Admin) from a dedicated Login screen and an instant 1-tap header demo switcher.
+2. Active role and district context persist locally in SQLite and memory across app restarts.
+3. Mobile navigation and action tabs dynamically filter based on active role (e.g., Clinical Triage and Lab Requisitions restricted to Doctor/Admin).  
+**Plans**: 2 plans
+
+Plans:
+- [x] 03.1-01: Build `useAuthStore.ts` with SQLite persistence and the dedicated Login & Role Selection screen (`RoleSelectionView.tsx`).
+- [x] 03.1-02: Implement the Header Demo Role-Switcher bar and role-filtered mobile navigation (`BottomBar.tsx` / `HeaderBar.tsx`).
 
 ---
 
 ### Phase 4: 8-Syndrome Decision Tree & Zero-Tolerance Anthrax Lockout
 **Goal**: Implement the deterministic edge clinical rule engine running 100% offline inside the APK, enforcing the zero-tolerance Anthrax biohazard lockout.  
-**Depends on**: Phase 3  
+**Depends on**: Phase 3.1  
 **Requirements**: BIO-01, BIO-02, BIO-03  
 **Success Criteria**:
 1. Reporting sudden death with unclotted bleeding immediately triggers `CRITICAL_ANTHRAX_LOCK`.
@@ -82,8 +99,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Build offline TypeScript syndromic rule evaluation engine covering the 8 veterinary decision trees.
-- [ ] 04-02: Build the Anthrax emergency biohazard modal with Marathi audio advisory and IDSP payload generator.
+- [x] 04-01: Build offline TypeScript syndromic rule evaluation engine covering the 8 veterinary decision trees.
+- [x] 04-02: Build the Anthrax emergency biohazard modal with Marathi audio advisory and IDSP payload generator.
 
 ---
 
@@ -98,8 +115,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Build the event-sourced `offline_sync_queue` table and synchronization state machine.
-- [ ] 05-02: Implement two-phase upload manager with automatic retries and exponential backoff.
+- [x] 05-01: Build the event-sourced `offline_sync_queue` table and synchronization state machine.
+- [x] 05-02: Implement two-phase upload manager with automatic retries and exponential backoff.
 
 ---
 
@@ -114,8 +131,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: Scaffold FastAPI backend with AsyncPG, Pydantic v2 schemas, and JWT authentication.
-- [ ] 06-02: Deploy PostgreSQL 16 + PostGIS 3.4 DDL schema with TimescaleDB hypertables and LGD census tables.
+- [x] 06-01: Scaffold FastAPI cloud backend with async dual-engine database (Postgres/SQLite), 12-digit animal models, and DAHD vaccination booster endpoints.
+- [x] 06-02: Implement mobile offline animal service, SQLite caching, and digital cattle passbook UI with vaccination timeline and registration modal.
 
 ---
 
@@ -191,10 +208,11 @@ Phases execute sequentially in numeric order: 1 → 2 → 3 → 4 → 5 → 6 �
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Scaffolding & Native Android APK | 2/2 | Complete    | 2026-08-30 |
-| 2. Mobile UI & React Bits | 0/2 | Not started | - |
-| 3. Hardware Sensor Bridges | 0/2 | Not started | - |
-| 4. Decision Tree & Anthrax Lockout | 0/2 | Not started | - |
-| 5. Two-Phase Delta Sync | 0/2 | Not started | - |
+| 2. Mobile UI & React Bits | 2/2 | Complete | 2026-08-31 |
+| 3. Hardware Sensor Bridges | 2/2 | Complete | 2026-09-03 |
+| 3.1. Multi-Role Auth Shell | 2/2 | Complete | 2026-09-03 |
+| 4. Decision Tree & Anthrax Lockout | 2/2 | Complete | 2026-09-03 |
+| 5. Two-Phase Delta Sync | 2/2 | Complete | 2026-09-03 |
 | 6. Livestock Registry & Cloud DB | 0/2 | Not started | - |
 | 7. Gemini 3.7 Flash Triage | 0/2 | Not started | - |
 | 8. PostGIS SaTScan & Buffers | 0/2 | Not started | - |

@@ -43,6 +43,36 @@ class HapticsService {
   }
 
   /**
+   * Success tactile feedback for successful registrations and confirmations.
+   */
+  async hapticSuccess(): Promise<void> {
+    try {
+      if (this.isNative) {
+        await Haptics.notification({ type: NotificationType.Success });
+      } else if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([30, 30]);
+      }
+    } catch {
+      // Graceful fallback
+    }
+  }
+
+  /**
+   * Warning tactile pulse for validation errors.
+   */
+  async hapticWarning(): Promise<void> {
+    try {
+      if (this.isNative) {
+        await Haptics.notification({ type: NotificationType.Warning });
+      } else if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([40, 20, 40]);
+      }
+    } catch {
+      // Graceful fallback
+    }
+  }
+
+  /**
    * Heavy pulsating tactile warning for Anthrax biohazard lockout and SOS emergency triggers.
    */
   async hapticError(): Promise<void> {

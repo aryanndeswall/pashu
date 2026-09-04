@@ -18,7 +18,9 @@ export const SCHEMA_STATEMENTS = [
     owner_mobile_masked TEXT NOT NULL,
     species TEXT NOT NULL,
     breed TEXT,
+    age_months INTEGER DEFAULT 0,
     village_lgd_code INTEGER NOT NULL,
+    village_name TEXT,
     vaccination_status TEXT,
     last_synced_at TEXT NOT NULL,
     FOREIGN KEY(village_lgd_code) REFERENCES local_lgd_hierarchy(lgd_code)
@@ -35,8 +37,32 @@ export const SCHEMA_STATEMENTS = [
     created_at TEXT NOT NULL
   );`,
 
+  // 4. Multi-Role Authentication Session State
+  `CREATE TABLE IF NOT EXISTS auth_session (
+    id TEXT PRIMARY KEY,
+    active_role TEXT NOT NULL,
+    display_name TEXT NOT NULL,
+    district TEXT NOT NULL,
+    block TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );`,
+
+  // 5. Binary Media Synchronization Queue (Phase 2 Relational Split)
+  `CREATE TABLE IF NOT EXISTS media_sync_queue (
+    media_id TEXT PRIMARY KEY,
+    sync_id TEXT NOT NULL,
+    media_type TEXT NOT NULL,
+    media_data TEXT NOT NULL,
+    file_size_kb REAL NOT NULL,
+    status TEXT DEFAULT 'PENDING',
+    created_at TEXT NOT NULL,
+    synced_at TEXT,
+    FOREIGN KEY(sync_id) REFERENCES offline_sync_queue(sync_id)
+  );`,
+
   // Indexes for high-speed spatial and queue queries
   `CREATE INDEX IF NOT EXISTS idx_sync_status ON offline_sync_queue(status, priority);`,
+  `CREATE INDEX IF NOT EXISTS idx_media_sync_status ON media_sync_queue(status, sync_id);`,
   `CREATE INDEX IF NOT EXISTS idx_local_animals_village ON local_animals(village_lgd_code);`,
   `CREATE INDEX IF NOT EXISTS idx_lgd_district_block ON local_lgd_hierarchy(district_name, block_name);`,
 ];

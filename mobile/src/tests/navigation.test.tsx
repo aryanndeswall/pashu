@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { useNavigationStore } from '../store/navigationStore';
+import { useAuthStore, DEMO_PERSONAS } from '../store/authStore';
 import { BottomBar } from '../components/navigation/BottomBar';
 import { SOSButton } from '../components/navigation/SOSButton';
 import { hapticsService } from '../services/hapticsService';
@@ -18,6 +19,10 @@ vi.mock('../services/hapticsService', () => ({
 describe('Navigation Shell & Ergonomics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useAuthStore.setState({
+      activeRole: 'doctor',
+      userProfile: DEMO_PERSONAS.doctor,
+    });
     useNavigationStore.setState({
       activeTab: 'report',
       isEmergencyModalOpen: false,
@@ -32,10 +37,10 @@ describe('Navigation Shell & Ergonomics', () => {
     expect(state.isEmergencyModalOpen).toBe(false);
   });
 
-  it('renders all 4 tabs and the elevated center SOS button', () => {
+  it('renders all 4 tabs and the elevated center SOS button for doctor role', () => {
     render(<BottomBar />);
 
-    expect(screen.getByText('नोंदणी')).toBeDefined();
+    expect(screen.getByText('८ लक्षणे')).toBeDefined();
     expect(screen.getByText('डॅशबोर्ड')).toBeDefined();
     expect(screen.getByText('पशु आधार')).toBeDefined();
     expect(screen.getByText('प्रयोगशाळा')).toBeDefined();

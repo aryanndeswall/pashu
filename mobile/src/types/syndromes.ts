@@ -35,6 +35,34 @@ export interface SyndromeDefinition {
   isZoonotic: boolean;
 }
 
+export interface SecondarySymptomDefinition {
+  id: string;
+  nameMarathi: string;
+  nameEnglish: string;
+  isHighRisk?: boolean;
+}
+
+export interface DifferentialDiagnosis {
+  diseaseName: string;
+  diseaseNameMarathi: string;
+  icd11OrOieCode: string;
+  confidence: 'CONFIRMED_ALERT' | 'HIGHLY_PROBABLE' | 'SUSPECTED';
+  isBiohazard: boolean;
+  isIdspNotifiable: boolean;
+  recommendedAction: string;
+  recommendedActionMarathi: string;
+}
+
+export interface DecisionTreeResult {
+  isAnthraxLockout: boolean;
+  urgencyLevel: SyndromeSeverity;
+  primaryDifferential: DifferentialDiagnosis;
+  secondaryDifferentials: DifferentialDiagnosis[];
+  clinicalGuidance: string;
+  farmerAdvisory: string;
+  idspNotifiable: boolean;
+}
+
 export const SYNDROME_TAXONOMY: SyndromeDefinition[] = [
   {
     code: 'VSS',

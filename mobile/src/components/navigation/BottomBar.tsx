@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Activity, Shield, FlaskConical } from 'lucide-react';
 import { useNavigationStore, TabType } from '../../store/navigationStore';
+import { useAuthStore, UserRole } from '../../store/authStore';
 import { SOSButton } from './SOSButton';
 import { hapticsService } from '../../services/hapticsService';
 
@@ -11,39 +12,10 @@ interface TabItemConfig {
   icon: React.FC<{ className?: string }>;
 }
 
-const TABS_LEFT: TabItemConfig[] = [
-  {
-    id: 'report',
-    labelMarathi: 'नोंदणी',
-    labelEnglish: 'Report',
-    icon: FileText,
-  },
-  {
-    id: 'dashboard',
-    labelMarathi: 'डॅशबोर्ड',
-    labelEnglish: 'Dashboard',
-    icon: Activity,
-  },
-];
-
-const TABS_RIGHT: TabItemConfig[] = [
-  {
-    id: 'animals',
-    labelMarathi: 'पशु आधार',
-    labelEnglish: 'Animals',
-    icon: Shield,
-  },
-  {
-    id: 'labs',
-    labelMarathi: 'प्रयोगशाळा',
-    labelEnglish: 'Labs',
-    icon: FlaskConical,
-  },
-];
-
 export const BottomBar: React.FC = () => {
   const activeTab = useNavigationStore((state) => state.activeTab);
   const setActiveTab = useNavigationStore((state) => state.setActiveTab);
+  const activeRole = useAuthStore((state) => state.activeRole);
 
   const handleTabClick = async (tabId: TabType) => {
     if (tabId !== activeTab) {
@@ -51,6 +23,101 @@ export const BottomBar: React.FC = () => {
       await hapticsService.hapticLight();
     }
   };
+
+  // Build role-specific tab configuration
+  const getTabConfig = (role: UserRole): { left: TabItemConfig[]; right: TabItemConfig[] } => {
+    switch (role) {
+      case 'consumer':
+        return {
+          left: [
+            {
+              id: 'report',
+              labelMarathi: 'लक्षणे नोंदवा',
+              labelEnglish: 'Report',
+              icon: FileText,
+            },
+          ],
+          right: [
+            {
+              id: 'dashboard',
+              labelMarathi: 'स्थानिक स्थिती',
+              labelEnglish: 'Status',
+              icon: Activity,
+            },
+            {
+              id: 'animals',
+              labelMarathi: 'माझे पशु',
+              labelEnglish: 'My Animals',
+              icon: Shield,
+            },
+          ],
+        };
+      case 'doctor':
+        return {
+          left: [
+            {
+              id: 'report',
+              labelMarathi: '८ लक्षणे',
+              labelEnglish: 'Triage',
+              icon: FileText,
+            },
+            {
+              id: 'dashboard',
+              labelMarathi: 'डॅशबोर्ड',
+              labelEnglish: 'Dashboard',
+              icon: Activity,
+            },
+          ],
+          right: [
+            {
+              id: 'animals',
+              labelMarathi: 'पशु आधार',
+              labelEnglish: 'Animals',
+              icon: Shield,
+            },
+            {
+              id: 'labs',
+              labelMarathi: 'प्रयोगशाळा',
+              labelEnglish: 'Labs',
+              icon: FlaskConical,
+            },
+          ],
+        };
+      case 'admin':
+        return {
+          left: [
+            {
+              id: 'dashboard',
+              labelMarathi: 'कमांड सेंटर',
+              labelEnglish: 'Command',
+              icon: Activity,
+            },
+            {
+              id: 'report',
+              labelMarathi: 'क्लिनिकल सारांश',
+              labelEnglish: 'Reports',
+              icon: FileText,
+            },
+          ],
+          right: [
+            {
+              id: 'animals',
+              labelMarathi: 'नोंदणी',
+              labelEnglish: 'Registry',
+              icon: Shield,
+            },
+            {
+              id: 'labs',
+              labelMarathi: 'लॅब पडताळणी',
+              labelEnglish: 'Lab Audit',
+              icon: FlaskConical,
+            },
+          ],
+        };
+    }
+  };
+
+  const { left, right } = getTabConfig(activeRole);
 
   const renderTab = (tab: TabItemConfig) => {
     const isActive = activeTab === tab.id;
@@ -62,6 +129,7 @@ export const BottomBar: React.FC = () => {
         type="button"
         onClick={() => handleTabClick(tab.id)}
         aria-selected={isActive}
+        aria-label={`${tab.labelMarathi} (${tab.labelEnglish})`}
         className={`field-touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
           isActive
             ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
@@ -87,7 +155,7 @@ export const BottomBar: React.FC = () => {
       <div className="max-w-md mx-auto flex items-center justify-between px-2">
         {/* Left Tabs */}
         <div className="flex flex-1 items-center justify-around">
-          {TABS_LEFT.map(renderTab)}
+          {left.map(renderTab)}
         </div>
 
         {/* Elevated Center SOS Button */}
@@ -97,7 +165,7 @@ export const BottomBar: React.FC = () => {
 
         {/* Right Tabs */}
         <div className="flex flex-1 items-center justify-around">
-          {TABS_RIGHT.map(renderTab)}
+          {right.map(renderTab)}
         </div>
       </div>
     </nav>

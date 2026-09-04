@@ -5,15 +5,22 @@ export type TabType = 'report' | 'dashboard' | 'animals' | 'labs';
 interface NavigationState {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
+  validateTabForRole: (role: 'consumer' | 'doctor' | 'admin') => void;
   isEmergencyModalOpen: boolean;
   setEmergencyModalOpen: (open: boolean) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
 }
 
-export const useNavigationStore = create<NavigationState>((set) => ({
+export const useNavigationStore = create<NavigationState>((set, get) => ({
   activeTab: 'report',
   setActiveTab: (tab) => set({ activeTab: tab }),
+  validateTabForRole: (role) => {
+    const current = get().activeTab;
+    if (role === 'consumer' && current === 'labs') {
+      set({ activeTab: 'report' });
+    }
+  },
   isEmergencyModalOpen: false,
   setEmergencyModalOpen: (open) => set({ isEmergencyModalOpen: open }),
   isDarkMode: false, // Outdoor sunlight mode is default per D-01
