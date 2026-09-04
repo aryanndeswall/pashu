@@ -1,17 +1,28 @@
 import React, { useState } from 'react';
-import { ShieldCheck, WifiOff, Sun, Moon, CheckCircle2, ArrowRight, RefreshCw, Clock } from 'lucide-react';
+import { ShieldCheck, WifiOff, Sun, Moon, CheckCircle2, ArrowRight, RefreshCw, Clock, Languages } from 'lucide-react';
 import { useNavigationStore } from '../../store/navigationStore';
 import { useAuthStore, UserRole, DEMO_PERSONAS } from '../../store/authStore';
 import { useSyncStore } from '../../store/syncStore';
+import { useLanguageStore, SUPPORTED_LANGUAGES } from '../../store/languageStore';
 import { hapticsService } from '../../services/hapticsService';
 import { FluidDrawer } from '../animations/FluidDrawer';
+import { LanguageSelectorModal } from './LanguageSelectorModal';
 
 export const HeaderBar: React.FC = () => {
   const isDarkMode = useNavigationStore((state) => state.isDarkMode);
   const toggleDarkMode = useNavigationStore((state) => state.toggleDarkMode);
   const { activeRole, switchRole } = useAuthStore();
   const { pendingCount, isSyncing, setDrawerOpen } = useSyncStore();
+  const { currentLanguage, setSelectorOpen } = useLanguageStore();
   const [isRoleDrawerOpen, setIsRoleDrawerOpen] = useState(false);
+
+  const activeLanguage =
+    SUPPORTED_LANGUAGES.find((l) => l.code === currentLanguage) ?? SUPPORTED_LANGUAGES[0];
+
+  const handleOpenLanguageModal = async () => {
+    await hapticsService.hapticLight();
+    setSelectorOpen(true);
+  };
 
   const handleToggleTheme = async () => {
     await hapticsService.hapticLight();
@@ -152,6 +163,17 @@ export const HeaderBar: React.FC = () => {
               <span className="font-semibold text-[10px]">Offline</span>
             </div>
 
+            {/* Multi-Lingual Language Selector Button */}
+            <button
+              type="button"
+              onClick={handleOpenLanguageModal}
+              aria-label={`Current language: ${activeLanguage.englishName}. Open Language Selector`}
+              className="field-touch-target flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-emerald-700/60 bg-emerald-900/60 text-emerald-200 hover:bg-emerald-800/80 active:scale-95 transition-all shadow-xs"
+            >
+              <Languages className="w-3.5 h-3.5 text-emerald-300" />
+              <span className="text-[10px] font-mono font-bold">{activeLanguage.badgeCode}</span>
+            </button>
+
             {/* Sunlight / Night Mode Toggle */}
             <button
               type="button"
@@ -231,6 +253,7 @@ export const HeaderBar: React.FC = () => {
           </div>
         </div>
       </FluidDrawer>
+      <LanguageSelectorModal />
     </>
   );
 };

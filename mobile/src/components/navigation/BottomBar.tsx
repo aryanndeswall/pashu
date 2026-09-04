@@ -2,12 +2,14 @@ import React from 'react';
 import { FileText, Activity, Shield, FlaskConical } from 'lucide-react';
 import { useNavigationStore, TabType } from '../../store/navigationStore';
 import { useAuthStore, UserRole } from '../../store/authStore';
+import { useLanguageStore } from '../../store/languageStore';
 import { SOSButton } from './SOSButton';
 import { hapticsService } from '../../services/hapticsService';
 
 interface TabItemConfig {
   id: TabType;
   labelMarathi: string;
+  labelHindi: string;
   labelEnglish: string;
   icon: React.FC<{ className?: string }>;
 }
@@ -16,6 +18,7 @@ export const BottomBar: React.FC = () => {
   const activeTab = useNavigationStore((state) => state.activeTab);
   const setActiveTab = useNavigationStore((state) => state.setActiveTab);
   const activeRole = useAuthStore((state) => state.activeRole);
+  const currentLanguage = useLanguageStore((state) => state.currentLanguage);
 
   const handleTabClick = async (tabId: TabType) => {
     if (tabId !== activeTab) {
@@ -33,6 +36,7 @@ export const BottomBar: React.FC = () => {
             {
               id: 'report',
               labelMarathi: 'लक्षणे नोंदवा',
+              labelHindi: 'लक्षण दर्ज करें',
               labelEnglish: 'Report',
               icon: FileText,
             },
@@ -41,12 +45,14 @@ export const BottomBar: React.FC = () => {
             {
               id: 'dashboard',
               labelMarathi: 'स्थानिक स्थिती',
+              labelHindi: 'स्थानिक स्थिति',
               labelEnglish: 'Status',
               icon: Activity,
             },
             {
               id: 'animals',
               labelMarathi: 'माझे पशु',
+              labelHindi: 'मेरे पशु',
               labelEnglish: 'My Animals',
               icon: Shield,
             },
@@ -58,12 +64,14 @@ export const BottomBar: React.FC = () => {
             {
               id: 'report',
               labelMarathi: '८ लक्षणे',
+              labelHindi: '८ लक्षण',
               labelEnglish: 'Triage',
               icon: FileText,
             },
             {
               id: 'dashboard',
               labelMarathi: 'डॅशबोर्ड',
+              labelHindi: 'डैशबोर्ड',
               labelEnglish: 'Dashboard',
               icon: Activity,
             },
@@ -72,12 +80,14 @@ export const BottomBar: React.FC = () => {
             {
               id: 'animals',
               labelMarathi: 'पशु आधार',
+              labelHindi: 'पशु आधार',
               labelEnglish: 'Animals',
               icon: Shield,
             },
             {
               id: 'labs',
               labelMarathi: 'प्रयोगशाळा',
+              labelHindi: 'प्रयोगशाला',
               labelEnglish: 'Labs',
               icon: FlaskConical,
             },
@@ -89,12 +99,14 @@ export const BottomBar: React.FC = () => {
             {
               id: 'dashboard',
               labelMarathi: 'कमांड सेंटर',
+              labelHindi: 'कमांड सेंटर',
               labelEnglish: 'Command',
               icon: Activity,
             },
             {
               id: 'report',
               labelMarathi: 'क्लिनिकल सारांश',
+              labelHindi: 'क्लिनिकल सारांश',
               labelEnglish: 'Reports',
               icon: FileText,
             },
@@ -103,12 +115,14 @@ export const BottomBar: React.FC = () => {
             {
               id: 'animals',
               labelMarathi: 'नोंदणी',
+              labelHindi: 'पंजीकरण',
               labelEnglish: 'Registry',
               icon: Shield,
             },
             {
               id: 'labs',
               labelMarathi: 'लॅब पडताळणी',
+              labelHindi: 'लैब सत्यापन',
               labelEnglish: 'Lab Audit',
               icon: FlaskConical,
             },
@@ -123,13 +137,23 @@ export const BottomBar: React.FC = () => {
     const isActive = activeTab === tab.id;
     const IconComponent = tab.icon;
 
+    const primaryLabel =
+      currentLanguage === 'mr'
+        ? tab.labelMarathi
+        : currentLanguage === 'hi'
+        ? tab.labelHindi
+        : tab.labelEnglish;
+
+    const secondaryLabel =
+      currentLanguage === 'en' ? tab.labelMarathi : tab.labelEnglish;
+
     return (
       <button
         key={tab.id}
         type="button"
         onClick={() => handleTabClick(tab.id)}
         aria-selected={isActive}
-        aria-label={`${tab.labelMarathi} (${tab.labelEnglish})`}
+        aria-label={`${primaryLabel} (${secondaryLabel})`}
         className={`field-touch-target flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
           isActive
             ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
@@ -138,10 +162,10 @@ export const BottomBar: React.FC = () => {
       >
         <IconComponent className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
         <span className="text-[11px] mt-0.5 tracking-tight lang-devanagari font-medium">
-          {tab.labelMarathi}
+          {primaryLabel}
         </span>
         <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider -mt-0.5">
-          {tab.labelEnglish}
+          {secondaryLabel}
         </span>
       </button>
     );
