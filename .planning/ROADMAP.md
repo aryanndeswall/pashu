@@ -164,8 +164,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 08-01: Implement PostGIS spatial clustering query with LGD village census denominator normalization.
-- [ ] 08-02: Implement dynamic 1km, 5km, 10km `ST_Buffer` polygon generator and Redis alert publisher.
+- [x] 08-01: Implement PostGIS spatial clustering query with LGD village census denominator normalization.
+- [x] 08-02: Implement dynamic 1km, 5km, 10km `ST_Buffer` polygon generator and Redis alert publisher.
 
 ---
 
@@ -180,8 +180,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 09-01: Build e-LRF requisition generator with QR code creation and cold-chain countdown timers.
-- [ ] 09-02: Build laboratory result entry interface with automatic case status escalation.
+- [x] 09-01: Build e-LRF requisition generator with QR code creation and cold-chain countdown timers.
+- [x] 09-02: Build laboratory result entry interface with automatic case status escalation.
 
 ---
 
@@ -196,8 +196,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 10-01: Build executive Web-GIS dashboard with MapLibre GL JS, Deck.gl, and TimescaleDB epi-curves.
-- [ ] 10-02: Implement automated IDSP webhook bridge and assemble the Ahmednagar live hackathon demo script.
+- [x] 10-01: Build executive Web-GIS dashboard with MapLibre GL JS, Deck.gl, and TimescaleDB epi-curves.
+- [x] 10-02: Implement automated IDSP webhook bridge and assemble the Ahmednagar live hackathon demo script.
 
 ---
 
@@ -216,8 +216,9 @@ Phases execute sequentially in numeric order: 1 → 2 → 3 → 4 → 5 → 6 �
 | 5. Two-Phase Delta Sync | 2/2 | Complete | 2026-09-03 |
 | 6. Livestock Registry & Cloud DB | 2/2 | Complete | 2026-09-04 |
 | 7. Gemini 3.7 Flash Triage | 2/2 | Complete | 2026-09-04 |
+| 8. PostGIS SaTScan & Dynamic Buffers | 2/2 | Complete | 2026-09-04 |
 | 9. Lab Referral & Cold-Chain | 2/2 | Complete | 2026-09-04 |
-| 10. Web-GIS Dashboard & SIH Demo | 0/2 | Not started | - |
+| 10. Web-GIS Dashboard & SIH Demo | 2/2 | Complete | 2026-09-04 |
 
 
 

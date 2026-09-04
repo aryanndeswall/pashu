@@ -29,6 +29,16 @@ from app.schemas.lab import (
     ColdChainStatus,
     RequisitionStatus,
 )
+from app.schemas.gis import (
+    EpiCurvePoint,
+    EpiCurveResponse,
+    MarketClosureMemoRequest,
+    MarketClosureMemoResponse,
+    IdspDispatchPayload,
+    IdspDispatchResponse,
+    SimulationStep,
+    SimulationResponse,
+)
 
 __all__ = [
     "AnimalCreate",
@@ -54,5 +64,14 @@ __all__ = [
     "ColdChainMetrics",
     "ColdChainStatus",
     "RequisitionStatus",
+    "EpiCurvePoint",
+    "EpiCurveResponse",
+    "MarketClosureMemoRequest",
+    "MarketClosureMemoResponse",
+    "IdspDispatchPayload",
+    "IdspDispatchResponse",
+    "SimulationStep",
+    "SimulationResponse",
 ]
+
 
