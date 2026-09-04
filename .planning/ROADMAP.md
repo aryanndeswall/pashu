@@ -16,9 +16,9 @@ Pashu-Suraksha is built in 10 sequential, highly focused phases adhering to the 
 - [x] **Phase 5: Two-Phase Delta Synchronization Engine** - Event-sourced SQLite queue, network state monitor, and low-bandwidth telemetry sync. (completed 2026-09-03)
 - [x] **Phase 6: Livestock Registry, Pashu Aadhaar & Cloud Persistence** - FastAPI backend, PostgreSQL 16 + PostGIS 3.4 schema, TimescaleDB, and 12-digit tag records. (completed 2026-09-04)
 - [x] **Phase 7: Google Gemini 3.7 Flash Multimodal Triage Pipeline** - Cloud multimodal perception parsing lesion photos and colloquial Marathi audio in <800ms. (completed 2026-09-04)
-- [x] **Phase 8: Spatio-Temporal SaTScan Outbreak Detection & Dynamic Buffers** - PostGIS 5 km / 72h Poisson Attack Rate algorithm and 1-5-10 km geodetic containment rings. (completed 2026-09-04)
-- [ ] **Phase 9: Diagnostic Lab Referral & Cold-Chain Tracking (e-LRF)** - QR chain-of-custody tracking, 48-hour cold-chain shelf-life timers, and closed-loop result verification.
+- [x] **Phase 9: Diagnostic Lab Referral & Cold-Chain Tracking (e-LRF)** - QR chain-of-custody tracking, 48-hour cold-chain shelf-life timers, and closed-loop result verification. (completed 2026-09-04)
 - [ ] **Phase 10: Web-GIS Command Center, IDSP Bridge & SIH Demo Simulation** - MapLibre GL executive dashboard, automated IDSP bridge, and Ahmednagar outbreak presentation script.
+
 
 
 ---
@@ -216,9 +216,9 @@ Phases execute sequentially in numeric order: 1 → 2 → 3 → 4 → 5 → 6 �
 | 5. Two-Phase Delta Sync | 2/2 | Complete | 2026-09-03 |
 | 6. Livestock Registry & Cloud DB | 2/2 | Complete | 2026-09-04 |
 | 7. Gemini 3.7 Flash Triage | 2/2 | Complete | 2026-09-04 |
-| 8. PostGIS SaTScan & Buffers | 2/2 | Complete | 2026-09-04 |
-| 9. Lab Referral & Cold-Chain | 0/2 | Not started | - |
+| 9. Lab Referral & Cold-Chain | 2/2 | Complete | 2026-09-04 |
 | 10. Web-GIS Dashboard & SIH Demo | 0/2 | Not started | - |
+
 
 
 ---

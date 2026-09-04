@@ -1,6 +1,7 @@
 from app.models.animal import Animal, VaccinationRecord
 from app.models.incident import Incident, LivestockCensus
 from app.models.cluster import OutbreakCluster
+from app.models.lab import LabRequisition
 
 __all__ = [
     "Animal",
@@ -8,4 +9,6 @@ __all__ = [
     "Incident",
     "LivestockCensus",
     "OutbreakCluster",
+    "LabRequisition",
 ]
+

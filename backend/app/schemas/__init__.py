@@ -20,6 +20,15 @@ from app.schemas.cluster import (
     ClusterSummary,
     OutbreakStatus,
 )
+from app.schemas.lab import (
+    LabRequisitionCreate,
+    LabRequisitionResponse,
+    LabResultSubmit,
+    TemperatureLogCreate,
+    ColdChainMetrics,
+    ColdChainStatus,
+    RequisitionStatus,
+)
 
 __all__ = [
     "AnimalCreate",
@@ -38,4 +47,12 @@ __all__ = [
     "ClusterEvaluationResponse",
     "ClusterSummary",
     "OutbreakStatus",
+    "LabRequisitionCreate",
+    "LabRequisitionResponse",
+    "LabResultSubmit",
+    "TemperatureLogCreate",
+    "ColdChainMetrics",
+    "ColdChainStatus",
+    "RequisitionStatus",
 ]
+
