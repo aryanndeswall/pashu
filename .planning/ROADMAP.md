@@ -13,7 +13,7 @@ Connecting real cloud credentials, storage pipelines, and live AI endpoints to e
 
 ### Phases
 
-- [ ] **Phase 12: Live Environment Configuration & Gemini 3.7 Flash Cloud Perception** - Inject live Gemini API key, configure dynamic mobile API gateway (`VITE_API_BASE_URL`), and verify live multimodal triage on lesion photos and vernacular audio.
+- [x] **Phase 12: Live Environment Configuration & Gemini 3.7 Flash Cloud Perception** - Inject live Gemini API key, configure dynamic mobile API gateway (`VITE_API_BASE_URL`), and verify live multimodal triage on lesion photos and vernacular audio.
 - [ ] **Phase 13: Firebase Cloud Storage & Resumable Media Sync Pipeline** - Integrate Firebase Storage SDKs, configure buckets for lesion WebP images and Indic audio notes, and enable direct `gs://` ingestion into Gemini.
 - [ ] **Phase 14: Cloud Database, Redis Alert Pub/Sub & Push Notification Bridge** - Connect cloud PostgreSQL 16 + PostGIS and Redis, stream live outbreak cluster events, and broadcast containment directives via FCM/SMS.
 
@@ -32,8 +32,8 @@ Connecting real cloud credentials, storage pipelines, and live AI endpoints to e
 **Plans**: 2 plans
 
 Plans:
-- [ ] 12-01: Environment configuration templates, dynamic API gateway service, and backend Gemini live client verification.
-- [ ] 12-02: End-to-end live multimodal triage execution, latency benchmarking, and client-side online/offline fallback integration.
+- [x] 12-01: Environment configuration templates, dynamic API gateway service, and backend Gemini live client verification.
+- [x] 12-02: End-to-end live multimodal triage execution, latency benchmarking, and client-side online/offline fallback integration.
 
 ---
 
