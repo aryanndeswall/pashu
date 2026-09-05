@@ -52,6 +52,13 @@ Requirements for initial production-grade release and SIH hackathon demonstratio
 - [x] **GIS-02**: Officials can view 14-day rolling epidemic curves (epi-curves) powered by TimescaleDB hypertables.
 - [x] **GIS-03**: Officials can issue one-click livestock market (haat) closure advisories and download official administrative memos.
 
+### Role-Based Authentication & User Onboarding (AUTH)
+- [ ] **AUTH-01**: User can select their persona (Farmer, Doctor/Pashu Sakhi, Admin/DVO) and enter role-tailored credentials (vernacular mobile number for farmers, VCI registration/license for doctors, administrative designation code for DVOs).
+- [ ] **AUTH-02**: User receives a 6-digit OTP and verifies their mobile identity with auto-advancing digit inputs and resend countdown timer.
+- [ ] **AUTH-03**: New users complete a sequential onboarding profile specifying their name, LGD district, block, and village (for farmers/sakhis) or assigned jurisdiction (for doctors/officials).
+- [ ] **AUTH-04**: User can set up and authenticate with a 4-digit Offline Security PIN to unlock the application immediately in cellular dead zones.
+- [ ] **AUTH-05**: Authenticated user can view their profile, DPDP-compliant masked credentials, offline sync status, switch roles for demonstration purposes, and securely sign out.
+
 ---
 
 ## v2 Requirements
@@ -108,13 +115,19 @@ Which phases cover which requirements. (Populated during roadmap creation).
 | GIS-01 | Phase 10 | Complete |
 | GIS-02 | Phase 10 | Complete |
 | GIS-03 | Phase 10 | Complete |
+| AUTH-01 | Phase 11 | Pending |
+| AUTH-02 | Phase 11 | Pending |
+| AUTH-03 | Phase 11 | Pending |
+| AUTH-04 | Phase 11 | Pending |
+| AUTH-05 | Phase 11 | Pending |
 
 **Coverage:**
-- v1 requirements: 26 total
-- Mapped to phases: 26
-- Completed: 26 (100%)
+- v1 requirements: 31 total
+- Mapped to phases: 31
+- Completed: 26 (84%)
+- Pending: 5 (16%)
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-08-30*  
-*Last updated: 2026-09-05 after v1.0 milestone audit*
+*Last updated: 2026-09-05 after adding Phase 11 Auth Screens*

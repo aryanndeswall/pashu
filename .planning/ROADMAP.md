@@ -19,6 +19,7 @@ Pashu-Suraksha is built in 10 sequential, highly focused phases adhering to the 
 - [x] **Phase 8: Spatio-Temporal SaTScan Outbreak Detection & Dynamic Buffers** - Space-time permutation clustering, census attack rates, and 1-5-10 km geodetic containment polygons. (completed 2026-09-04)
 - [x] **Phase 9: Diagnostic Lab Referral & Cold-Chain Tracking (e-LRF)** - QR chain-of-custody tracking, 48-hour cold-chain shelf-life timers, and closed-loop result verification. (completed 2026-09-04)
 - [x] **Phase 10: Web-GIS Command Center, IDSP Bridge & SIH Demo Simulation** - MapLibre GL executive dashboard, automated IDSP bridge, and Ahmednagar outbreak presentation script. (completed 2026-09-04)
+- [ ] **Phase 11: Role-Based Authentication Screens & User Onboarding** - Sequential login flows for Farmer, Doctor, and Admin with vernacular mobile OTP, LGD onboarding, offline 4-digit PIN, and profile management.
 
 
 
@@ -202,10 +203,27 @@ Plans:
 
 ---
 
+### Phase 11: Role-Based Authentication Screens & User Onboarding
+**Goal**: Build sequential role-based authentication flows for Farmers, Field Vets/Pashu Sakhis, and District Admins, featuring vernacular phone login, 6-digit OTP verification, LGD jurisdiction onboarding, 4-digit offline emergency PIN, and DPDP-compliant user profiles.  
+**Depends on**: Phase 10  
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05  
+**Success Criteria**:
+1. Users can select and authenticate across 3 dedicated persona flows (Farmer, Doctor/Pashu Sakhi, Admin/DVO) with role-tailored identifiers (phone, VCI license, admin passkey).
+2. Users can complete 6-digit OTP verification with auto-focus, countdown timer, and simulated delivery, proceeding to sequential LGD district/block/village onboarding.
+3. Users can configure a 4-digit Offline Security PIN stored securely in SQLite for instant biometric/PIN app unlocks in cellular dead zones.
+4. Authenticated users can view their profile with DPDP-compliant masked details, sync status, quick demo role-switcher, and sign out back to the portal.  
+**Plans**: 2 plans
+
+Plans:
+- [ ] 11-01: Build SQLite auth credentials schema, extended `useAuthStore`, Role Portal, and role-tailored Login & 6-digit OTP verification screens.
+- [ ] 11-02: Build sequential LGD User Onboarding, 4-digit Offline PIN setup/unlock flow, User Profile screen, and App auth route gating.
+
+---
+
 ## Progress
 
 **Execution Order:**
-Phases execute sequentially in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10.
+Phases execute sequentially in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -220,8 +238,10 @@ Phases execute sequentially in numeric order: 1 → 2 → 3 → 4 → 5 → 6 �
 | 8. PostGIS SaTScan & Dynamic Buffers | 2/2 | Complete | 2026-09-04 |
 | 9. Lab Referral & Cold-Chain | 2/2 | Complete | 2026-09-04 |
 | 10. Web-GIS Dashboard & SIH Demo | 2/2 | Complete | 2026-09-04 |
+| 11. Role-Based Auth Screens & Onboarding | 0/2 | Ready to Plan | - |
 
 
 
 ---
 *Roadmap created: 2026-08-30*
+*Last updated: 2026-09-05*
