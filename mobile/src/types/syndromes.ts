@@ -65,11 +65,17 @@ export interface DecisionTreeResult {
   urgencyLevel: SyndromeSeverity;
   primaryDifferential: DifferentialDiagnosis;
   secondaryDifferentials: DifferentialDiagnosis[];
-  recommendedAction: string;
-  recommendedActionMarathi: string;
+  clinicalGuidance?: string;
+  farmerAdvisory?: string;
+  farmerAdvisoryEnglish?: string;
+  farmerAdvisoryMarathi?: string;
+  farmerAdvisoryHindi?: string;
+  idspNotifiable?: boolean;
+  recommendedAction?: string;
+  recommendedActionMarathi?: string;
   recommendedActionHindi?: string;
-  statutoryAdvisory: string;
-  statutoryAdvisoryMarathi: string;
+  statutoryAdvisory?: string;
+  statutoryAdvisoryMarathi?: string;
   statutoryAdvisoryHindi?: string;
 }
 
