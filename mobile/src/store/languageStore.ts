@@ -109,6 +109,36 @@ export const UI_TRANSLATIONS: Record<string, Record<SupportedLanguage, string>> 
     hi: 'सक्रिय भूमिका',
     en: 'Active Role',
   },
+  rolePortalTitle: {
+    mr: 'पशु सुरक्षा — प्रवेश पोर्टल',
+    hi: 'पशु सुरक्षा — प्रवेश पोर्टल',
+    en: 'Pashu-Suraksha Portal',
+  },
+  rolePortalSubtitle: {
+    mr: 'राष्ट्रीय पशु आरोग्य सर्वेक्षण आणि जैव सुरक्षा नियंत्रण प्रणाली',
+    hi: 'राष्ट्रीय पशु स्वास्थ्य निगरानी और जैव सुरक्षा रोकथाम प्रणाली',
+    en: 'National Livestock Health Surveillance & Biohazard Containment System',
+  },
+  enterAsRole: {
+    mr: 'प्रवेश करा',
+    hi: 'प्रवेश करें',
+    en: 'Enter Portal',
+  },
+  tagOtpLogin: {
+    mr: 'मोबाईल OTP लॉगिन',
+    hi: 'मोबाइल OTP लॉगिन',
+    en: 'Mobile OTP Login',
+  },
+  tagVciLogin: {
+    mr: 'VCI नोंदणी / परवाना लॉगिन',
+    hi: 'VCI पंजीकरण / लाइसेंस लॉगिन',
+    en: 'VCI License Login',
+  },
+  tagAdminLogin: {
+    mr: 'शासकीय पासकोड लॉगिन',
+    hi: 'शासकीय पासकोड लॉगिन',
+    en: 'Official Passcode Login',
+  },
 
   // Tabs
   reportTab: {

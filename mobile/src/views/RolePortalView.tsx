@@ -24,7 +24,8 @@ export const RolePortalView: React.FC = () => {
         btn: 'bg-emerald-600 hover:bg-emerald-700 text-white',
         tag: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300',
       },
-      tagText: 'मोबाईल OTP लॉगिन',
+      tagKey: 'tagOtpLogin',
+      tagFallback: 'मोबाईल OTP लॉगिन',
     },
     {
       role: 'doctor' as UserRole,
@@ -42,7 +43,8 @@ export const RolePortalView: React.FC = () => {
         btn: 'bg-blue-600 hover:bg-blue-700 text-white',
         tag: 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300',
       },
-      tagText: 'VCI नोंदणी / परवाना लॉगिन',
+      tagKey: 'tagVciLogin',
+      tagFallback: 'VCI नोंदणी / परवाना लॉगिन',
     },
     {
       role: 'admin' as UserRole,
@@ -60,7 +62,8 @@ export const RolePortalView: React.FC = () => {
         btn: 'bg-purple-600 hover:bg-purple-700 text-white',
         tag: 'bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300',
       },
-      tagText: 'शासकीय पासकोड लॉगिन',
+      tagKey: 'tagAdminLogin',
+      tagFallback: 'शासकीय पासकोड लॉगिन',
     },
   ];
 
@@ -72,11 +75,7 @@ export const RolePortalView: React.FC = () => {
           <Shield className="w-8 h-8" />
         </div>
         <h1 className={`text-2xl font-black text-slate-900 dark:text-white tracking-tight ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-          {currentLanguage === 'en'
-            ? 'Pashu-Suraksha'
-            : currentLanguage === 'hi'
-            ? 'पशु सुरक्षा — प्रवेश पोर्टल'
-            : 'पशु सुरक्षा — प्रवेश पोर्टल'}
+          {t('rolePortalTitle', 'पशु सुरक्षा — प्रवेश पोर्टल')}
         </h1>
         <p className="text-xs text-slate-600 dark:text-slate-400 font-medium max-w-xs mx-auto">
           {t('rolePortalSubtitle', 'National Livestock Health Surveillance & Biohazard Containment System')}
@@ -99,6 +98,10 @@ export const RolePortalView: React.FC = () => {
               : currentLanguage === 'hi'
               ? p.subtitleHindi
               : p.subtitleMarathi;
+          const secondaryTitle =
+            currentLanguage === 'en'
+              ? p.titleMarathi
+              : p.titleEnglish;
 
           return (
             <div
@@ -117,13 +120,13 @@ export const RolePortalView: React.FC = () => {
                     <h2 className={`text-base font-bold text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                       {title}
                     </h2>
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                      {p.titleEnglish}
+                    <p className={`text-[11px] font-semibold text-slate-500 dark:text-slate-400 ${currentLanguage === 'en' ? 'lang-devanagari' : ''}`}>
+                      {secondaryTitle}
                     </p>
                   </div>
                 </div>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${p.color.tag}`}>
-                  {p.tagText}
+                  {t(p.tagKey, p.tagFallback)}
                 </span>
               </div>
 
