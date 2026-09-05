@@ -1,0 +1,53 @@
+/**
+ * Pashu-Suraksha (पशु सुरक्षा) — Centralized API Gateway Configuration
+ *
+ * Dynamically resolves the backend base URL and provides sanitized endpoint helpers
+ * for both browser execution and native Android WebView APK environments.
+ */
+
+export interface ApiConfiguration {
+  baseUrl: string;
+  timeoutMs: number;
+}
+
+const DEFAULT_API_BASE_URL = 'http://localhost:8000/api/v1';
+const DEFAULT_TIMEOUT_MS = 2500;
+
+export const API_CONFIG: ApiConfiguration = {
+  baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || DEFAULT_API_BASE_URL,
+  timeoutMs: Number(import.meta.env?.VITE_API_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS,
+};
+
+/**
+ * Builds a fully qualified, sanitized API URL from a given endpoint path.
+ * Ensures no duplicate or missing slashes between the base URL and the endpoint.
+ *
+ * @param endpoint Relative API endpoint path, e.g. 'triage/multimodal' or '/sync/telemetry'
+ * @returns Fully qualified API URL, e.g. 'http://localhost:8000/api/v1/triage/multimodal'
+ */
+export function getApiUrl(endpoint: string): string {
+  const sanitizedBase = API_CONFIG.baseUrl.replace(/\/+$/, '');
+  const sanitizedEndpoint = endpoint.replace(/^\/+/, '');
+  return `${sanitizedBase}/${sanitizedEndpoint}`;
+}
+
+/**
+ * Endpoint helper for multimodal AI triage inference
+ */
+export function getTriageEndpoint(): string {
+  return getApiUrl('triage/multimodal');
+}
+
+/**
+ * Endpoint helper for offline-to-cloud telemetry synchronization
+ */
+export function getSyncTelemetryEndpoint(): string {
+  return getApiUrl('sync/telemetry');
+}
+
+/**
+ * Endpoint helper for binary media (lesion images & audio) upload
+ */
+export function getSyncMediaEndpoint(): string {
+  return getApiUrl('sync/media');
+}

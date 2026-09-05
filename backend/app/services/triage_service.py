@@ -201,7 +201,8 @@ class GeminiTriageService:
         self.client = None
         self._initialize_client()
 
-    def _initialize_client(self):
+    def initialize_client(self):
+        """Initializes or reinitializes the Google GenAI client based on current settings."""
         if settings.GEMINI_API_KEY:
             try:
                 from google import genai
@@ -213,6 +214,9 @@ class GeminiTriageService:
         else:
             logger.info("GEMINI_API_KEY not configured. Running in EdgeRulesEvaluator fallback mode.")
             self.client = None
+
+    def _initialize_client(self):
+        self.initialize_client()
 
     async def triage(self, request: TriageRequest) -> TriageResponse:
         start_time = time.time()

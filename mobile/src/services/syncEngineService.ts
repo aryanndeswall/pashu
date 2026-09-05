@@ -6,6 +6,7 @@ import {
   MediaQueueItem,
   SyncResult,
 } from '../types/sync';
+import { getSyncTelemetryEndpoint, getSyncMediaEndpoint } from '../config/api';
 
 // ponytail: Two-Phase delta sync engine with relational split between telemetry and media
 class SyncEngineService {
@@ -120,7 +121,7 @@ class SyncEngineService {
       for (const item of telemetryRows) {
         if (item.status === 'PENDING') {
           // Send Phase 1 telemetry (simulated HTTP API call for Phase 5)
-          const success = await this.mockUploadEndpoint('/api/v1/sync/telemetry', item.payload_json);
+          const success = await this.mockUploadEndpoint(getSyncTelemetryEndpoint(), item.payload_json);
           if (success) {
             syncedPhase1++;
             // Check if there is associated media
@@ -157,7 +158,7 @@ class SyncEngineService {
         );
 
         for (const media of mediaRows) {
-          const success = await this.mockUploadEndpoint('/api/v1/sync/media', {
+          const success = await this.mockUploadEndpoint(getSyncMediaEndpoint(), {
             media_id: media.media_id,
             sync_id: media.sync_id,
           });

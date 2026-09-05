@@ -1,3 +1,5 @@
+import { API_CONFIG, getTriageEndpoint } from '../config/api';
+
 export type SyndromeCode = 'VSS' | 'NSLS' | 'HSDS' | 'AROS' | 'CMSS' | 'SARF' | 'HES' | 'NAS';
 export type BiohazardAlert = 'NONE' | 'WARNING' | 'CRITICAL_ANTHRAX_LOCK';
 
@@ -27,8 +29,6 @@ export interface TriageResponse {
 }
 
 class AITriageService {
-  private apiBaseUrl = 'http://localhost:8000/api/v1/triage';
-
   /**
    * Run multimodal triage with sub-second cloud inference and local offline fallback
    */
@@ -48,12 +48,12 @@ class AITriageService {
       return this.generateOfflineAnthraxResponse(startTime);
     }
 
-    // 2. Attempt cloud call to FastAPI / Gemini 3.7 Flash gateway
+    // 2. Attempt cloud call to FastAPI / Gemini gateway
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeoutMs);
 
-      const resp = await fetch(`${this.apiBaseUrl}/multimodal`, {
+      const resp = await fetch(getTriageEndpoint(), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -161,6 +161,39 @@ class AITriageService {
           'कीटक व माश्यांचे नियंत्रण (Vector Control)',
           'गोठ्याची स्वच्छता व निंबोळी धूर',
           'परिसरातील निरोगी जनावरांचे गोटपॉक्स लसीकरण',
+        ],
+        inference_time_ms: duration,
+        model_used: 'OnDevice-HeuristicEvaluator',
+      };
+    }
+
+    if (
+      combinedSignals.includes('घसा') ||
+      combinedSignals.includes('घटसर्प') ||
+      combinedSignals.includes('गळघोटू') ||
+      combinedSignals.includes('घरघर') ||
+      combinedSignals.includes('throat') ||
+      combinedSignals.includes('swelling') ||
+      combinedSignals.includes('galghotu') ||
+      combinedSignals.includes('ghatwasa') ||
+      combinedSignals.includes('hs')
+    ) {
+      return {
+        syndrome_code: 'HSDS',
+        syndrome_name_en: 'Hemorrhagic Septicemic Disease',
+        syndrome_name_marathi: 'घटसर्प संलक्षण',
+        suspected_disease: 'घटसर्प / गळघोटू (Hemorrhagic Septicemia - HS)',
+        clinical_confidence: 0.91,
+        biohazard_alert: 'WARNING',
+        clinical_rationale: 'घशाखालील तीव्र सूज आणि श्वास घेताना घरघर आवाज हे घटसर्पाचे (HS) अतिगंभीर लक्षण आहे.',
+        identified_symptoms: ['घशाखालील सूज (Submandibular Edema)', 'श्वासास अडथळा (Dyspnea)'],
+        immediate_advisory_marathi:
+          'अतितातडीची स्थिती! पशुवैद्यकीय डॉक्टरांकडून तातडीने प्रतिजैविके (सल्फोनामाइड / Antibiotics) टोचून घ्या. जनावराला मोकळ्या हवेत बांधा.',
+        immediate_advisory_hindi:
+          'आपातकालीन स्थिति! पशु चिकित्सक से तुरंत एंटीबायोटिक का टीका लगवाएं। पशु को खुली हवा में रखें।',
+        recommended_containment_actions: [
+          'तातडीने पशुवैद्यकीय उपचार बोलवा',
+          'पाणी व खाद्याची भांडी वेगळी करा',
         ],
         inference_time_ms: duration,
         model_used: 'OnDevice-HeuristicEvaluator',
