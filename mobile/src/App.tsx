@@ -10,6 +10,12 @@ import { DashboardView } from './views/DashboardView';
 import { AnimalRegistryView } from './views/AnimalRegistryView';
 import { LabReferralView } from './views/LabReferralView';
 import { RoleSelectionView } from './views/RoleSelectionView';
+import { RolePortalView } from './views/RolePortalView';
+import { LoginView } from './views/LoginView';
+import { OtpVerificationView } from './views/OtpVerificationView';
+import { OnboardingView } from './views/OnboardingView';
+import { OfflinePinView } from './views/OfflinePinView';
+import { UserProfileView } from './views/UserProfileView';
 import { SyncQueueDrawer } from './components/sync/SyncQueueDrawer';
 import { useSyncStore } from './store/syncStore';
 import { useLanguageStore } from './store/languageStore';
@@ -26,20 +32,57 @@ const queryClient = new QueryClient({
 
 export function App() {
   const activeTab = useNavigationStore((state) => state.activeTab);
-  const { activeRole, userProfile, initSession } = useAuthStore();
+  const {
+    activeRole,
+    userProfile,
+    isAuthenticated,
+    isLocked,
+    loginStep,
+    initSession,
+  } = useAuthStore();
   const { currentLanguage, t } = useLanguageStore();
   const [showRoleSelector, setShowRoleSelector] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     initSession();
     useSyncStore.getState().initSyncStore();
   }, [initSession]);
 
+  const isAuthFlowActive = !isAuthenticated || isLocked;
+
   const renderActiveView = () => {
+    // 1. Unauthenticated or locked state routing
+    if (isAuthFlowActive) {
+      switch (loginStep) {
+        case 'portal':
+          return <RolePortalView />;
+        case 'login':
+          return <LoginView />;
+        case 'otp':
+          return <OtpVerificationView />;
+        case 'onboarding':
+          return <OnboardingView />;
+        case 'pin_setup':
+          return <OfflinePinView mode="setup" />;
+        case 'pin_unlock':
+          return <OfflinePinView mode="unlock" />;
+        default:
+          return <RolePortalView />;
+      }
+    }
+
+    // 2. Profile View Overlay
+    if (showProfile) {
+      return <UserProfileView onClose={() => setShowProfile(false)} />;
+    }
+
+    // 3. Demo Role Selection Screen Overlay
     if (showRoleSelector) {
       return <RoleSelectionView onRoleSelected={() => setShowRoleSelector(false)} />;
     }
 
+    // 4. Primary Application Tab Viewport
     switch (activeTab) {
       case 'report':
         return <ReportView />;
@@ -95,44 +138,55 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
         {/* Top Header */}
-        <HeaderBar />
+        <HeaderBar
+          onOpenProfile={
+            isAuthenticated && !isLocked
+              ? () => {
+                  setShowRoleSelector(false);
+                  setShowProfile(!showProfile);
+                }
+              : undefined
+          }
+        />
 
-        {/* User Persona Context Greeting Banner */}
-        <div className={`border-b px-4 py-2 text-xs transition-colors ${getRoleBannerStyle()}`}>
-          <div className="max-w-md mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-1.5 truncate">
-              <span className={`font-bold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                {getGreetingText()}
-              </span>
-              <span className="opacity-75 text-[11px] truncate">
-                ({getBlockText()})
-              </span>
+        {/* User Persona Context Greeting Banner (shown when authenticated and not in overlays) */}
+        {!isAuthFlowActive && !showProfile && (
+          <div className={`border-b px-4 py-2 text-xs transition-colors ${getRoleBannerStyle()}`}>
+            <div className="max-w-md mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-1.5 truncate">
+                <span className={`font-bold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                  {getGreetingText()}
+                </span>
+                <span className="opacity-75 text-[11px] truncate">
+                  ({getBlockText()})
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRoleSelector(!showRoleSelector)}
+                aria-label="Toggle Full Role Selection View"
+                className="field-touch-target text-[11px] font-bold underline flex items-center gap-1 opacity-90 hover:opacity-100 flex-shrink-0"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>{showRoleSelector ? t('goToApp', 'Go to App') : t('switchRole', 'Switch Role')}</span>
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowRoleSelector(!showRoleSelector)}
-              aria-label="Toggle Full Role Selection View"
-              className="field-touch-target text-[11px] font-bold underline flex items-center gap-1 opacity-90 hover:opacity-100 flex-shrink-0"
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span>{showRoleSelector ? t('goToApp', 'Go to App') : t('switchRole', 'Switch Role')}</span>
-            </button>
           </div>
-        </div>
+        )}
 
-        {/* Dynamic Main Viewport (pb-28 for bottom bar clearance) */}
-        <main className="flex-1 p-4 pb-28 max-w-md mx-auto w-full">
+        {/* Dynamic Main Viewport (pb-28 for bottom bar clearance when authenticated) */}
+        <main className={`flex-1 p-4 max-w-md mx-auto w-full ${!isAuthFlowActive && !showProfile ? 'pb-28' : 'pb-6'}`}>
           {renderActiveView()}
         </main>
 
-        {/* Emergency SOS Biohazard Modal */}
-        <EmergencySOSModal />
+        {/* Emergency SOS Biohazard Modal (only when authenticated) */}
+        {!isAuthFlowActive && <EmergencySOSModal />}
 
         {/* Offline Sync Queue Drawer */}
         <SyncQueueDrawer />
 
         {/* Bottom Navigation Bar */}
-        {!showRoleSelector && <BottomBar />}
+        {!isAuthFlowActive && !showRoleSelector && !showProfile && <BottomBar />}
       </div>
     </QueryClientProvider>
   );

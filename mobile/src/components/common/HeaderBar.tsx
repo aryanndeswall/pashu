@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, WifiOff, Sun, Moon, CheckCircle2, ArrowRight, RefreshCw, Clock, Languages } from 'lucide-react';
+import { ShieldCheck, WifiOff, Sun, Moon, CheckCircle2, ArrowRight, RefreshCw, Clock, Languages, User } from 'lucide-react';
 import { useNavigationStore } from '../../store/navigationStore';
 import { useAuthStore, UserRole, DEMO_PERSONAS } from '../../store/authStore';
 import { useSyncStore } from '../../store/syncStore';
@@ -8,7 +8,11 @@ import { hapticsService } from '../../services/hapticsService';
 import { FluidDrawer } from '../animations/FluidDrawer';
 import { LanguageSelectorModal } from './LanguageSelectorModal';
 
-export const HeaderBar: React.FC = () => {
+interface HeaderBarProps {
+  onOpenProfile?: () => void;
+}
+
+export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenProfile }) => {
   const isDarkMode = useNavigationStore((state) => state.isDarkMode);
   const toggleDarkMode = useNavigationStore((state) => state.toggleDarkMode);
   const { activeRole, switchRole } = useAuthStore();
@@ -187,6 +191,21 @@ export const HeaderBar: React.FC = () => {
                 <Moon className="w-4 h-4 text-emerald-300" />
               )}
             </button>
+
+            {/* User Profile Settings Button */}
+            {onOpenProfile && (
+              <button
+                type="button"
+                onClick={async () => {
+                  await hapticsService.hapticLight();
+                  onOpenProfile();
+                }}
+                aria-label="Open User Profile"
+                className="field-touch-target p-1.5 rounded-full text-emerald-300 hover:text-white hover:bg-emerald-900/60 active:scale-95 transition-all flex items-center justify-center"
+              >
+                <User className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </header>

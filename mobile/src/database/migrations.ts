@@ -60,11 +60,29 @@ export const SCHEMA_STATEMENTS = [
     FOREIGN KEY(sync_id) REFERENCES offline_sync_queue(sync_id)
   );`,
 
-  // Indexes for high-speed spatial and queue queries
+  // 6. User Credentials & Offline Security PIN Table (Phase 11)
+  `CREATE TABLE IF NOT EXISTS user_credentials (
+    id TEXT PRIMARY KEY,
+    role TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    mobile_hash TEXT NOT NULL,
+    mobile_masked TEXT NOT NULL,
+    license_or_id TEXT,
+    district TEXT NOT NULL,
+    block TEXT NOT NULL,
+    village TEXT,
+    offline_pin_hash TEXT,
+    is_verified INTEGER DEFAULT 1,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );`,
+
+  // Indexes for high-speed spatial, credential and queue queries
   `CREATE INDEX IF NOT EXISTS idx_sync_status ON offline_sync_queue(status, priority);`,
   `CREATE INDEX IF NOT EXISTS idx_media_sync_status ON media_sync_queue(status, sync_id);`,
   `CREATE INDEX IF NOT EXISTS idx_local_animals_village ON local_animals(village_lgd_code);`,
   `CREATE INDEX IF NOT EXISTS idx_lgd_district_block ON local_lgd_hierarchy(district_name, block_name);`,
+  `CREATE INDEX IF NOT EXISTS idx_user_credentials_role ON user_credentials(role, mobile_hash);`,
 ];
 
 export async function runMigrations(db: DatabaseService): Promise<void> {

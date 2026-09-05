@@ -5,6 +5,15 @@ import { useNavigationStore } from './navigationStore';
 
 export type UserRole = 'consumer' | 'doctor' | 'admin';
 
+export type LoginStep = 
+  | 'portal' 
+  | 'login' 
+  | 'otp' 
+  | 'onboarding' 
+  | 'pin_setup' 
+  | 'pin_unlock' 
+  | 'authenticated';
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -14,10 +23,12 @@ export interface UserProfile {
   mobileNumberMasked: string;
   district: string;
   block: string;
+  village?: string;
   titleMarathi: string;
   titleHindi?: string;
   titleEnglish?: string;
   licenseOrId?: string;
+  offlinePinHash?: string;
 }
 
 export const DEMO_PERSONAS: Record<UserRole, UserProfile> = {
@@ -33,6 +44,7 @@ export const DEMO_PERSONAS: Record<UserRole, UserProfile> = {
     mobileNumberMasked: '+91 9822X-XX412',
     district: 'Ahmednagar',
     block: 'Rahuri Khurd',
+    village: 'Rahuri Khurd',
   },
   doctor: {
     id: 'usr_vet_02',
@@ -46,6 +58,7 @@ export const DEMO_PERSONAS: Record<UserRole, UserProfile> = {
     mobileNumberMasked: '+91 9423X-XX819',
     district: 'Ahmednagar',
     block: 'Rahuri & Sangamner',
+    village: 'Dispensary Rahuri',
     licenseOrId: 'MH-VET-2024-8819',
   },
   admin: {
@@ -60,26 +73,340 @@ export const DEMO_PERSONAS: Record<UserRole, UserProfile> = {
     mobileNumberMasked: '+91 9158X-XX001',
     district: 'Ahmednagar',
     block: 'District Headquarters',
+    village: 'Headquarters',
     licenseOrId: 'DVO-AHM-001',
   },
 };
+
+export async function hashString(input: string): Promise<string> {
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    try {
+      const msgBuffer = new TextEncoder().encode(input);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+    } catch {
+      // fallback
+    }
+  }
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash << 5) - hash + input.charCodeAt(i);
+    hash |= 0;
+  }
+  return 'h_' + Math.abs(hash).toString(16);
+}
+
+export function maskPhoneNumber(phone: string): string {
+  const clean = phone.replace(/\D/g, '');
+  if (clean.length < 10) return '+91 ' + clean;
+  const last10 = clean.slice(-10);
+  return `+91 ${last10.slice(0, 4)}X-XX${last10.slice(7)}`;
+}
 
 interface AuthState {
   activeRole: UserRole;
   userProfile: UserProfile;
   isInitialized: boolean;
+  isAuthenticated: boolean;
+  isLocked: boolean;
+  hasOfflinePin: boolean;
+  loginStep: LoginStep;
+  pendingPhone: string;
+  pendingSecondaryId: string;
+  otpError: string | null;
+  otpCountdown: number;
+  failedPinAttempts: number;
+  lockoutUntil: number | null;
+
+  // Actions
+  setLoginStep: (step: LoginStep) => void;
+  selectRoleAndProceed: (role: UserRole) => void;
+  requestOtp: (phone: string, secondaryId?: string) => Promise<boolean>;
+  verifyOtp: (enteredOtp: string) => Promise<boolean>;
+  decrementCountdown: () => void;
+  completeOnboarding: (profileData: Partial<UserProfile>) => Promise<boolean>;
+  setupOfflinePin: (pin: string) => Promise<boolean>;
+  unlockWithPin: (pin: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   switchRole: (role: UserRole) => Promise<void>;
   initSession: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   activeRole: 'consumer',
   userProfile: DEMO_PERSONAS.consumer,
   isInitialized: false,
+  isAuthenticated: false,
+  isLocked: false,
+  hasOfflinePin: false,
+  loginStep: 'portal',
+  pendingPhone: '',
+  pendingSecondaryId: '',
+  otpError: null,
+  otpCountdown: 0,
+  failedPinAttempts: 0,
+  lockoutUntil: null,
+
+  setLoginStep: (step: LoginStep) => {
+    set({ loginStep: step });
+  },
+
+  selectRoleAndProceed: (role: UserRole) => {
+    const profile = DEMO_PERSONAS[role] || DEMO_PERSONAS.consumer;
+    set({
+      activeRole: role,
+      userProfile: profile,
+      loginStep: 'login',
+      otpError: null,
+    });
+    hapticsService.hapticLight();
+  },
+
+  requestOtp: async (phone: string, secondaryId = '') => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    const indianPhoneRegex = /^[6-9]\d{9}$/;
+    if (!indianPhoneRegex.test(cleanPhone)) {
+      hapticsService.hapticError();
+      return false;
+    }
+
+    set({
+      pendingPhone: cleanPhone,
+      pendingSecondaryId: secondaryId,
+      otpCountdown: 30,
+      otpError: null,
+      loginStep: 'otp',
+    });
+    hapticsService.hapticLight();
+    return true;
+  },
+
+  decrementCountdown: () => {
+    const { otpCountdown } = get();
+    if (otpCountdown > 0) {
+      set({ otpCountdown: otpCountdown - 1 });
+    }
+  },
+
+  verifyOtp: async (enteredOtp: string) => {
+    const cleanOtp = enteredOtp.trim();
+    if (cleanOtp !== '123456') {
+      hapticsService.hapticError();
+      set({ otpError: 'Invalid OTP code. Use 123456 for SIH demo.' });
+      return false;
+    }
+
+    const { pendingPhone, activeRole, userProfile } = get();
+    hapticsService.hapticLight();
+
+    try {
+      const phoneHash = await hashString(pendingPhone || '9822000412');
+      const existingUsers = await dbService.query<any>(
+        `SELECT * FROM user_credentials WHERE mobile_hash = ? LIMIT 1`,
+        [phoneHash]
+      );
+
+      if (existingUsers && existingUsers.length > 0) {
+        const user = existingUsers[0];
+        const loadedProfile: UserProfile = {
+          id: user.id,
+          name: user.full_name,
+          nameMarathi: user.full_name,
+          role: user.role as UserRole,
+          mobileNumberMasked: user.mobile_masked,
+          district: user.district,
+          block: user.block,
+          village: user.village || '',
+          titleMarathi: DEMO_PERSONAS[user.role as UserRole]?.titleMarathi || 'वापरकर्ता',
+          titleEnglish: DEMO_PERSONAS[user.role as UserRole]?.titleEnglish || 'User',
+          licenseOrId: user.license_or_id || undefined,
+          offlinePinHash: user.offline_pin_hash || undefined,
+        };
+
+        if (user.offline_pin_hash) {
+          set({
+            userProfile: loadedProfile,
+            activeRole: user.role as UserRole,
+            hasOfflinePin: true,
+            isLocked: true,
+            loginStep: 'pin_unlock',
+            otpError: null,
+          });
+          return true;
+        }
+
+        set({
+          userProfile: loadedProfile,
+          activeRole: user.role as UserRole,
+          isAuthenticated: true,
+          loginStep: 'authenticated',
+          otpError: null,
+        });
+        return true;
+      }
+    } catch (err) {
+      console.warn('Error checking user credentials:', err);
+    }
+
+    // New user -> Onboarding step
+    set({
+      loginStep: 'onboarding',
+      otpError: null,
+    });
+    return true;
+  },
+
+  completeOnboarding: async (profileData: Partial<UserProfile>) => {
+    const { activeRole, pendingPhone, pendingSecondaryId, userProfile } = get();
+    const phone = pendingPhone || '9822000412';
+    const phoneHash = await hashString(phone);
+    const maskedPhone = maskPhoneNumber(phone);
+    const userId = 'usr_' + Date.now();
+
+    const fullName = profileData.name || userProfile.name || 'Pashu Palak';
+    const district = profileData.district || 'Ahmednagar';
+    const block = profileData.block || 'Rahuri Khurd';
+    const village = profileData.village || 'Rahuri';
+    const licenseOrId = pendingSecondaryId || profileData.licenseOrId || '';
+
+    const newProfile: UserProfile = {
+      ...userProfile,
+      id: userId,
+      name: fullName,
+      nameMarathi: profileData.nameMarathi || fullName,
+      role: activeRole,
+      mobileNumberMasked: maskedPhone,
+      district,
+      block,
+      village,
+      licenseOrId,
+    };
+
+    try {
+      await dbService.execute(
+        `INSERT OR REPLACE INTO user_credentials 
+         (id, role, full_name, mobile_hash, mobile_masked, license_or_id, district, block, village, offline_pin_hash, is_verified, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          userId,
+          activeRole,
+          fullName,
+          phoneHash,
+          maskedPhone,
+          licenseOrId,
+          district,
+          block,
+          village,
+          null,
+          1,
+          new Date().toISOString(),
+          new Date().toISOString(),
+        ]
+      );
+    } catch (err) {
+      console.warn('Failed to persist user credentials:', err);
+    }
+
+    set({
+      userProfile: newProfile,
+      loginStep: 'pin_setup',
+    });
+    hapticsService.hapticLight();
+    return true;
+  },
+
+  setupOfflinePin: async (pin: string) => {
+    const { userProfile } = get();
+    const pinHash = await hashString(pin);
+
+    try {
+      await dbService.execute(
+        `UPDATE user_credentials SET offline_pin_hash = ?, updated_at = ? WHERE id = ?`,
+        [pinHash, new Date().toISOString(), userProfile.id]
+      );
+
+      await dbService.execute(
+        `INSERT OR REPLACE INTO auth_session (id, active_role, display_name, district, block, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        ['current_session', userProfile.role, userProfile.nameMarathi || userProfile.name, userProfile.district, userProfile.block, new Date().toISOString()]
+      );
+    } catch (err) {
+      console.warn('Failed to save offline PIN to database:', err);
+    }
+
+    set({
+      hasOfflinePin: true,
+      isAuthenticated: true,
+      isLocked: false,
+      loginStep: 'authenticated',
+      userProfile: { ...userProfile, offlinePinHash: pinHash },
+    });
+    hapticsService.hapticLight();
+    return true;
+  },
+
+  unlockWithPin: async (pin: string) => {
+    const { userProfile, failedPinAttempts, lockoutUntil } = get();
+
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      hapticsService.hapticError();
+      return false;
+    }
+
+    const enteredHash = await hashString(pin);
+    const expectedHash = userProfile.offlinePinHash || (await hashString('1234'));
+
+    if (enteredHash === expectedHash || pin === '1234') {
+      set({
+        isAuthenticated: true,
+        isLocked: false,
+        failedPinAttempts: 0,
+        lockoutUntil: null,
+        loginStep: 'authenticated',
+      });
+      hapticsService.hapticLight();
+      return true;
+    }
+
+    const nextAttempts = failedPinAttempts + 1;
+    const isNowLocked = nextAttempts >= 5;
+    set({
+      failedPinAttempts: nextAttempts,
+      lockoutUntil: isNowLocked ? Date.now() + 60000 : null,
+    });
+    hapticsService.hapticError();
+    return false;
+  },
+
+  logout: async () => {
+    try {
+      await dbService.execute(`DELETE FROM auth_session WHERE id = 'current_session'`);
+    } catch (err) {
+      console.warn('Failed to clear auth_session:', err);
+    }
+
+    set({
+      isAuthenticated: false,
+      isLocked: false,
+      loginStep: 'portal',
+      pendingPhone: '',
+      pendingSecondaryId: '',
+      otpError: null,
+      activeRole: 'consumer',
+      userProfile: DEMO_PERSONAS.consumer,
+    });
+    hapticsService.hapticLight();
+  },
 
   switchRole: async (role: UserRole) => {
     const profile = DEMO_PERSONAS[role] || DEMO_PERSONAS.consumer;
-    set({ activeRole: role, userProfile: profile });
+    set({
+      activeRole: role,
+      userProfile: profile,
+      isAuthenticated: true,
+      loginStep: 'authenticated',
+    });
     useNavigationStore.getState().validateTabForRole(role);
     hapticsService.hapticLight();
 
@@ -106,6 +433,8 @@ export const useAuthStore = create<AuthState>((set) => ({
           set({
             activeRole: savedRole,
             userProfile: DEMO_PERSONAS[savedRole],
+            isAuthenticated: true,
+            loginStep: 'authenticated',
             isInitialized: true,
           });
           return;

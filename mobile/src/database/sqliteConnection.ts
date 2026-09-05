@@ -68,6 +68,8 @@ class SQLiteDatabaseManager implements DatabaseService {
     if (!this.memoryTables.has('local_animals')) this.memoryTables.set('local_animals', []);
     if (!this.memoryTables.has('offline_sync_queue')) this.memoryTables.set('offline_sync_queue', []);
     if (!this.memoryTables.has('media_sync_queue')) this.memoryTables.set('media_sync_queue', []);
+    if (!this.memoryTables.has('auth_session')) this.memoryTables.set('auth_session', []);
+    if (!this.memoryTables.has('user_credentials')) this.memoryTables.set('user_credentials', []);
     this.isInitialized = true;
   }
 
@@ -201,6 +203,52 @@ class SQLiteDatabaseManager implements DatabaseService {
       return { changes: { changes: 1 } };
     }
 
+    if (lower.startsWith('delete from auth_session')) {
+      this.memoryTables.set('auth_session', []);
+      return { changes: { changes: 1 } };
+    }
+
+    if (lower.startsWith('insert or replace into user_credentials') || lower.startsWith('insert into user_credentials')) {
+      let rows = this.memoryTables.get('user_credentials') || [];
+      const existingIdx = rows.findIndex((r: any) => r.id === values[0]);
+      const credRow = {
+        id: values[0],
+        role: values[1],
+        full_name: values[2],
+        mobile_hash: values[3],
+        mobile_masked: values[4],
+        license_or_id: values[5] ?? null,
+        district: values[6],
+        block: values[7],
+        village: values[8] ?? null,
+        offline_pin_hash: values[9] ?? null,
+        is_verified: values[10] ?? 1,
+        created_at: values[11] ?? new Date().toISOString(),
+        updated_at: values[12] ?? new Date().toISOString(),
+      };
+      if (existingIdx >= 0) {
+        rows[existingIdx] = credRow;
+      } else {
+        rows.push(credRow);
+      }
+      this.memoryTables.set('user_credentials', rows);
+      return { changes: { changes: 1 } };
+    }
+
+    if (lower.startsWith('update user_credentials set offline_pin_hash')) {
+      let rows = this.memoryTables.get('user_credentials') || [];
+      const pinHash = values[0];
+      const updatedAt = values[1];
+      const id = values[2];
+      const target = rows.find((r: any) => r.id === id);
+      if (target) {
+        target.offline_pin_hash = pinHash;
+        target.updated_at = updatedAt;
+        return { changes: { changes: 1 } };
+      }
+      return { changes: { changes: 0 } };
+    }
+
     return { changes: { changes: 0 } };
   }
 
@@ -231,6 +279,17 @@ class SQLiteDatabaseManager implements DatabaseService {
 
     if (lower.includes('from auth_session')) {
       const rows = this.memoryTables.get('auth_session') || [];
+      return [...rows] as T[];
+    }
+
+    if (lower.includes('from user_credentials')) {
+      let rows = this.memoryTables.get('user_credentials') || [];
+      if (values && values.length > 0 && lower.includes('id = ?')) {
+        return rows.filter((r: any) => r.id === values[0]) as T[];
+      }
+      if (values && values.length > 0 && lower.includes('mobile_hash = ?')) {
+        return rows.filter((r: any) => r.mobile_hash === values[0]) as T[];
+      }
       return [...rows] as T[];
     }
 
