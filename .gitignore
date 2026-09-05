@@ -16,10 +16,22 @@ captures/
 .externalNativeBuild/
 .cxx/
 
-# Environment and IDE
+# Environment and Secrets
 .env
 .env.*
 !.env.example
+*service-account*.json
+firebase-credentials.json
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+.pytest_cache/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json

@@ -1,73 +1,42 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: completed
-stopped_at: Phase 11 completed (All 12 phases / 24 plans executed and verified)
-last_updated: "2026-09-05T12:00:00.000Z"
-last_activity: 2026-09-05 -- Phase 11 executed and verified (11-01, 11-02 complete; 144 mobile tests passing).
+milestone: v1.1
+milestone_name: Live Cloud Integrations & Production Services
+status: in_progress
+stopped_at: Initialized Milestone v1.1 (Phases 12-14 defined; awaiting user API credentials)
+last_updated: "2026-09-05T12:15:00.000Z"
+last_activity: 2026-09-05 -- Milestone v1.0 archived; Milestone v1.1 initialized.
 progress:
-  total_phases: 12
-  completed_phases: 12
-  total_plans: 24
-  completed_plans: 24
-  percent: 100
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 6
+  completed_plans: 0
+  percent: 0
 ---
 
-# Project State
+# Project State: Milestone v1.1
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-08-30)
+See: `.planning/PROJECT.md` (updated 2026-09-05)
 
 **Core value:** Immediate, reliable early-warning outbreak identification and automated biosecurity containment—even in complete cellular dead zones—so that contagious outbreaks and fatal zoonoses (Anthrax, FMD, LSD) are contained within hours rather than days.  
-**Current focus:** All Phases Complete (Milestone v1.0 + Phase 11 Auth Verified)
+**Current focus:** Milestone v1.1 — Phase 12 (Live Environment Configuration & Gemini 3.7 Flash Cloud Perception)
 
 ## Current Position
 
-Phase: 11 of 12 (Role-Based Authentication Screens & User Onboarding) - COMPLETED
-Plan: 2/2 plans executed
-Status: All phases complete, 100% verified
-Last activity: 2026-09-05 — Phase 11 executed and verified (11-01-SUMMARY.md, 11-02-SUMMARY.md, 11-VERIFICATION.md).
+Milestone: v1.1 (Live Cloud Integrations & Production Services)
+Phase: 12 of 14 (Live Environment Configuration & Gemini 3.7 Flash Cloud Perception) - READY
+Plan: 0/2 plans executed
+Status: Ready to receive API keys and secrets from user, then plan and execute Phase 12.
+Last activity: 2026-09-05 — Initialized Milestone v1.1; created archive for Milestone v1.0; defined requirements CLOUD-01 through CLOUD-05.
 
-Progress: [██████████] 100%
+Progress: [----------] 0%
 
+## Accumulated History
 
-## Performance Metrics
+- **Milestone v1.0:** Shipped 2026-09-05. 12 phases, 24 plans completed, 184 tests passing.
+- **Archive:** `.planning/milestones/v1.0-ROADMAP.md` and `.planning/milestones/v1.0-REQUIREMENTS.md`.
 
-**Velocity:**
-
-- Total plans completed: 24
-- Average duration: 10.5 min
-- Total execution time: ~4.1 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1. Scaffolding & Native APK | 2/2 | 27 min | 13.5 min |
-| 2. Mobile UI & React Bits | 2/2 | 24 min | 12 min |
-| 3. Hardware Sensor Bridges | 2/2 | 20 min | 10 min |
-| 3.1. Multi-Role Auth Shell | 2/2 | 22 min | 11 min |
-| 4. Decision Tree & Anthrax Lockout | 2/2 | 18 min | 9 min |
-| 5. Two-Phase Delta Sync | 2/2 | 16 min | 8 min |
-| 6. Livestock Registry & Cloud DB | 2/2 | 20 min | 10 min |
-| 7. Gemini 3.7 Flash Triage | 2/2 | 18 min | 9 min |
-| 8. PostGIS SaTScan & Buffers | 2/2 | 16 min | 8 min |
-| 9. Lab Referral & Cold-Chain | 2/2 | 18 min | 9 min |
-| 10. Web-GIS Dashboard & SIH Demo | 2/2 | 19 min | 9.5 min |
-| 11. Role-Based Auth Screens & Onboarding | 2/2 | 15 min | 7.5 min |
-
-## Quality & Test Status
-
-- **Backend Pytest:** 40 passed in 1.23s (100% pass)
-- **Mobile Vitest:** 144 passed in 19.69s (100% pass across 28 test files)
-- **Combined:** 184 passed, 0 failures, 0 regressions
-- **Milestone v1.0 Audit Status:** Fully audited, zero open blockers, 100% requirements satisfied.
-
-## Accumulated Context
-
-### Roadmap Evolution
-- Phase 11 added & completed: Role-Based Authentication Screens & User Onboarding (Farmer, Doctor, Admin login flows, 6-digit OTP, LGD onboarding, offline 4-digit PIN, user profile & session management).
-
-
+## Active Target: Phase 12
+- Goal: Inject live `GEMINI_API_KEY`, configure mobile `VITE_API_BASE_URL`, and verify end-to-end multimodal perception on real lesion photos and Indic voice notes.
