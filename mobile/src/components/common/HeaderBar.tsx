@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, WifiOff, Sun, Moon, CheckCircle2, ArrowRight, RefreshCw, Clock, Languages, User } from 'lucide-react';
+import { ShieldCheck, Wifi, WifiOff, Sun, Moon, CheckCircle2, ArrowRight, RefreshCw, Clock, Languages, User } from 'lucide-react';
 import { useNavigationStore } from '../../store/navigationStore';
 import { useAuthStore, UserRole, DEMO_PERSONAS } from '../../store/authStore';
 import { useSyncStore } from '../../store/syncStore';
@@ -16,7 +16,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenProfile }) => {
   const isDarkMode = useNavigationStore((state) => state.isDarkMode);
   const toggleDarkMode = useNavigationStore((state) => state.toggleDarkMode);
   const { activeRole, switchRole } = useAuthStore();
-  const { pendingCount, isSyncing, setDrawerOpen } = useSyncStore();
+  const { networkTier, pendingCount, isSyncing, setDrawerOpen } = useSyncStore();
+  const isOnline = networkTier !== 'OFFLINE';
   const { currentLanguage, setSelectorOpen, t } = useLanguageStore();
   const [isRoleDrawerOpen, setIsRoleDrawerOpen] = useState(false);
 
@@ -161,11 +162,32 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenProfile }) => {
               )}
             </button>
 
-            {/* Offline Core Status Pill */}
-            <div className="hidden sm:flex items-center gap-1 bg-emerald-900/70 border border-emerald-700/50 px-2 py-1 rounded-full text-[11px] text-emerald-200">
-              <WifiOff className="w-3 h-3 text-amber-400" />
-              <span className="font-semibold text-[10px]">{t('offlineStatus', 'Offline')}</span>
-            </div>
+            {/* Dynamic Network Status Pill */}
+            <button
+              type="button"
+              onClick={async () => {
+                await hapticsService.hapticLight();
+                setDrawerOpen(true);
+              }}
+              aria-label={`Network status: ${isOnline ? 'Online' : 'Offline'}. Open sync drawer.`}
+              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] border transition-all active:scale-95 cursor-pointer shadow-xs ${
+                isOnline
+                  ? 'bg-emerald-900/60 border-emerald-600/70 text-emerald-200 hover:bg-emerald-800/80'
+                  : 'bg-amber-950/80 border-amber-600/70 text-amber-200 hover:bg-amber-900/80'
+              }`}
+            >
+              {isOnline ? (
+                <>
+                  <Wifi className="w-3 h-3 text-emerald-400" />
+                  <span className="font-semibold text-[10px]">{t('onlineStatus', 'Online')}</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3 h-3 text-amber-400 animate-pulse" />
+                  <span className="font-semibold text-[10px]">{t('offlineStatus', 'Offline')}</span>
+                </>
+              )}
+            </button>
 
             {/* Multi-Lingual Language Selector Button */}
             <button

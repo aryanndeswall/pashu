@@ -233,13 +233,19 @@ class GeminiTriageService:
 
                 contents = []
 
-                # Handle lesion photo if present
-                if request.photo_base64:
+                # Handle lesion photo if present (URI or base64)
+                if request.photo_uri:
+                    contents.append(types.Part.from_uri(file_uri=request.photo_uri, mime_type="image/webp"))
+                elif request.photo_base64:
                     cleaned_b64 = request.photo_base64
                     if "," in cleaned_b64:
                         cleaned_b64 = cleaned_b64.split(",", 1)[1]
                     image_bytes = base64.b64decode(cleaned_b64)
                     contents.append(types.Part.from_bytes(data=image_bytes, mime_type="image/webp"))
+
+                # Handle audio note if present (URI or base64)
+                if request.audio_uri:
+                    contents.append(types.Part.from_uri(file_uri=request.audio_uri, mime_type="audio/webm"))
 
                 # Context prompt
                 user_prompt = f"""

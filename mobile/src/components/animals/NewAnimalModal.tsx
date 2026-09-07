@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, PlusCircle, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { animalService, LocalAnimal } from '../../services/animalService';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface NewAnimalModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
   onClose,
   onRegistered,
 }) => {
+  const { currentLanguage, t } = useLanguageStore();
   const [tagNumber, setTagNumber] = useState('');
   const [species, setSpecies] = useState('गाय (Cow - Bovine)');
   const [breed, setBreed] = useState('गीर (Gir)');
@@ -42,19 +44,37 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
 
     if (tagNumber.length !== 12) {
       await hapticsService.hapticWarning();
-      setErrorMessage('कृपया वैध १२-अंकी पशू आधार टॅग क्रमांक टाका (12 digits required)');
+      setErrorMessage(
+        currentLanguage === 'en'
+          ? 'Please enter a valid 12-digit Pashu Aadhaar tag number'
+          : currentLanguage === 'hi'
+          ? 'कृपया वैध १२-अंकीय पशु आधार टैग दर्ज करें (12 digits required)'
+          : 'कृपया वैध १२-अंकी पशू आधार टॅग क्रमांक टाका (12 digits required)'
+      );
       return;
     }
 
     if (!ownerName.trim() || ownerName.trim().length < 2) {
       await hapticsService.hapticWarning();
-      setErrorMessage('कृपया पशुपालकाचे पूर्ण नाव टाका (Owner name required)');
+      setErrorMessage(
+        currentLanguage === 'en'
+          ? 'Please enter the owner full name'
+          : currentLanguage === 'hi'
+          ? 'कृपया पशुपालक का पूरा नाम लिखें (Owner name required)'
+          : 'कृपया पशुपालकाचे पूर्ण नाव टाका (Owner name required)'
+      );
       return;
     }
 
     if (ownerMobile.length < 10) {
       await hapticsService.hapticWarning();
-      setErrorMessage('कृपया १०-अंकी मोबाईल नंबर टाका (10-digit mobile required)');
+      setErrorMessage(
+        currentLanguage === 'en'
+          ? 'Please enter 10-digit mobile number'
+          : currentLanguage === 'hi'
+          ? 'कृपया १०-अंकीय मोबाइल नंबर दर्ज करें (10-digit mobile required)'
+          : 'कृपया १०-अंकी मोबाईल नंबर टाका (10-digit mobile required)'
+      );
       return;
     }
 
@@ -81,7 +101,13 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
       setOwnerMobile('');
     } catch (err: any) {
       console.error('Registration failed:', err);
-      setErrorMessage('नोंदणी अयशस्वी झाली. कृपया पुन्हा प्रयत्न करा.');
+      setErrorMessage(
+        currentLanguage === 'en'
+          ? 'Registration failed. Please try again.'
+          : currentLanguage === 'hi'
+          ? 'पंजीकरण असफल हुआ। कृपया पुनः प्रयास करें।'
+          : 'नोंदणी अयशस्वी झाली. कृपया पुन्हा प्रयत्न करा.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -98,7 +124,14 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
           <div className="flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             <h2 className="text-base font-black text-slate-900 dark:text-white">
-              नवीन पशू नोंदणी (New Cattle Registration)
+              {t(
+                'newCattleRegistration',
+                currentLanguage === 'en'
+                  ? 'New Cattle Registration'
+                  : currentLanguage === 'hi'
+                  ? 'नया पशु पंजीकरण (New Cattle Registration)'
+                  : 'नवीन पशू नोंदणी (New Cattle Registration)'
+              )}
             </h2>
           </div>
           <button
@@ -122,7 +155,11 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
           {/* 12-Digit Tag Number */}
           <div>
             <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-              १२-अंकी पशू आधार क्रमांक (RFID Ear Tag) *
+              {currentLanguage === 'en'
+                ? '12-Digit RFID Ear Tag Number *'
+                : currentLanguage === 'hi'
+                ? '१२-अंकीय पशु आधार क्रमांक (RFID Ear Tag) *'
+                : '१२-अंकी पशू आधार क्रमांक (RFID Ear Tag) *'}
             </label>
             <input
               type="text"
@@ -130,12 +167,16 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
               maxLength={12}
               value={tagNumber}
               onChange={(e) => handleTagChange(e.target.value)}
-              placeholder="उदा. 100293847599"
+              placeholder={currentLanguage === 'en' ? 'e.g. 100293847599' : 'उदा. 100293847599'}
               className="field-touch-target w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-mono text-sm tracking-widest text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
               data-testid="input-tag-number"
             />
             <span className="text-[10px] text-slate-400 mt-0.5 block">
-              {tagNumber.length}/12 अंक प्रविष्ट केले
+              {currentLanguage === 'en'
+                ? `${tagNumber.length}/12 digits entered`
+                : currentLanguage === 'hi'
+                ? `${tagNumber.length}/१२ अंक दर्ज किए गए`
+                : `${tagNumber.length}/12 अंक प्रविष्ट केले`}
             </span>
           </div>
 
@@ -143,7 +184,11 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                प्रजाती (Species) *
+                {currentLanguage === 'en'
+                  ? 'Species *'
+                  : currentLanguage === 'hi'
+                  ? 'प्रजाति (Species) *'
+                  : 'प्रजाती (Species) *'}
               </label>
               <select
                 value={species}
@@ -151,22 +196,40 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
                 className="field-touch-target w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                 data-testid="select-species"
               >
-                <option value="गाय (Cow - Bovine)">गाय (Cow - Bovine)</option>
-                <option value="म्हैस (Buffalo)">म्हैस (Buffalo)</option>
-                <option value="शेळी (Goat)">शेळी (Goat)</option>
-                <option value="मेंढी (Sheep)">मेंढी (Sheep)</option>
+                <option value="गाय (Cow - Bovine)">
+                  {currentLanguage === 'en' ? 'Cow (Bovine)' : 'गाय (Cow - Bovine)'}
+                </option>
+                <option value="म्हैस (Buffalo)">
+                  {currentLanguage === 'en' ? 'Buffalo' : currentLanguage === 'hi' ? 'भैंस (Buffalo)' : 'म्हैस (Buffalo)'}
+                </option>
+                <option value="शेळी (Goat)">
+                  {currentLanguage === 'en' ? 'Goat' : currentLanguage === 'hi' ? 'बकरी (Goat)' : 'शेळी (Goat)'}
+                </option>
+                <option value="मेंढी (Sheep)">
+                  {currentLanguage === 'en' ? 'Sheep' : currentLanguage === 'hi' ? 'भेड़ (Sheep)' : 'मेंढी (Sheep)'}
+                </option>
               </select>
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                जात (Breed)
+                {currentLanguage === 'en'
+                  ? 'Breed'
+                  : currentLanguage === 'hi'
+                  ? 'नस्ल (Breed)'
+                  : 'जात (Breed)'}
               </label>
               <input
                 type="text"
                 value={breed}
                 onChange={(e) => setBreed(e.target.value)}
-                placeholder="उदा. गीर, मुऱ्हा, डांगी"
+                placeholder={
+                  currentLanguage === 'en'
+                    ? 'e.g. Gir, Murrah, Dangi'
+                    : currentLanguage === 'hi'
+                    ? 'उदा. गिर, मुर्रा, डांगी'
+                    : 'उदा. गीर, मुऱ्हा, डांगी'
+                }
                 className="field-touch-target w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                 data-testid="input-breed"
               />
@@ -176,7 +239,13 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
           {/* Age in Months */}
           <div>
             <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-              वय (Age in Months): <span className="text-emerald-600 font-bold">{ageMonths} महिने ({Math.floor(ageMonths / 12)} वर्षे)</span>
+              {currentLanguage === 'en' ? (
+                <>Age: <span className="text-emerald-600 font-bold">{ageMonths} months ({Math.floor(ageMonths / 12)} years)</span></>
+              ) : currentLanguage === 'hi' ? (
+                <>आयु: <span className="text-emerald-600 font-bold">{ageMonths} महीने ({Math.floor(ageMonths / 12)} वर्ष)</span></>
+              ) : (
+                <>वय: <span className="text-emerald-600 font-bold">{ageMonths} महिने ({Math.floor(ageMonths / 12)} वर्षे)</span></>
+              )}
             </label>
             <input
               type="range"
@@ -193,14 +262,24 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                पशुपालक नाव (Owner Name) *
+                {currentLanguage === 'en'
+                  ? 'Owner Name *'
+                  : currentLanguage === 'hi'
+                  ? 'पशुपालक का नाम (Owner Name) *'
+                  : 'पशुपालक नाव (Owner Name) *'}
               </label>
               <input
                 type="text"
                 required
                 value={ownerName}
                 onChange={(e) => setOwnerName(e.target.value)}
-                placeholder="उदा. बबनराव तांबे"
+                placeholder={
+                  currentLanguage === 'en'
+                    ? 'e.g. Ramesh Patil'
+                    : currentLanguage === 'hi'
+                    ? 'उदा. रमेश पाटिल'
+                    : 'उदा. बबनराव तांबे'
+                }
                 className="field-touch-target w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                 data-testid="input-owner-name"
               />
@@ -208,7 +287,11 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
 
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                मोबाईल क्रमांक (Mobile) *
+                {currentLanguage === 'en'
+                  ? 'Mobile Number *'
+                  : currentLanguage === 'hi'
+                  ? 'मोबाइल नंबर (Mobile) *'
+                  : 'मोबाईल क्रमांक (Mobile) *'}
               </label>
               <input
                 type="tel"
@@ -216,7 +299,7 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
                 maxLength={10}
                 value={ownerMobile}
                 onChange={(e) => handleMobileChange(e.target.value)}
-                placeholder="उदा. 9812345678"
+                placeholder={currentLanguage === 'en' ? 'e.g. 9812345678' : 'उदा. 9812345678'}
                 className="field-touch-target w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                 data-testid="input-owner-mobile"
               />
@@ -225,7 +308,13 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
 
           <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>DPDP Act 2023: मोबाईल नंबर कूटबद्ध (SHA-256 Hash) करून सुरक्षित ठेवला जाईल.</span>
+            <span>
+              {currentLanguage === 'en'
+                ? 'DPDP Act 2023: Mobile number is securely hashed (SHA-256) on device.'
+                : currentLanguage === 'hi'
+                ? 'DPDP Act 2023: मोबाइल नंबर कूटबद्ध (SHA-256 Hash) करके सुरक्षित रखा जाएगा।'
+                : 'DPDP Act 2023: मोबाईल नंबर कूटबद्ध (SHA-256 Hash) करून सुरक्षित ठेवला जाईल.'}
+            </span>
           </div>
 
           {/* Submit Button (52px Touch Target) */}
@@ -237,7 +326,11 @@ export const NewAnimalModal: React.FC<NewAnimalModalProps> = ({
               data-testid="btn-submit-registration"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{isSubmitting ? 'नोंदणी होत आहे...' : 'पशू नोंदणी करा (Register Offline)'}</span>
+              <span>
+                {isSubmitting
+                  ? t('registering', currentLanguage === 'en' ? 'Registering...' : currentLanguage === 'hi' ? 'पंजीकरण हो रहा है...' : 'नोंदणी होत आहे...')
+                  : t('registerOfflineBtn', currentLanguage === 'en' ? 'Register Cattle (Offline)' : currentLanguage === 'hi' ? 'पशु पंजीकरण करें (Register Offline)' : 'पशू नोंदणी करा (Register Offline)')}
+              </span>
             </button>
           </div>
         </form>

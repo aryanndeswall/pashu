@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { dbService } from '../database/sqliteConnection';
 import { hapticsService } from '../services/hapticsService';
 import { useNavigationStore } from './navigationStore';
+import { getAuthRequestOtpEndpoint, getAuthVerifyOtpEndpoint, getAuthPinEndpoint } from '../config/api';
 
 export type UserRole = 'consumer' | 'doctor' | 'admin';
 
@@ -171,6 +172,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return false;
     }
 
+    // Attempt cloud dispatch if online
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2000);
+      await fetch(getAuthRequestOtpEndpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          role: get().activeRole,
+          secondary_id: secondaryId || undefined,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+    } catch {
+      // Offline fallback: continue cleanly in local dead-zone mode
+    }
+
     set({
       pendingPhone: cleanPhone,
       pendingSecondaryId: secondaryId,
@@ -191,15 +211,105 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   verifyOtp: async (enteredOtp: string) => {
     const cleanOtp = enteredOtp.trim();
-    if (cleanOtp !== '123456') {
+    const { pendingPhone, activeRole, pendingSecondaryId, userProfile } = get();
+
+    let serverUser: UserProfile | null = null;
+
+    // 1. Try cloud verification if online
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2500);
+      const resp = await fetch(getAuthVerifyOtpEndpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: pendingPhone || '9822000412',
+          otp: cleanOtp,
+          role: activeRole,
+          secondary_id: pendingSecondaryId || undefined,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (resp.ok) {
+        const authData = await resp.json();
+        if (typeof localStorage !== 'undefined' && authData.access_token) {
+          localStorage.setItem('pashu_auth_token', authData.access_token);
+        }
+        serverUser = {
+          id: authData.user.id,
+          name: authData.user.name,
+          nameMarathi: authData.user.name_marathi || authData.user.name,
+          nameHindi: authData.user.name_hindi || authData.user.name,
+          role: authData.user.role as UserRole,
+          mobileNumberMasked: authData.user.mobile_number_masked,
+          district: authData.user.district,
+          block: authData.user.block,
+          village: authData.user.village || '',
+          titleMarathi: authData.user.title_marathi || DEMO_PERSONAS[activeRole]?.titleMarathi,
+          titleHindi: authData.user.title_hindi || DEMO_PERSONAS[activeRole]?.titleHindi,
+          titleEnglish: authData.user.title_english || DEMO_PERSONAS[activeRole]?.titleEnglish,
+          licenseOrId: authData.user.license_or_id,
+          offlinePinHash: undefined,
+        };
+      } else if (cleanOtp !== '123456') {
+        const err = await resp.json().catch(() => ({}));
+        hapticsService.hapticError();
+        set({ otpError: err.detail || 'Invalid OTP code.' });
+        return false;
+      }
+    } catch {
+      // Offline fallback
+    }
+
+    if (!serverUser && cleanOtp !== '123456') {
       hapticsService.hapticError();
       set({ otpError: 'Invalid OTP code. Use 123456 for SIH demo.' });
       return false;
     }
 
-    const { pendingPhone, activeRole, userProfile } = get();
     hapticsService.hapticLight();
 
+    // Cache verified server user to local SQLite
+    if (serverUser) {
+      try {
+        const phoneHash = await hashString(pendingPhone || '9822000412');
+        await dbService.execute(
+          `INSERT OR REPLACE INTO user_credentials 
+           (id, role, full_name, mobile_hash, mobile_masked, license_or_id, district, block, village, offline_pin_hash, is_verified, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            serverUser.id,
+            serverUser.role,
+            serverUser.name,
+            phoneHash,
+            serverUser.mobileNumberMasked,
+            serverUser.licenseOrId || null,
+            serverUser.district,
+            serverUser.block,
+            serverUser.village || null,
+            null,
+            1,
+            new Date().toISOString(),
+            new Date().toISOString(),
+          ]
+        );
+      } catch (err) {
+        console.warn('Could not cache user to SQLite:', err);
+      }
+
+      set({
+        userProfile: serverUser,
+        activeRole: serverUser.role,
+        isAuthenticated: true,
+        loginStep: 'authenticated',
+        otpError: null,
+      });
+      return true;
+    }
+
+    // 2. Offline SQLite lookup fallback
     try {
       const phoneHash = await hashString(pendingPhone || '9822000412');
       const existingUsers = await dbService.query<any>(
@@ -333,6 +443,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       );
     } catch (err) {
       console.warn('Failed to save offline PIN to database:', err);
+    }
+
+    // Best-effort sync to backend if online
+    try {
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('pashu_auth_token') : null;
+      if (token) {
+        await fetch(getAuthPinEndpoint(), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ pin_hash: pinHash }),
+        });
+      }
+    } catch {
+      // Offline mode: silently continue
     }
 
     set({

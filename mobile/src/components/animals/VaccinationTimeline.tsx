@@ -1,6 +1,7 @@
 import React from 'react';
 import { Syringe, Calendar, CheckCircle2, Clock, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { VaccineRecord } from '../../services/animalService';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface VaccinationTimelineProps {
   vaccines: VaccineRecord[];
@@ -11,13 +12,26 @@ export const VaccinationTimeline: React.FC<VaccinationTimelineProps> = ({
   vaccines,
   tagNumber,
 }) => {
+  const { currentLanguage, t } = useLanguageStore();
+
+  const getLocalizedDisease = (v: VaccineRecord) => {
+    if (currentLanguage === 'en') return v.disease;
+    if (currentLanguage === 'hi') {
+      if (v.disease === 'FMD') return 'खुरपका-मुंहपका (FMD)';
+      if (v.disease === 'LSD') return 'लम्पी त्वचा रोग (LSD)';
+      if (v.disease === 'ANTHRAX') return 'एंथ्रेक्स (Anthrax)';
+      return v.disease;
+    }
+    return v.diseaseNameMarathi;
+  };
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
         <div className="flex items-center gap-2">
           <Syringe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            DAHD राष्ट्रीय लसीकरण वेळापत्रक (Vaccination Ledger)
+            {t('vaccineLedgerTitle', 'DAHD राष्ट्रीय लसीकरण वेळापत्रक (Vaccination Ledger)')}
           </h3>
         </div>
         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
@@ -45,10 +59,10 @@ export const VaccinationTimeline: React.FC<VaccinationTimelineProps> = ({
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <span className="text-xs font-black text-slate-900 dark:text-white block">
-                    {v.diseaseNameMarathi}
+                    {getLocalizedDisease(v)}
                   </span>
                   <span className="text-[10px] font-mono text-slate-400">
-                    बॅच क्र.: {v.batchNumber}
+                    {t('batchNo', 'बॅच क्र.')}: {v.batchNumber}
                   </span>
                 </div>
 
@@ -56,19 +70,19 @@ export const VaccinationTimeline: React.FC<VaccinationTimelineProps> = ({
                 {v.status === 'UP_TO_DATE' && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
                     <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                    लस पूर्ण
+                    {t('vaccinesComplete', 'लस पूर्ण')}
                   </span>
                 )}
                 {v.status === 'BOOSTER_DUE' && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 animate-pulse">
                     <Clock className="w-3 h-3 text-amber-700 dark:text-amber-300" />
-                    {v.daysRemaining} दिवसात बूस्टर
+                    {v.daysRemaining} {t('boosterInDays', 'दिवसात बूस्टर')}
                   </span>
                 )}
                 {v.status === 'OVERDUE' && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-600 text-white">
                     <ShieldAlert className="w-3 h-3" />
-                    मुदत संपली ({Math.abs(v.daysRemaining)} दिवस)
+                    {t('daysOverdue', 'मुदत संपली')} ({Math.abs(v.daysRemaining)})
                   </span>
                 )}
               </div>
@@ -77,11 +91,11 @@ export const VaccinationTimeline: React.FC<VaccinationTimelineProps> = ({
               <div className="grid grid-cols-2 gap-2 text-[11px] pt-1.5 border-t border-slate-200/60 dark:border-slate-700/60">
                 <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                   <Calendar className="w-3 h-3 text-slate-400" />
-                  <span>शेवटचा डोस: <strong className="font-mono">{v.lastDoseDate}</strong></span>
+                  <span>{t('lastDose', 'शेवटचा डोस')}: <strong className="font-mono">{v.lastDoseDate}</strong></span>
                 </div>
                 <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                   <Clock className="w-3 h-3 text-slate-400" />
-                  <span>पुढील डोस: <strong className={`font-mono ${isDueSoon ? 'text-amber-700 dark:text-amber-400 font-bold' : ''}`}>{v.nextBoosterDue}</strong></span>
+                  <span>{t('nextDose', 'पुढील डोस')}: <strong className={`font-mono ${isDueSoon ? 'text-amber-700 dark:text-amber-400 font-bold' : ''}`}>{v.nextBoosterDue}</strong></span>
                 </div>
               </div>
             </div>

@@ -21,6 +21,7 @@ import {
 } from '../services/labService';
 import { DEMO_ANIMALS, formatTagNumber } from '../services/animalService';
 import { hapticsService } from '../services/hapticsService';
+import { useLanguageStore } from '../store/languageStore';
 
 // Generates an authentic SVG QR matrix with the 3 canonical corner finder patterns
 function SvgQrCode({ payload, size = 160 }: { payload: string; size?: number }) {
@@ -108,6 +109,7 @@ function SvgQrCode({ payload, size = 160 }: { payload: string; size?: number }) 
 }
 
 export const LabReferralView: React.FC = () => {
+  const { currentLanguage, t } = useLanguageStore();
   const [requisitions, setRequisitions] = useState<LabRequisition[]>([]);
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [selectedReqForQr, setSelectedReqForQr] = useState<LabRequisition | null>(null);
@@ -205,21 +207,21 @@ export const LabReferralView: React.FC = () => {
         return (
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-            निश्चित (LAB_CONFIRMED)
+            {t('statusConfirmed', 'निश्चित (LAB_CONFIRMED)')}
           </span>
         );
       case 'TESTING':
         return (
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 flex items-center gap-1">
             <FlaskConical className="w-3 h-3" />
-            तपासणी सुरू (Testing)
+            {t('statusTesting', 'तपासणी सुरू (Testing)')}
           </span>
         );
       case 'NEGATIVE':
         return (
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-1">
             <CheckCircle className="w-3 h-3" />
-            नकारार्थी (Negative)
+            {t('statusNegative', 'नकारार्थी (Negative)')}
           </span>
         );
       case 'IN_TRANSIT':
@@ -227,7 +229,7 @@ export const LabReferralView: React.FC = () => {
         return (
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            मार्गावर (In Transit)
+            {t('statusInTransit', 'मार्गावर (In Transit)')}
           </span>
         );
     }
@@ -268,7 +270,7 @@ export const LabReferralView: React.FC = () => {
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white lang-devanagari">
-                इ-प्रयोगशाळा मागणीपत्र (e-LRF Tracker)
+                {t('eLrfTitle', 'इ-प्रयोगशाळा मागणीपत्र (e-LRF Tracker)')}
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Sample cold-chain SLA & diagnostic confirmation
@@ -282,7 +284,7 @@ export const LabReferralView: React.FC = () => {
             aria-label="New e-LRF"
           >
             <Plus className="w-4 h-4" />
-            <span>मागणी नोंदवा</span>
+            <span>{t('newRequisitionBtn', 'मागणी नोंदवा')}</span>
           </button>
         </div>
       </div>
@@ -312,23 +314,23 @@ export const LabReferralView: React.FC = () => {
               {/* Patient & Sample Details */}
               <div className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">पशु आधार (Tag ID):</span>
+                  <span className="text-slate-400">{t('pashuAadhaarTitle', 'पशु आधार (Tag ID):')}</span>
                   <span className="font-mono font-bold text-slate-900 dark:text-white">
                     {formatTagNumber(req.animalTagId)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">संशयित आजार (Suspect):</span>
+                  <span className="text-slate-400">{t('suspectedDiseaseLabel', 'संशयित आजार (Suspect):')}</span>
                   <span className="font-semibold text-purple-600 dark:text-purple-400">
                     {req.suspectedDisease}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">नमुना प्रकार (Sample):</span>
+                  <span className="text-slate-400">{t('sampleTypeLabel', 'नमुना प्रकार (Sample):')}</span>
                   <span className="font-semibold">{req.sampleType}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">प्रयोगशाळा (Destination):</span>
+                  <span className="text-slate-400">{t('destinationLabLabel', 'प्रयोगशाळा (Destination):')}</span>
                   <span className="font-semibold text-right max-w-[200px] truncate">
                     {req.destinationLab}
                   </span>
@@ -342,10 +344,10 @@ export const LabReferralView: React.FC = () => {
                 <div className="flex items-center justify-between text-[11px] font-bold mb-1.5">
                   <span className="flex items-center gap-1 text-slate-700 dark:text-slate-200">
                     <Clock className={`w-3.5 h-3.5 ${coldColors.text}`} />
-                    ४८ तास कोल्ड-चेन मर्यादा (Cold Chain SLA)
+                    {t('coldChainSla', '४८ तास कोल्ड-चेन मर्यादा (Cold Chain SLA)')}
                   </span>
                   <span className={`font-mono ${coldColors.text}`}>
-                    {req.coldChain.remainingHours} तास शिल्लक ({req.coldChain.remainingHours}h left)
+                    {req.coldChain.remainingHours} {t('hoursLeft', 'तास शिल्लक')}
                   </span>
                 </div>
                 <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
@@ -357,7 +359,7 @@ export const LabReferralView: React.FC = () => {
                 <div className="flex items-center justify-between mt-2 text-[10px]">
                   <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
                     <Thermometer className="w-3 h-3" />
-                    तापमान: <strong className="text-slate-800 dark:text-slate-200">{req.transitTempC}°C</strong>
+                    {t('sampleTemp', 'तापमान')}: <strong className="text-slate-800 dark:text-slate-200">{req.transitTempC}°C</strong>
                   </span>
                   <button
                     type="button"
@@ -367,13 +369,13 @@ export const LabReferralView: React.FC = () => {
                     }}
                     className="text-purple-600 dark:text-purple-400 font-bold hover:underline"
                   >
-                    तापमान नोंदवा (Log)
+                    {t('logTemperatureBtn', 'तापमान नोंदवा (Log)')}
                   </button>
                 </div>
                 {req.coldChain.isBreached && (
                   <p className="text-[10px] text-rose-600 dark:text-rose-400 font-bold mt-1 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" />
-                    {req.coldChain.advisoryMessageMr}
+                    {currentLanguage === 'en' ? req.coldChain.advisoryMessage : req.coldChain.advisoryMessageMr}
                   </p>
                 )}
               </div>
@@ -386,7 +388,7 @@ export const LabReferralView: React.FC = () => {
                   className="flex-1 py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center justify-center gap-1.5"
                 >
                   <QrCode className="w-3.5 h-3.5 text-purple-600" />
-                  <span>QR लेबल (View QR)</span>
+                  <span>{t('viewQrLabel', 'QR लेबल (View QR)')}</span>
                 </button>
                 {req.status !== 'LAB_CONFIRMED' && (
                   <button
@@ -395,7 +397,7 @@ export const LabReferralView: React.FC = () => {
                     className="flex-1 py-2 px-3 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/80 text-xs font-bold flex items-center justify-center gap-1.5"
                   >
                     <FileCheck2 className="w-3.5 h-3.5" />
-                    <span>निकाल नोंदवा (Result)</span>
+                    <span>{t('enterResultBtn', 'निकाल नोंदवा (Result)')}</span>
                   </button>
                 )}
               </div>
@@ -413,8 +415,8 @@ export const LabReferralView: React.FC = () => {
                 <div className="p-2 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
                   <FlaskConical className="w-5 h-5" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white lang-devanagari">
-                  नवीन प्रयोगशाळा मागणीपत्र (New e-LRF)
+                <h3 className={`text-sm font-bold text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                  {t('newElrfModalTitle', 'नवीन प्रयोगशाळा मागणीपत्र (New e-LRF)')}
                 </h3>
               </div>
               <button
@@ -429,7 +431,7 @@ export const LabReferralView: React.FC = () => {
             <form onSubmit={handleCreateRequisition} className="space-y-3 text-xs">
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  पशु आधार टॅग (12-digit Tag Number)
+                  {t('tagNumberLabel', 'पशु आधार टॅग (12-digit Tag Number)')}
                 </label>
                 <select
                   value={animalTag}
@@ -446,7 +448,7 @@ export const LabReferralView: React.FC = () => {
 
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  संशयित संलक्षण / आजार (Suspected Disease)
+                  {t('suspectedDiseaseFieldLabel', 'संशयित संलक्षण / आजार (Suspected Disease)')}
                 </label>
                 <select
                   value={suspectedDisease}
@@ -466,16 +468,24 @@ export const LabReferralView: React.FC = () => {
                   }}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
                 >
-                  <option value="Foot-and-Mouth Disease (खुरकूत)">खुरकूत (FMD)</option>
-                  <option value="Lumpy Skin Disease (लम्पी त्वचा रोग)">लम्पी (LSD)</option>
-                  <option value="Anthrax Suspect (संशयित घटसर्प / एंथ्रॅक्स)">एंथ्रॅक्स (Anthrax)</option>
-                  <option value="Haemorrhagic Septicaemia (घटसर्प)">घटसर्प (HS)</option>
+                  <option value="Foot-and-Mouth Disease (खुरकूत)">
+                    {currentLanguage === 'en' ? 'Foot-and-Mouth Disease (FMD)' : 'खुरकूत (FMD)'}
+                  </option>
+                  <option value="Lumpy Skin Disease (लम्पी त्वचा रोग)">
+                    {currentLanguage === 'en' ? 'Lumpy Skin Disease (LSD)' : 'लम्पी (LSD)'}
+                  </option>
+                  <option value="Anthrax Suspect (संशयित घटसर्प / एंथ्रॅक्स)">
+                    {currentLanguage === 'en' ? 'Anthrax Suspect' : 'एंथ्रॅक्स (Anthrax)'}
+                  </option>
+                  <option value="Haemorrhagic Septicaemia (घटसर्प)">
+                    {currentLanguage === 'en' ? 'Haemorrhagic Septicaemia (HS)' : 'घटसर्प (HS)'}
+                  </option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  नमुना प्रकार (Sample Type)
+                  {t('sampleTypeFieldLabel', 'नमुना प्रकार (Sample Type)')}
                 </label>
                 <input
                   type="text"
@@ -487,7 +497,7 @@ export const LabReferralView: React.FC = () => {
 
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  प्रिसर्व्हेटिव्ह माध्यम (Preservative Media)
+                  {currentLanguage === 'en' ? 'Preservative Media' : 'प्रिसर्व्हेटिव्ह माध्यम (Preservative Media)'}
                 </label>
                 <input
                   type="text"
@@ -499,7 +509,7 @@ export const LabReferralView: React.FC = () => {
 
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  लक्ष्य प्रयोगशाळा (Destination Lab)
+                  {t('destinationLabFieldLabel', 'लक्ष्य प्रयोगशाळा (Destination Lab)')}
                 </label>
                 <select
                   value={destinationLab}
@@ -523,7 +533,7 @@ export const LabReferralView: React.FC = () => {
 
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  सुरुवातीचे तापमान (Initial Temp °C)
+                  {currentLanguage === 'en' ? 'Initial Temperature (°C)' : 'सुरुवातीचे तापमान (Initial Temp °C)'}
                 </label>
                 <input
                   type="number"
@@ -540,7 +550,7 @@ export const LabReferralView: React.FC = () => {
                   className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-md transition-transform active:scale-95 flex items-center justify-center gap-1.5"
                 >
                   <ShieldCheck className="w-4 h-4" />
-                  <span>मागणीपत्र तयार करा (Generate e-LRF)</span>
+                  <span>{currentLanguage === 'en' ? 'Generate e-LRF' : 'मागणीपत्र तयार करा (Generate e-LRF)'}</span>
                 </button>
               </div>
             </form>
@@ -574,7 +584,7 @@ export const LabReferralView: React.FC = () => {
                 {selectedReqForQr.sampleType}
               </p>
               <p className="text-[11px] text-slate-500">
-                टॅग: {formatTagNumber(selectedReqForQr.animalTagId)}
+                {currentLanguage === 'en' ? 'Tag: ' : 'टॅग: '}{formatTagNumber(selectedReqForQr.animalTagId)}
               </p>
               <p className="text-[11px] text-slate-400">
                 {selectedReqForQr.destinationLab}
@@ -582,7 +592,9 @@ export const LabReferralView: React.FC = () => {
             </div>
 
             <div className="bg-purple-50 dark:bg-purple-950/50 p-2.5 rounded-xl border border-purple-200 dark:border-purple-800 text-[11px] text-purple-800 dark:text-purple-300">
-              हा QR कोड नमुना बाटलीवर (Specimen Vial) व कोल्ड-बॉक्सवर चिटकवून लॅबमध्ये पाठवावा.
+              {currentLanguage === 'en'
+                ? 'Affix this QR code to the specimen vial and cold-box before dispatching to laboratory.'
+                : 'हा QR कोड नमुना बाटलीवर (Specimen Vial) व कोल्ड-बॉक्सवर चिटकवून लॅबमध्ये पाठवावा.'}
             </div>
           </div>
         </div>
@@ -596,7 +608,9 @@ export const LabReferralView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Thermometer className="w-5 h-5 text-purple-600" />
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white">
-                  तापमान नोंदवा ({selectedReqForTemp.requisitionId})
+                  {currentLanguage === 'en'
+                    ? `Log Temperature (${selectedReqForTemp.requisitionId})`
+                    : `तापमान नोंदवा (${selectedReqForTemp.requisitionId})`}
                 </h3>
               </div>
               <button
@@ -611,7 +625,7 @@ export const LabReferralView: React.FC = () => {
             <form onSubmit={handleLogTemperature} className="space-y-3 text-xs">
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  सद्य तापमान (Current Temp °C)
+                  {currentLanguage === 'en' ? 'Current Temperature (°C)' : 'सद्य तापमान (Current Temp °C)'}
                 </label>
                 <input
                   type="number"
@@ -624,7 +638,7 @@ export const LabReferralView: React.FC = () => {
 
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  चेकपॉईंट ठिकाण (Checkpoint Location)
+                  {currentLanguage === 'en' ? 'Checkpoint Location' : 'चेकपॉईंट ठिकाण (Checkpoint Location)'}
                 </label>
                 <input
                   type="text"
@@ -638,7 +652,7 @@ export const LabReferralView: React.FC = () => {
                 type="submit"
                 className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-transform active:scale-95"
               >
-                तापमान जतन करा (Save Temperature)
+                {currentLanguage === 'en' ? 'Save Temperature' : 'तापमान जतन करा (Save Temperature)'}
               </button>
             </form>
           </div>
@@ -653,7 +667,7 @@ export const LabReferralView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <FileCheck2 className="w-5 h-5 text-purple-600" />
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white">
-                  प्रयोगशाळा निकाल नोंदवा (Submit Lab Result)
+                  {currentLanguage === 'en' ? 'Submit Laboratory Result' : 'प्रयोगशाळा निकाल नोंदवा (Submit Lab Result)'}
                 </h3>
               </div>
               <button
@@ -668,7 +682,7 @@ export const LabReferralView: React.FC = () => {
             <form onSubmit={handleSubmitResult} className="space-y-3 text-xs">
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  चाचणी प्रकार (Test Assay Type)
+                  {currentLanguage === 'en' ? 'Test Assay Type' : 'चाचणी प्रकार (Test Assay Type)'}
                 </label>
                 <select
                   value={testType}
@@ -683,7 +697,7 @@ export const LabReferralView: React.FC = () => {
 
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  चाचणी निकाल (Diagnostic Result)
+                  {currentLanguage === 'en' ? 'Diagnostic Result' : 'चाचणी निकाल (Diagnostic Result)'}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -695,7 +709,7 @@ export const LabReferralView: React.FC = () => {
                         : 'border-slate-200 dark:border-slate-700 text-slate-600'
                     }`}
                   >
-                    होकारार्थी (POSITIVE)
+                    {currentLanguage === 'en' ? 'POSITIVE' : 'होकारार्थी (POSITIVE)'}
                   </button>
                   <button
                     type="button"
@@ -706,14 +720,14 @@ export const LabReferralView: React.FC = () => {
                         : 'border-slate-200 dark:border-slate-700 text-slate-600'
                     }`}
                   >
-                    नकारार्थी (NEGATIVE)
+                    {currentLanguage === 'en' ? 'NEGATIVE' : 'नकारार्थी (NEGATIVE)'}
                   </button>
                 </div>
               </div>
 
               <div>
                 <label className="block text-slate-500 dark:text-slate-400 mb-1 font-semibold">
-                  पॅथॉलॉजिस्ट शेरे (Result Notes)
+                  {currentLanguage === 'en' ? 'Result Notes / Remarks' : 'पॅथॉलॉजिस्ट शेरे (Result Notes)'}
                 </label>
                 <textarea
                   rows={2}
@@ -728,7 +742,7 @@ export const LabReferralView: React.FC = () => {
                 className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-transform active:scale-95 flex items-center justify-center gap-1.5"
               >
                 <CheckCircle className="w-4 h-4" />
-                <span>निकालाची पुष्टी करा (Confirm Result)</span>
+                <span>{currentLanguage === 'en' ? 'Confirm Result' : 'निकालाची पुष्टी करा (Confirm Result)'}</span>
               </button>
             </form>
           </div>

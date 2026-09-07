@@ -59,6 +59,8 @@ export interface MediaQueueItem {
   status: QueueStatus;
   created_at: string;
   synced_at?: string | null;
+  gs_uri?: string | null;
+  https_url?: string | null;
 }
 
 export interface SyncResult {

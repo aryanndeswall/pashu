@@ -28,8 +28,13 @@ export const ClinicalGuidanceCard: React.FC<ClinicalGuidanceCardProps> = ({ resu
                 {result.primaryDifferential.diseaseName}
               </div>
               <div className={`text-[11px] font-semibold text-blue-800 dark:text-blue-300 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                {currentLanguage === 'hi' ? (result.primaryDifferential.diseaseNameHindi || result.primaryDifferential.diseaseNameMarathi) : result.primaryDifferential.diseaseNameMarathi}
+                {currentLanguage === 'en'
+                  ? (result.primaryDifferential.diseaseNameEnglish || result.primaryDifferential.diseaseName)
+                  : currentLanguage === 'hi'
+                  ? (result.primaryDifferential.diseaseNameHindi || result.primaryDifferential.diseaseNameMarathi)
+                  : result.primaryDifferential.diseaseNameMarathi}
               </div>
+
             </div>
           </div>
 

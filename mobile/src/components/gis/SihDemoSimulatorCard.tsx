@@ -14,8 +14,10 @@ import {
   SimulationStepState,
 } from '../../services/gisService';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 
 export const SihDemoSimulatorCard: React.FC = () => {
+  const { currentLanguage, t } = useLanguageStore();
   const [currentStepIndex, setCurrentStepIndex] = useState(6); // Default show full completion
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
 
@@ -49,6 +51,10 @@ export const SihDemoSimulatorCard: React.FC = () => {
   };
 
   const currentStep = AHMEDNAGAR_SIMULATION_STEPS[currentStepIndex];
+  const stepMetrics =
+    currentLanguage === 'en' && currentStep.metricsEnglish
+      ? currentStep.metricsEnglish
+      : currentStep.metrics;
 
   return (
     <div className="bg-gradient-to-br from-purple-900 via-indigo-950 to-slate-900 rounded-3xl p-5 text-white shadow-xl border border-purple-500/30 relative overflow-hidden space-y-4">
@@ -63,7 +69,7 @@ export const SihDemoSimulatorCard: React.FC = () => {
           </div>
           <div>
             <h3 className="text-xs font-black tracking-wide uppercase text-purple-200">
-              SIH २०२६ लाईव्ह सादरीकरण सिम्युलेटर
+              {t('simTitle', 'SIH २०२६ लाईव्ह सादरीकरण सिम्युलेटर')}
             </h3>
             <p className="text-[10px] text-purple-300/80">
               End-to-End Outbreak Containment Lifecycle
@@ -73,7 +79,7 @@ export const SihDemoSimulatorCard: React.FC = () => {
 
         <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
           <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-          टप्पा {currentStepIndex + 1} / 7
+          {currentLanguage === 'en' ? 'Step' : t('simStep', 'टप्पा')} {currentStepIndex + 1} / 7
         </span>
       </div>
 
@@ -99,12 +105,20 @@ export const SihDemoSimulatorCard: React.FC = () => {
             <span className="text-[10px] font-bold text-purple-300 block">
               {currentStep.component}
             </span>
-            <h4 className="text-sm font-bold text-white lang-devanagari mt-0.5">
-              {currentStep.stepTitleMr}
-            </h4>
-            <p className="text-[11px] text-white/70">
-              {currentStep.stepTitle}
-            </p>
+            {currentLanguage === 'en' ? (
+              <h4 className="text-sm font-bold text-white mt-0.5">
+                {currentStep.stepTitle}
+              </h4>
+            ) : (
+              <>
+                <h4 className="text-sm font-bold text-white lang-devanagari mt-0.5">
+                  {currentStep.stepTitleMr}
+                </h4>
+                <p className="text-[11px] text-white/70">
+                  {currentStep.stepTitle}
+                </p>
+              </>
+            )}
           </div>
 
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-purple-500/30 text-purple-200 border border-purple-400/40">
@@ -114,7 +128,7 @@ export const SihDemoSimulatorCard: React.FC = () => {
 
         {/* Step Key Metrics */}
         <div className="bg-black/30 rounded-xl p-2 text-[11px] font-mono grid grid-cols-2 gap-2 text-purple-100 border border-white/5">
-          {Object.entries(currentStep.metrics).map(([k, v]) => (
+          {Object.entries(stepMetrics).map(([k, v]) => (
             <div key={k} className="truncate">
               <span className="text-purple-300/60 block text-[9px] uppercase">{k}</span>
               <span className="font-bold text-white">{String(v)}</span>
@@ -145,7 +159,7 @@ export const SihDemoSimulatorCard: React.FC = () => {
           }`}
         >
           {isAutoPlaying ? <FastForward className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-          <span>{isAutoPlaying ? 'स्वयंचलित सुरू आहे...' : '⚡ ऑटो प्ले (Auto Run)'}</span>
+          <span>{isAutoPlaying ? t('autoRunning', 'स्वयंचलित सुरू आहे...') : t('autoRunBtn', '⚡ ऑटो प्ले (Auto Run)')}</span>
         </button>
 
         <button
@@ -154,7 +168,7 @@ export const SihDemoSimulatorCard: React.FC = () => {
           disabled={currentStepIndex >= AHMEDNAGAR_SIMULATION_STEPS.length - 1}
           className="flex-1 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-transform active:scale-95 flex items-center justify-center gap-1 disabled:opacity-40 shadow-md"
         >
-          <span>पुढील टप्पा</span>
+          <span>{t('nextStepBtn', 'पुढील टप्पा')}</span>
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>

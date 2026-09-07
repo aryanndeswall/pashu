@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingDown, AlertCircle, BarChart3, ShieldCheck } from 'lucide-react';
 import { gisService, EpiCurveResponse, EpiCurvePoint } from '../../services/gisService';
+import { useLanguageStore } from '../../store/languageStore';
 
 export const EpiCurveChart: React.FC = () => {
+  const { currentLanguage, t } = useLanguageStore();
   const [data, setData] = useState<EpiCurveResponse | null>(null);
   const [activePoint, setActivePoint] = useState<EpiCurvePoint | null>(null);
 
@@ -33,7 +35,7 @@ export const EpiCurveChart: React.FC = () => {
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-900 dark:text-white lang-devanagari">
-              १४ दिवसांचा उद्रेक आलेख (14-Day Epi-Curve)
+              {t('epiCurveTitle', '१४ दिवसांचा उद्रेक आलेख (14-Day Epi-Curve)')}
             </h3>
             <p className="text-[10px] text-slate-400">
               TimescaleDB syndromic time-series
@@ -43,7 +45,7 @@ export const EpiCurveChart: React.FC = () => {
 
         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center gap-1 font-mono">
           <TrendingDown className="w-3 h-3" />
-          Rt {data.currentRt} (नियंत्रित)
+          Rt {data.currentRt} ({t('controlled', 'नियंत्रित')})
         </span>
       </div>
 
@@ -55,7 +57,7 @@ export const EpiCurveChart: React.FC = () => {
           style={{ left: `${(6.5 / 14) * 100}%` }}
         >
           <span className="absolute -top-1 left-1 text-[8px] font-bold bg-rose-500 text-white px-1.5 py-0.2 rounded shadow whitespace-nowrap">
-            रिंग लसीकरण (Day 7)
+            {t('ringVacDay7', 'रिंग लसीकरण (Day 7)')}
           </span>
         </div>
 
@@ -107,12 +109,12 @@ export const EpiCurveChart: React.FC = () => {
         <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs">
           <div className="space-y-0.5">
             <span className="font-mono text-[10px] text-slate-400">
-              दिनांक: {activePoint.date} (Day {activePoint.dayIndex})
+              {currentLanguage === 'en' ? 'Date' : 'दिनांक'}: {activePoint.date} (Day {activePoint.dayIndex})
             </span>
             <div className="flex items-center gap-3 font-semibold text-slate-800 dark:text-slate-200">
-              <span className="text-amber-600">संशयित: {activePoint.suspectedCases}</span>
-              <span className="text-purple-600">निश्चित: {activePoint.confirmedCases}</span>
-              <span className="text-rose-600">मृत्यू: {activePoint.mortalityCount}</span>
+              <span className="text-amber-600">{t('suspectedLabel', 'संशयित')}: {activePoint.suspectedCases}</span>
+              <span className="text-purple-600">{t('confirmedLabel', 'निश्चित')}: {activePoint.confirmedCases}</span>
+              <span className="text-rose-600">{t('deathsLabel', 'मृत्यू')}: {activePoint.mortalityCount}</span>
             </div>
           </div>
           <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
@@ -124,19 +126,19 @@ export const EpiCurveChart: React.FC = () => {
       {/* Aggregate Epi Counters */}
       <div className="grid grid-cols-4 gap-2 text-center text-xs">
         <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-          <span className="text-[10px] text-slate-400 block">एकूण संशयित</span>
+          <span className="text-[10px] text-slate-400 block">{t('totalSuspected', 'एकूण संशयित')}</span>
           <strong className="text-sm font-bold text-amber-600">{data.totalSuspected}</strong>
         </div>
         <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-          <span className="text-[10px] text-slate-400 block">लॅब निश्चित</span>
+          <span className="text-[10px] text-slate-400 block">{t('totalConfirmed', 'लॅब निश्चित')}</span>
           <strong className="text-sm font-bold text-purple-600">{data.totalConfirmed}</strong>
         </div>
         <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-          <span className="text-[10px] text-slate-400 block">एकूण मृत्यू</span>
+          <span className="text-[10px] text-slate-400 block">{t('totalDeaths', 'एकूण मृत्यू')}</span>
           <strong className="text-sm font-bold text-rose-600">{data.totalDeaths}</strong>
         </div>
         <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-          <span className="text-[10px] text-slate-400 block">प्रसार वेग</span>
+          <span className="text-[10px] text-slate-400 block">{t('transmissionRate', 'प्रसार वेग')}</span>
           <strong className="text-sm font-bold text-emerald-600 font-mono">Rt {data.currentRt}</strong>
         </div>
       </div>

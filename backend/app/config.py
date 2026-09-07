@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-2.5-flash"
     AI_INFERENCE_TIMEOUT_SECONDS: float = 3.0
 
+    # Firebase Cloud Storage & Admin SDK
+    FIREBASE_CREDENTIALS_PATH: Optional[str] = None
+    FIREBASE_STORAGE_BUCKET: Optional[str] = None
+
+    # Redis Pub/Sub Live Alert Broker
+    REDIS_URL: Optional[str] = None
+
     model_config = SettingsConfigDict(
         env_file=(".env", "backend/.env"),
         env_file_encoding="utf-8",

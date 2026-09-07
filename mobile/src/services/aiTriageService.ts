@@ -16,6 +16,7 @@ export interface TriageResponse {
   syndrome_code: SyndromeCode;
   syndrome_name_en: string;
   syndrome_name_marathi: string;
+  syndrome_name_hindi?: string;
   suspected_disease: string;
   clinical_confidence: number;
   biohazard_alert: BiohazardAlert;
@@ -23,6 +24,7 @@ export interface TriageResponse {
   identified_symptoms: string[];
   immediate_advisory_marathi: string;
   immediate_advisory_hindi: string;
+  immediate_advisory_en?: string;
   recommended_containment_actions: string[];
   inference_time_ms: number;
   model_used: string;

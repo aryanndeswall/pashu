@@ -28,15 +28,30 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
   const roleStyles = {
     consumer: {
       badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300',
-      tag: 'पशुपालक (Farmer)',
+      tag:
+        currentLanguage === 'en'
+          ? 'Farmer'
+          : currentLanguage === 'hi'
+          ? 'पशुपालक (किसान)'
+          : 'पशुपालक (Farmer)',
     },
     doctor: {
       badge: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border-blue-300',
-      tag: 'पशुवैद्य (Veterinarian)',
+      tag:
+        currentLanguage === 'en'
+          ? 'Veterinarian'
+          : currentLanguage === 'hi'
+          ? 'पशु चिकित्सक'
+          : 'पशुवैद्य (Veterinarian)',
     },
     admin: {
       badge: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-300',
-      tag: 'जिल्हा अधिकारी (DVO)',
+      tag:
+        currentLanguage === 'en'
+          ? 'District Officer (DVO)'
+          : currentLanguage === 'hi'
+          ? 'जिला अधिकारी (DVO)'
+          : 'जिल्हा अधिकारी (DVO)',
     },
   }[activeRole];
 
@@ -55,11 +70,27 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
             className="field-touch-target inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{t('backToDashboard', 'मागे (Back)')}</span>
+            <span>
+              {t(
+                'backToDashboard',
+                currentLanguage === 'en'
+                  ? 'Back'
+                  : currentLanguage === 'hi'
+                  ? 'पीछे (Back)'
+                  : 'मागे (Back)'
+              )}
+            </span>
           </button>
         )}
         <h1 className="text-base font-bold text-slate-900 dark:text-white">
-          {t('userProfileTitle', 'वापरकर्ता प्रोफाइल व सुरक्षा')}
+          {t(
+            'userProfileTitle',
+            currentLanguage === 'en'
+              ? 'User Profile & Security'
+              : currentLanguage === 'hi'
+              ? 'उपयोगकर्ता प्रोफ़ाइल व सुरक्षा'
+              : 'वापरकर्ता प्रोफाइल व सुरक्षा'
+          )}
         </h1>
         <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${roleStyles.badge}`}>
           {roleStyles.tag}
@@ -74,10 +105,18 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="text-base font-extrabold text-slate-900 dark:text-white truncate">
-              {userProfile.nameMarathi || userProfile.name}
+              {currentLanguage === 'hi'
+                ? userProfile.nameHindi || userProfile.name
+                : currentLanguage === 'mr'
+                ? userProfile.nameMarathi || userProfile.name
+                : userProfile.name}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-              {userProfile.titleMarathi || userProfile.titleEnglish}
+              {currentLanguage === 'hi'
+                ? userProfile.titleHindi || userProfile.titleEnglish
+                : currentLanguage === 'mr'
+                ? userProfile.titleMarathi || userProfile.titleEnglish
+                : userProfile.titleEnglish}
             </p>
             <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-600 dark:text-slate-300">
               <MapPin className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
@@ -90,11 +129,21 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
         <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500 dark:text-slate-400 font-medium">
-              नोंदणीकृत मोबाईल (DPDP Act 2023)
+              {currentLanguage === 'en'
+                ? 'Registered Mobile (DPDP Act 2023)'
+                : currentLanguage === 'hi'
+                ? 'पंजीकृत मोबाइल (DPDP Act 2023)'
+                : 'नोंदणीकृत मोबाईल (DPDP Act 2023)'}
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>सत्यापित</span>
+              <span>
+                {currentLanguage === 'en'
+                  ? 'Verified'
+                  : currentLanguage === 'hi'
+                  ? 'सत्यापित'
+                  : 'सत्यापित'}
+              </span>
             </span>
           </div>
           <p className="text-sm font-bold font-mono text-slate-900 dark:text-white tracking-wide">
@@ -102,7 +151,12 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
           </p>
           {userProfile.licenseOrId && (
             <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-              ID / परवाना: {userProfile.licenseOrId}
+              {currentLanguage === 'en'
+                ? 'ID / License: '
+                : currentLanguage === 'hi'
+                ? 'आईडी / लाइसेंस: '
+                : 'ID / परवाना: '}
+              {userProfile.licenseOrId}
             </p>
           )}
         </div>
@@ -111,7 +165,11 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
       {/* Offline Status & Security Actions */}
       <div className="space-y-2.5">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
-          सुरक्षा व ऑफलाइन व्यवस्थापन
+          {currentLanguage === 'en'
+            ? 'Security & Offline Management'
+            : currentLanguage === 'hi'
+            ? 'सुरक्षा व ऑफ़लाइन प्रबंधन'
+            : 'सुरक्षा व ऑफलाइन व्यवस्थापन'}
         </h3>
 
         {/* Change Offline PIN */}
@@ -126,10 +184,18 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
             </div>
             <div>
               <p className="text-xs font-bold text-slate-900 dark:text-white">
-                ४-अंकी ऑफलाइन सुरक्षा पिन बदला
+                {currentLanguage === 'en'
+                  ? 'Change 4-Digit Offline PIN'
+                  : currentLanguage === 'hi'
+                  ? '४-अंकीय ऑफ़लाइन सुरक्षा पिन बदलें'
+                  : '४-अंकी ऑफलाइन सुरक्षा पिन बदला'}
               </p>
               <p className="text-[11px] text-slate-500">
-                नेटवर्क नसताना जलद लॉगिनसाठी सुरक्षा पिन
+                {currentLanguage === 'en'
+                  ? 'Used for fast offline login without mobile OTP'
+                  : currentLanguage === 'hi'
+                  ? 'नेटवर्क न होने पर त्वरित लॉगिन के लिए सुरक्षा पिन'
+                  : 'नेटवर्क नसताना जलद लॉगिनसाठी सुरक्षा पिन'}
               </p>
             </div>
           </div>
@@ -143,10 +209,24 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
             </div>
             <div>
               <p className="text-xs font-bold text-slate-900 dark:text-white">
-                ऑफलाइन सिंक रांग (Sync Queue)
+                {currentLanguage === 'en'
+                  ? 'Offline Sync Queue'
+                  : currentLanguage === 'hi'
+                  ? 'ऑफ़लाइन सिंक कतार (Sync Queue)'
+                  : 'ऑफलाइन सिंक रांग (Sync Queue)'}
               </p>
               <p className="text-[11px] text-slate-500">
-                {pendingCount === 0 ? 'सर्व डेटा क्लाउडवर सुरक्षित आहे' : `${pendingCount} अहवाल सिंक बाकी आहेत`}
+                {pendingCount === 0
+                  ? currentLanguage === 'en'
+                    ? 'All records safely stored in cloud'
+                    : currentLanguage === 'hi'
+                    ? 'सभी डेटा क्लाउड पर सुरक्षित है'
+                    : 'सर्व डेटा क्लाउडवर सुरक्षित आहे'
+                  : currentLanguage === 'en'
+                  ? `${pendingCount} report(s) pending sync`
+                  : currentLanguage === 'hi'
+                  ? `${pendingCount} रिपोर्ट सिंक बाकी हैं`
+                  : `${pendingCount} अहवाल सिंक बाकी आहेत`}
               </p>
             </div>
           </div>
@@ -161,10 +241,14 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
       {/* Language Preference */}
       <div className="space-y-2.5">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
-          भाषा प्राधान्य (Language)
+          {currentLanguage === 'en'
+            ? 'Language Preference'
+            : currentLanguage === 'hi'
+            ? 'भाषा प्राथमिकता (Language)'
+            : 'भाषा प्राधान्य (Language)'}
         </h3>
         <div className="grid grid-cols-3 gap-2">
-          {(['mr', 'hi', 'en'] as const).map((lang) => (
+          {(['hi', 'en', 'mr'] as const).map((lang) => (
             <button
               key={lang}
               type="button"
@@ -176,7 +260,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
               }`}
             >
               <Globe className="w-3 h-3" />
-              <span>{lang === 'mr' ? 'मराठी' : lang === 'hi' ? 'हिंदी' : 'English'}</span>
+              <span>{lang === 'hi' ? 'हिंदी' : lang === 'mr' ? 'मराठी' : 'English'}</span>
             </button>
           ))}
         </div>
@@ -198,7 +282,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
                 : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
             }`}
           >
-            👨‍🌾 पशुपालक
+            👨‍🌾 {currentLanguage === 'en' ? 'Farmer' : currentLanguage === 'hi' ? 'पशुपालक' : 'पशुपालक'}
           </button>
           <button
             type="button"
@@ -209,7 +293,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
                 : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
             }`}
           >
-            🩺 पशुवैद्य
+            🩺 {currentLanguage === 'en' ? 'Doctor' : currentLanguage === 'hi' ? 'पशु चिकित्सक' : 'पशुवैद्य'}
           </button>
           <button
             type="button"
@@ -220,7 +304,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
                 : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
             }`}
           >
-            🏛️ DVO
+            🏛️ {currentLanguage === 'en' ? 'Admin' : currentLanguage === 'hi' ? 'जिला अधिकारी' : 'DVO'}
           </button>
         </div>
       </div>
@@ -233,7 +317,16 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onClose }) => 
           className="w-full min-h-[52px] rounded-xl border-2 border-red-500/80 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 font-bold text-xs flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
         >
           <LogOut className="w-4 h-4" />
-          <span>{t('signOutButton', 'लॉगआउट करा (Sign Out)')}</span>
+          <span>
+            {t(
+              'signOutButton',
+              currentLanguage === 'en'
+                ? 'Sign Out'
+                : currentLanguage === 'hi'
+                ? 'लॉगआउट करें (Sign Out)'
+                : 'लॉगआउट करा (Sign Out)'
+            )}
+          </span>
         </button>
       </div>
     </div>

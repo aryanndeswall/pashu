@@ -48,6 +48,7 @@ export interface SimulationStepState {
   component: string;
   status: 'PENDING' | 'ACTIVE' | 'COMPLETED';
   metrics: Record<string, any>;
+  metricsEnglish?: Record<string, any>;
 }
 
 export const AHMEDNAGAR_EPI_DATA: EpiCurvePoint[] = [
@@ -80,6 +81,12 @@ export const AHMEDNAGAR_SIMULATION_STEPS: SimulationStepState[] = [
       symptoms: 'लाळ गळणे, तोंडात व पायात फोड',
       offlineSaveTimeMs: 14,
     },
+    metricsEnglish: {
+      tagId: '1002-9384-7561',
+      village: 'Ashwi Budruk (Rahuri)',
+      symptoms: 'Salivation, oral & foot blisters',
+      offlineSaveTimeMs: '14 ms',
+    },
   },
   {
     stepNumber: 2,
@@ -93,6 +100,12 @@ export const AHMEDNAGAR_SIMULATION_STEPS: SimulationStepState[] = [
       ruleZeroAnthrax: 'CLEAR (सुरक्षित)',
       latencyMs: 680,
     },
+    metricsEnglish: {
+      syndromeCode: 'SYN_VESICULAR (FMD)',
+      confidence: '96%',
+      ruleZeroAnthrax: 'CLEAR (Safe)',
+      latencyMs: '680 ms',
+    },
   },
   {
     stepNumber: 3,
@@ -103,6 +116,12 @@ export const AHMEDNAGAR_SIMULATION_STEPS: SimulationStepState[] = [
     metrics: {
       window: '५ किमी / ७२ तास',
       attackRate: '२.७६% (> १.५% मर्यादा)',
+      opsScore: '0.84',
+      status: 'OUTBREAK_DECLARED',
+    },
+    metricsEnglish: {
+      window: '5 km / 72 hours',
+      attackRate: '2.76% (> 1.5% threshold)',
       opsScore: '0.84',
       status: 'OUTBREAK_DECLARED',
     },
@@ -118,6 +137,11 @@ export const AHMEDNAGAR_SIMULATION_STEPS: SimulationStepState[] = [
       ringVacZone: '५.० किमी (रिंग लसीकरण)',
       surveillanceZone: '१०.० किमी (पाळत परिमिती)',
     },
+    metricsEnglish: {
+      infectedZone: '1.0 km (Movement Ban)',
+      ringVacZone: '5.0 km (Ring Vaccination)',
+      surveillanceZone: '10.0 km (Surveillance)',
+    },
   },
   {
     stepNumber: 5,
@@ -130,6 +154,12 @@ export const AHMEDNAGAR_SIMULATION_STEPS: SimulationStepState[] = [
       sample: 'Vesicular Swab (FMD)',
       tempC: '3.8°C (२°C-८°C योग्य)',
       slaRemaining: '३२ तास शिल्लक',
+    },
+    metricsEnglish: {
+      requisitionId: 'LRF-20260904-0941',
+      sample: 'Vesicular Swab (FMD)',
+      tempC: '3.8°C (2°C-8°C optimal)',
+      slaRemaining: '32 hours left',
     },
   },
   {
@@ -144,6 +174,12 @@ export const AHMEDNAGAR_SIMULATION_STEPS: SimulationStepState[] = [
       cycleThreshold: '21.4',
       escalation: 'LAB_CONFIRMED',
     },
+    metricsEnglish: {
+      assay: 'RT-PCR (VP1 Gene)',
+      result: 'POSITIVE',
+      cycleThreshold: '21.4',
+      escalation: 'LAB_CONFIRMED',
+    },
   },
   {
     stepNumber: 7,
@@ -155,6 +191,12 @@ export const AHMEDNAGAR_SIMULATION_STEPS: SimulationStepState[] = [
       actCitation: 'PCICDA 2009 (Sections 6, 10, 20)',
       marketsClosed: 'राहुरी व संगमनेर आठवडे बाजार',
       idspFeverSurvey: '१२ व्यक्तींची तपासणी',
+      containment: 'ACTIVE & ENFORCED',
+    },
+    metricsEnglish: {
+      actCitation: 'PCICDA 2009 (Sections 6, 10, 20)',
+      marketsClosed: 'Rahuri & Sangamner Haats',
+      idspFeverSurvey: '12 persons screened',
       containment: 'ACTIVE & ENFORCED',
     },
   },

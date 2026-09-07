@@ -210,14 +210,15 @@ export const AnimalRegistryView: React.FC = () => {
             <div className="mt-4 pt-2 border-t border-slate-200 dark:border-slate-800 animate-in fade-in duration-200 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  निवडलेले पशू: {selectedAnimal.breed || selectedAnimal.species} ({formatTagNumber(selectedAnimal.tagNumber)})
+                  {t('selectedAnimalLabel', currentLanguage === 'en' ? 'Selected Animal: ' : 'निवडलेले पशू: ')}
+                  {selectedAnimal.breed || selectedAnimal.species} ({formatTagNumber(selectedAnimal.tagNumber)})
                 </span>
                 <button
                   type="button"
                   onClick={() => setSelectedAnimal(null)}
                   className="text-xs text-slate-400 hover:text-slate-600"
                 >
-                  बंद करा
+                  {currentLanguage === 'en' ? 'Close' : 'बंद करा'}
                 </button>
               </div>
               <VaccinationTimeline
@@ -235,7 +236,7 @@ export const AnimalRegistryView: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
             <div>
               <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">
-                १२-अंकी पशू आधार टॅग क्रमांक टाका (Enter 12-Digit RFID)
+                {t('enter12DigitAadhaar', currentLanguage === 'en' ? 'Enter 12-Digit RFID Tag Number' : '१२-अंकी पशू आधार टॅग क्रमांक टाका (Enter 12-Digit RFID)')}
               </label>
               <form onSubmit={handleSearchSubmit} className="flex gap-2">
                 <input
@@ -243,7 +244,7 @@ export const AnimalRegistryView: React.FC = () => {
                   maxLength={12}
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value.replace(/\D/g, ''))}
-                  placeholder="उदा. 100293847561"
+                  placeholder={currentLanguage === 'en' ? 'e.g. 100293847561' : 'उदा. 100293847561'}
                   className="field-touch-target flex-1 px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
                   data-testid="input-search-tag"
                 />
@@ -253,7 +254,7 @@ export const AnimalRegistryView: React.FC = () => {
                   data-testid="btn-search-tag"
                 >
                   <Search className="w-4 h-4" />
-                  <span>शोधा</span>
+                  <span>{t('searchBtn', currentLanguage === 'en' ? 'Search' : 'शोधा')}</span>
                 </button>
               </form>
             </div>
@@ -261,7 +262,7 @@ export const AnimalRegistryView: React.FC = () => {
             {/* Quick Demo Tag Select Pills */}
             <div>
               <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-1.5">
-                त्वरित निवड (Quick Demo Cattle Tags):
+                {t('quickDemoCattleTags', currentLanguage === 'en' ? 'Quick Demo Cattle Tags:' : 'त्वरित निवड (Quick Demo Cattle Tags):')}
               </span>
               <div className="flex flex-wrap gap-1.5">
                 <button
@@ -304,7 +305,7 @@ export const AnimalRegistryView: React.FC = () => {
             <div className="space-y-3 animate-in fade-in slide-in-from-top-3 duration-200">
               <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="w-4 h-4" />
-                <span>पशू आधार रेकॉर्ड सापडले (Record Found)</span>
+                <span>{t('recordFound', currentLanguage === 'en' ? 'Pashu Aadhaar Record Found' : 'पशू आधार रेकॉर्ड सापडले (Record Found)')}</span>
               </div>
               <AnimalCard animal={selectedAnimal} />
               <VaccinationTimeline

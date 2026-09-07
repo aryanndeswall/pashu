@@ -1,4 +1,5 @@
 import { dbService } from '../database/sqliteConnection';
+import { getApiUrl } from '../config/api';
 
 export interface LocalAnimal {
   tagNumber: string;
@@ -238,6 +239,44 @@ class AnimalService {
         nowIso,
       ]
     );
+
+    // 3. Attempt direct cloud registration if online (skip in test runner)
+    if (
+      (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') ||
+      (typeof import.meta !== 'undefined' && (import.meta as any).env?.MODE === 'test')
+    ) {
+      return newAnimal;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch(getApiUrl('animals'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tag_number: newAnimal.tagNumber,
+          owner_name: newAnimal.ownerName,
+          owner_mobile: data.ownerMobile || '9876543210',
+          species: newAnimal.species,
+          breed: newAnimal.breed,
+          age_months: newAnimal.ageMonths,
+          village_lgd_code: newAnimal.villageLgdCode,
+          village_name: newAnimal.villageName,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        await dbService.execute(
+          `UPDATE offline_sync_queue SET status = 'COMPLETED', synced_at = ? WHERE sync_id = ?`,
+          [new Date().toISOString(), syncId]
+        );
+      }
+    } catch {
+      // Offline or cloud endpoint unreachable; retain PENDING status in sync queue
+    }
 
     return newAnimal;
   }

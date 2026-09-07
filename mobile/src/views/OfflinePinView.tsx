@@ -68,6 +68,8 @@ export const OfflinePinView: React.FC<OfflinePinViewProps> = ({ mode }) => {
             setError(
               currentLanguage === 'en'
                 ? 'PINs do not match. Please try again.'
+                : currentLanguage === 'hi'
+                ? 'सुरक्षा पिन मेल नहीं खाता। कृपया पुनः प्रयास करें।'
                 : 'सुरक्षा पिन जुळत नाही. कृपया पुन्हा प्रयत्न करा.'
             );
             setPin('');
@@ -83,6 +85,8 @@ export const OfflinePinView: React.FC<OfflinePinViewProps> = ({ mode }) => {
           setError(
             currentLanguage === 'en'
               ? 'Incorrect Security PIN. Use 1234 for demo.'
+              : currentLanguage === 'hi'
+              ? 'गलत सुरक्षा पिन। डेमो के लिए 1234 उपयोग करें।'
               : 'चुकीचा सुरक्षा पिन. डेमोसाठी 1234 वापरा.'
           );
           setPin('');
@@ -119,13 +123,19 @@ export const OfflinePinView: React.FC<OfflinePinViewProps> = ({ mode }) => {
       return isConfirming
         ? currentLanguage === 'en'
           ? 'Confirm 4-Digit Offline PIN'
+          : currentLanguage === 'hi'
+          ? 'सुरक्षा पिन की पुनः पुष्टि करें'
           : 'सुरक्षा पिन पुन्हा प्रविष्ट करा'
         : currentLanguage === 'en'
         ? 'Set 4-Digit Offline PIN'
+        : currentLanguage === 'hi'
+        ? '४-अंकीय ऑफ़लाइन सुरक्षा पिन सेट करें'
         : '४-अंकी ऑफलाइन सुरक्षा पिन तयार करा';
     }
     return currentLanguage === 'en'
       ? 'Unlock Offline Session'
+      : currentLanguage === 'hi'
+      ? 'ऑफ़लाइन सुरक्षा पिन दर्ज करें'
       : 'ऑफलाइन सुरक्षा पिन प्रविष्ट करा';
   };
 
@@ -133,14 +143,24 @@ export const OfflinePinView: React.FC<OfflinePinViewProps> = ({ mode }) => {
     if (lockoutRemaining > 0) {
       return currentLanguage === 'en'
         ? `Too many failed attempts. Locked for ${lockoutRemaining}s.`
+        : currentLanguage === 'hi'
+        ? `अत्यधिक असफल प्रयास। ${lockoutRemaining} सेकंड के लिए लॉक किया गया।`
         : `अनेक अयशस्वी प्रयत्न. ${lockoutRemaining} सेकंदांसाठी लॉक केले.`;
     }
     if (mode === 'setup') {
       return currentLanguage === 'en'
         ? 'Used to quickly unlock the app in cellular dead zones without mobile OTP.'
+        : currentLanguage === 'hi'
+        ? 'नेटवर्क विहीन क्षेत्रों में बिना मोबाइल OTP के त्वरित लॉगिन के लिए उपयोग किया जाता है।'
         : 'नेटवर्क नसलेल्या भागात मोबाईल OTP शिवाय ॲप सुरू करण्यासाठी वापरला जातो.';
     }
-    return `${userProfile.nameMarathi || userProfile.name} (${userProfile.role.toUpperCase()})`;
+    const displayName =
+      currentLanguage === 'hi'
+        ? userProfile.nameHindi || userProfile.name
+        : currentLanguage === 'mr'
+        ? userProfile.nameMarathi || userProfile.name
+        : userProfile.name;
+    return `${displayName} (${userProfile.role.toUpperCase()})`;
   };
 
   return (
@@ -204,7 +224,7 @@ export const OfflinePinView: React.FC<OfflinePinViewProps> = ({ mode }) => {
           disabled={lockoutRemaining > 0}
           className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50"
         >
-          {currentLanguage === 'en' ? 'CLEAR' : 'साफ करा'}
+          {currentLanguage === 'en' ? 'CLEAR' : currentLanguage === 'hi' ? 'मिटाएं' : 'साफ करा'}
         </button>
 
         {/* Zero */}
@@ -237,7 +257,13 @@ export const OfflinePinView: React.FC<OfflinePinViewProps> = ({ mode }) => {
           className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors"
         >
           <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-          <span>⚡ SIH Demo: Instant Unlock with PIN (1234)</span>
+          <span>
+            {currentLanguage === 'en'
+              ? '⚡ SIH Demo: Instant Unlock with PIN (1234)'
+              : currentLanguage === 'hi'
+              ? '⚡ SIH Demo: पिन (1234) से त्वरित अनलॉक करें'
+              : '⚡ SIH Demo: Instant Unlock with PIN (1234)'}
+          </span>
         </button>
 
         {mode === 'unlock' && (
@@ -247,7 +273,16 @@ export const OfflinePinView: React.FC<OfflinePinViewProps> = ({ mode }) => {
             className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-slate-500 hover:text-red-600 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>{t('switchUserAccount', 'दुसऱ्या खात्यातून लॉगिन करा (Switch Account)')}</span>
+            <span>
+              {t(
+                'switchUserAccount',
+                currentLanguage === 'en'
+                  ? 'Switch Account'
+                  : currentLanguage === 'hi'
+                  ? 'दूसरे खाते से लॉगिन करें (Switch Account)'
+                  : 'दुसऱ्या खात्यातून लॉगिन करा (Switch Account)'
+              )}
+            </span>
           </button>
         )}
       </div>

@@ -14,7 +14,7 @@ describe('useLanguageStore Unit Tests', () => {
     }
   });
 
-  it('initializes with Marathi (mr) as default language', () => {
+  it('initializes with Marathi (mr) in test environment', () => {
     const { currentLanguage } = useLanguageStore.getState();
     expect(currentLanguage).toBe('mr');
     expect(document.documentElement.lang).toBe('mr');

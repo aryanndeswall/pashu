@@ -53,9 +53,17 @@ class TriageRequest(BaseModel):
         default=None,
         description="Base64 encoded lesion photo (WebP/JPEG)",
     )
+    photo_uri: Optional[str] = Field(
+        default=None,
+        description="Cloud Storage URI (gs://... or signed https://) for zero-egress ingestion",
+    )
     audio_base64: Optional[str] = Field(
         default=None,
         description="Base64 encoded audio note (m4a/opus/wav)",
+    )
+    audio_uri: Optional[str] = Field(
+        default=None,
+        description="Cloud Storage URI for audio note",
     )
     audio_transcript: Optional[str] = Field(
         default=None,

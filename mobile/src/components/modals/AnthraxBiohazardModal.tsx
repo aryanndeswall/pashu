@@ -3,6 +3,7 @@ import { HazardBorder } from '../animations/HazardBorder';
 import { alarmAudioService } from '../../services/alarmAudioService';
 import { idspAlertService } from '../../services/idspAlertService';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 import {
   Skull,
   AlertTriangle,
@@ -35,6 +36,7 @@ export const AnthraxBiohazardModal: React.FC<AnthraxBiohazardModalProps> = ({
   coordinates,
   pashuAadhaar,
 }) => {
+  const { currentLanguage } = useLanguageStore();
   const [isSirenActive, setIsSirenActive] = useState(false);
   const [isAlertQueued, setIsAlertQueued] = useState(false);
   const [syncId, setSyncId] = useState<string | null>(null);
@@ -101,13 +103,22 @@ export const AnthraxBiohazardModal: React.FC<AnthraxBiohazardModalProps> = ({
 
   if (!isOpen) return null;
 
-  const biosecurityProtocols = [
-    '१. मृत जनावराचे शव उघडणे, कापणे किंवा कातडी काढणे पूर्णपणे बंदी (Strictly NO Incision)',
-    '२. रक्ताचा नमुना फक्त कानाच्या टोकावरून काढावा (Ear-tip Blood Smear Only)',
-    '३. शव ६ फूट खोल खड्ड्यात कळीच्या चुन्यासह पुरावे (Deep 6ft Burial with Quicklime)',
-    '४. १ किमी परिसरातील सर्व जनावरांची हालचाल तत्काळ थांबवा (1 km Herd Movement Freeze)',
-    '५. जिल्हा मानवी आरोग्य विभागाकडे (IDSP) त्वरित संपर्क शोध सुरू करा (Human Exposure Tracing)',
-  ];
+  const biosecurityProtocols =
+    currentLanguage === 'en'
+      ? [
+          '1. Strictly NO incision, skinning, or opening of carcass (Rule Zero Lockdown)',
+          '2. Peripheral ear-tip blood smear only (Never open veins)',
+          '3. Deep 6-foot burial covered completely with quicklime',
+          '4. Immediate 1 km containment perimeter animal movement freeze',
+          '5. Notify District Human Health Unit (IDSP) for urgent contact tracing',
+        ]
+      : [
+          '१. मृत जनावराचे शव उघडणे, कापणे किंवा कातडी काढणे पूर्णपणे बंदी (Strictly NO Incision)',
+          '२. रक्ताचा नमुना फक्त कानाच्या टोकावरून काढावा (Ear-tip Blood Smear Only)',
+          '३. शव ६ फूट खोल खड्ड्यात कळीच्या चुन्यासह पुरावे (Deep 6ft Burial with Quicklime)',
+          '४. १ किमी परिसरातील सर्व जनावरांची हालचाल तत्काळ थांबवा (1 km Herd Movement Freeze)',
+          '५. जिल्हा मानवी आरोग्य विभागाकडे (IDSP) त्वरित संपर्क शोध सुरू करा (Human Exposure Tracing)',
+        ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
@@ -124,8 +135,8 @@ export const AnthraxBiohazardModal: React.FC<AnthraxBiohazardModalProps> = ({
                   <div className="text-[10px] font-black uppercase tracking-widest text-red-300">
                     CRITICAL BIOHAZARD ALERT • RULE ZERO
                   </div>
-                  <h2 className="text-base font-extrabold text-white lang-devanagari tracking-tight">
-                    शव विच्छेदन करू नका! (DO NOT CUT!)
+                  <h2 className={`text-base font-extrabold text-white tracking-tight ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                    {currentLanguage === 'en' ? 'DO NOT CUT CARCASS! (CRITICAL BIOHAZARD)' : 'शव विच्छेदन करू नका! (DO NOT CUT!)'}
                   </h2>
                 </div>
               </div>
@@ -143,12 +154,16 @@ export const AnthraxBiohazardModal: React.FC<AnthraxBiohazardModalProps> = ({
 
             {/* Warning Description & Spores Warning */}
             <div className="bg-red-900/50 p-3.5 rounded-2xl border border-red-700/60 space-y-1.5">
-              <div className="flex items-center gap-2 text-amber-300 font-bold text-xs lang-devanagari">
+              <div className={`flex items-center gap-2 text-amber-300 font-bold text-xs ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                <span>काळपुळी (ॲन्थ्रॅक्स) संसर्गाचा गंभीर धोका</span>
+                <span>
+                  {currentLanguage === 'en' ? 'Anthrax (Bacillus anthracis) Severe Biohazard Risk' : 'काळपुळी (ॲन्थ्रॅक्स) संसर्गाचा गंभीर धोका'}
+                </span>
               </div>
-              <p className="text-xs text-red-100 lang-devanagari leading-relaxed">
-                जनावराचे शव हवेच्या संपर्कात आल्यास <strong>ॲन्थ्रॅक्सचे घातक बीजाणू (spores)</strong> तयार होतात, ज्यामुळे माणसांना व इतर जनावरांना प्राणघातक संसर्ग होतो. शव कोणत्याही परिस्थितीत कापू नका!
+              <p className={`text-xs text-red-100 leading-relaxed ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {currentLanguage === 'en'
+                  ? 'Exposure of carcass to air causes formation of virulent Anthrax spores, triggering fatal pulmonary and cutaneous infections in humans and livestock. Under no circumstances should the carcass be opened!'
+                  : 'जनावराचे शव हवेच्या संपर्कात आल्यास ॲन्थ्रॅक्सचे घातक बीजाणू (spores) तयार होतात, ज्यामुळे माणसांना व इतर जनावरांना प्राणघातक संसर्ग होतो. शव कोणत्याही परिस्थितीत कापू नका!'}
               </p>
 
               {/* Replay Spoken Warning */}
@@ -159,18 +174,22 @@ export const AnthraxBiohazardModal: React.FC<AnthraxBiohazardModalProps> = ({
                 className="field-touch-target mt-2 px-3 py-1.5 rounded-xl bg-red-800 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all"
               >
                 <Volume2 className="w-4 h-4 text-amber-300" />
-                <span>मराठी ध्वनी चेतावणी पुन्हा ऐका (Replay Voice Alert)</span>
+                <span>
+                  {currentLanguage === 'en' ? 'Replay Voice Alert' : 'मराठी ध्वनी चेतावणी पुन्हा ऐका (Replay Voice Alert)'}
+                </span>
               </button>
             </div>
 
             {/* 5-Point Biosecurity Disposal Protocol */}
             <div className="space-y-2">
               <h3 className="text-xs font-bold text-red-200 tracking-wide uppercase">
-                कडक जैविक सुरक्षा नियम (Mandatory Disposal Protocol):
+                {currentLanguage === 'en'
+                  ? 'Mandatory Disposal Protocol (Rule Zero):'
+                  : 'कडक जैविक सुरक्षा नियम (Mandatory Disposal Protocol):'}
               </h3>
               <div className="space-y-1.5 bg-black/40 p-3 rounded-2xl border border-red-800/60">
                 {biosecurityProtocols.map((protocol, i) => (
-                  <div key={i} className="flex items-start gap-2 text-[11px] text-red-100 lang-devanagari">
+                  <div key={i} className={`flex items-start gap-2 text-[11px] text-red-100 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                     <span className="text-red-400 font-bold mt-0.5">•</span>
                     <span>{protocol}</span>
                   </div>
@@ -183,17 +202,23 @@ export const AnthraxBiohazardModal: React.FC<AnthraxBiohazardModalProps> = ({
               <div className="bg-emerald-950/80 border border-emerald-500 p-3.5 rounded-2xl text-center space-y-2">
                 <div className="flex items-center justify-center gap-1.5 text-emerald-400 text-xs font-extrabold">
                   <CheckCircle2 className="w-5 h-5" />
-                  <span>IDSP राष्ट्रीय सूचना नोंदवली! (Alert Queued: Priority 3)</span>
+                  <span>
+                    {currentLanguage === 'en'
+                      ? 'IDSP Alert Queued! (Priority 3 Emergency)'
+                      : 'IDSP राष्ट्रीय सूचना नोंदवली! (Alert Queued: Priority 3)'}
+                  </span>
                 </div>
                 <p className="text-[11px] text-emerald-200 font-mono">
-                  Sync ID: {syncId} • मानवी आरोग्य व जिल्हा अधिकाऱ्यांना सूचना पाठवली जाईल.
+                  {currentLanguage === 'en'
+                    ? `Sync ID: ${syncId} • Human Health & District Officials notified.`
+                    : `Sync ID: ${syncId} • मानवी आरोग्य व जिल्हा अधिकाऱ्यांना सूचना पाठवली जाईल.`}
                 </p>
                 <button
                   type="button"
                   onClick={onClose}
                   className="field-touch-target w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md"
                 >
-                  समजले, बंद करा (Acknowledge & Close)
+                  {currentLanguage === 'en' ? 'Acknowledge & Close' : 'समजले, बंद करा (Acknowledge & Close)'}
                 </button>
               </div>
             ) : (
@@ -203,7 +228,7 @@ export const AnthraxBiohazardModal: React.FC<AnthraxBiohazardModalProps> = ({
                   className="field-touch-target py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-700"
                 >
                   <PhoneCall className="w-4 h-4 text-amber-400" />
-                  <span>१९६२ आपत्कालीन कॉल</span>
+                  <span>{currentLanguage === 'en' ? '1962 Emergency Call' : '१९६२ आपत्कालीन कॉल'}</span>
                 </a>
 
                 <button
@@ -212,7 +237,7 @@ export const AnthraxBiohazardModal: React.FC<AnthraxBiohazardModalProps> = ({
                   className="field-touch-target py-2.5 px-3 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-red-900/60 transition-transform active:scale-95"
                 >
                   <Radio className="w-4 h-4 animate-ping" />
-                  <span>IDSP राष्ट्रीय सूचना नोंदवा</span>
+                  <span>{currentLanguage === 'en' ? 'Dispatch National IDSP Alert' : 'IDSP राष्ट्रीय सूचना नोंदवा'}</span>
                 </button>
               </div>
             )}

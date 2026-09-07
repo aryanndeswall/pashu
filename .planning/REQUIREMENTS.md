@@ -12,7 +12,7 @@
 - [x] **CLOUD-01**: Google Gemini 3.7 Flash Live Inference — Backend ingests `GEMINI_API_KEY`, executes real multimodal triage calls on lesion WebP photos and vernacular audio notes via `google-genai` SDK, adhering strictly to the Pydantic schema in <800ms.
 
 ### Cloud Media Storage & Sync (CLOUD-STORAGE)
-- [ ] **CLOUD-02**: Firebase Cloud Storage Integration — Secure media pipeline using Firebase Client and Admin SDKs for uploading, storing, and generating signed/public URLs for lesion photos and audio recordings, with direct Gemini `gs://` URI compatibility.
+- [x] **CLOUD-02**: Firebase Cloud Storage Integration — Secure media pipeline using Firebase Client and Admin SDKs for uploading, storing, and generating signed/public URLs for lesion photos and audio recordings, with direct Gemini `gs://` URI compatibility.
 
 ### Mobile Dynamic Networking (CLOUD-NET)
 - [x] **CLOUD-03**: Dynamic Mobile API Gateway Configuration — Mobile client reads `VITE_API_BASE_URL` from `.env`, connects to the cloud backend over HTTPS/WSS, and gracefully falls back to local SQLite operations when offline or when cloud requests timeout.
@@ -28,7 +28,7 @@
 | Requirement ID | Category | Phase | Status |
 |----------------|----------|:-----:|:------:|
 | **CLOUD-01** | Cloud Multimodal Perception | Phase 12 | Completed |
-| **CLOUD-02** | Cloud Media Storage & Sync | Phase 13 | Pending |
+| **CLOUD-02** | Cloud Media Storage & Sync | Phase 13 | Completed |
 | **CLOUD-03** | Mobile Dynamic Networking | Phase 12 | Completed |
 | **CLOUD-04** | Live Outbreak Streaming | Phase 14 | Pending |
 | **CLOUD-05** | Containment Alert Broadcast | Phase 14 | Pending |

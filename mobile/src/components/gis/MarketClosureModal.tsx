@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { gisService, MarketClosureMemoResponse } from '../../services/gisService';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface MarketClosureModalProps {
   isOpen: boolean;
@@ -21,7 +22,10 @@ export const MarketClosureModal: React.FC<MarketClosureModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'marathi' | 'english'>('marathi');
+  const { currentLanguage, t } = useLanguageStore();
+  const [activeTab, setActiveTab] = useState<'marathi' | 'english'>(
+    currentLanguage === 'en' ? 'english' : 'marathi'
+  );
   const [copied, setCopied] = useState(false);
   const [idspSent, setIdspSent] = useState(false);
   const [memo, setMemo] = useState<MarketClosureMemoResponse | null>(null);
@@ -80,11 +84,11 @@ export const MarketClosureModal: React.FC<MarketClosureModalProps> = ({
               <Building2 className="w-5 h-5 text-purple-700 dark:text-purple-400" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white lang-devanagari">
-                PCICDA कायदा २००९ आठवडे बाजार बंदी आदेश
+              <h3 className={`text-xs font-bold text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('marketClosureTitle', 'PCICDA कायदा २००९ आठवडे बाजार बंदी आदेश')}
               </h3>
               <p className="text-[10px] text-slate-500">
-                Statutory Administrative Memo (Sections 6, 10 & 20)
+                {t('marketClosureSubtitle', 'Statutory Administrative Memo (Sections 6, 10 & 20)')}
               </p>
             </div>
           </div>
@@ -100,62 +104,77 @@ export const MarketClosureModal: React.FC<MarketClosureModalProps> = ({
         {/* Form to configure memo */}
         {!memo ? (
           <div className="space-y-3 text-xs">
-            <div className="bg-purple-50 dark:bg-purple-950/40 p-3 rounded-2xl border border-purple-200 dark:border-purple-800 text-[11px] text-purple-900 dark:text-purple-300">
-              <strong>वैधानिक अधिकार:</strong> प्राण्यांमधील संसर्गजन्य रोगांचे प्रतिबंध व नियंत्रण कायदा, २००९ अन्वये १० किमी पाळत परिमितीत पशु बाजार तात्काळ बंद करण्याचे कायदेशीर आदेश.
+            <div className={`bg-purple-50 dark:bg-purple-950/40 p-3 rounded-2xl border border-purple-200 dark:border-purple-800 text-[11px] text-purple-900 dark:text-purple-300 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+              {t('statutoryAuthorityDesc', 'वैधानिक अधिकार: प्राण्यांमधील संसर्गजन्य रोगांचे प्रतिबंध व नियंत्रण कायदा, २००९ अन्वये १० किमी पाळत परिमितीत पशु बाजार तात्काळ बंद करण्याचे कायदेशीर आदेश.')}
             </div>
 
             <div>
-              <label className="block text-slate-600 dark:text-slate-300 mb-1 font-bold">
-                बंद करावयाचे आठवडे बाजार (Markets / Haats under Section 10):
+              <label className={`block text-slate-600 dark:text-slate-300 mb-1 font-bold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('marketsToCloseLabel', 'बंद करावयाचे आठवडे बाजार (Markets / Haats under Section 10):')}
               </label>
               <div className="space-y-1.5">
                 {[
-                  'राहुरी आठवडे पशु बाजार (Rahuri Cattle Haat)',
-                  'संगमनेर बैल बाजार (Sangamner Livestock Fair)',
-                  'कोपरगाव शेळी-मेंढी बाजार (Kopargaon Caprine Market)',
+                  {
+                    id: 'rahuri',
+                    label: currentLanguage === 'en' ? 'Rahuri Weekly Cattle Haat' : 'राहुरी आठवडे पशु बाजार (Rahuri Cattle Haat)',
+                  },
+                  {
+                    id: 'sangamner',
+                    label: currentLanguage === 'en' ? 'Sangamner Livestock Fair' : 'संगमनेर बैल बाजार (Sangamner Livestock Fair)',
+                  },
+                  {
+                    id: 'kopargaon',
+                    label: currentLanguage === 'en' ? 'Kopargaon Small Ruminant Market' : 'कोपरगाव शेळी-मेंढी बाजार (Kopargaon Caprine Market)',
+                  },
                 ].map((haat) => (
-                  <label key={haat} className="flex items-center gap-2 text-[11px]">
+                  <label key={haat.id} className="flex items-center gap-2 text-[11px]">
                     <input
                       type="checkbox"
-                      checked={selectedHaats.includes(haat)}
+                      checked={selectedHaats.some((h) => h.includes(haat.id) || h === haat.label)}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedHaats([...selectedHaats, haat]);
+                          setSelectedHaats([...selectedHaats, haat.label]);
                         } else {
-                          setSelectedHaats(selectedHaats.filter((h) => h !== haat));
+                          setSelectedHaats(selectedHaats.filter((h) => h !== haat.label));
                         }
                       }}
                       className="rounded text-purple-600"
                     />
-                    <span>{haat}</span>
+                    <span>{haat.label}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-600 dark:text-slate-300 mb-1 font-bold">
-                पोलीस तपासणी नाके (Quarantine Checkpoints under Section 20):
+              <label className={`block text-slate-600 dark:text-slate-300 mb-1 font-bold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('quarantineCheckpointsLabel', 'पोलीस तपासणी नाके (Quarantine Checkpoints under Section 20):')}
               </label>
               <div className="space-y-1.5">
                 {[
-                  'SH-10 Rahuri Toll Barrier',
-                  'NH-160 Shirdi Road Checkpost',
+                  {
+                    id: 'sh10',
+                    label: currentLanguage === 'en' ? 'SH-10 Rahuri Police Toll Barrier' : 'SH-10 Rahuri Toll Barrier',
+                  },
+                  {
+                    id: 'nh160',
+                    label: currentLanguage === 'en' ? 'NH-160 Shirdi Highway Checkpost' : 'NH-160 Shirdi Road Checkpost',
+                  },
                 ].map((cp) => (
-                  <label key={cp} className="flex items-center gap-2 text-[11px]">
+                  <label key={cp.id} className="flex items-center gap-2 text-[11px]">
                     <input
                       type="checkbox"
-                      checked={selectedCheckpoints.includes(cp)}
+                      checked={selectedCheckpoints.some((c) => c.includes(cp.id) || c === cp.label)}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedCheckpoints([...selectedCheckpoints, cp]);
+                          setSelectedCheckpoints([...selectedCheckpoints, cp.label]);
                         } else {
-                          setSelectedCheckpoints(selectedCheckpoints.filter((c) => c !== cp));
+                          setSelectedCheckpoints(selectedCheckpoints.filter((c) => c !== cp.label));
                         }
                       }}
                       className="rounded text-purple-600"
                     />
-                    <span>{cp}</span>
+                    <span>{cp.label}</span>
                   </label>
                 ))}
               </div>
@@ -164,10 +183,10 @@ export const MarketClosureModal: React.FC<MarketClosureModalProps> = ({
             <button
               type="button"
               onClick={handleGenerateMemo}
-              className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-transform active:scale-95 flex items-center justify-center gap-1.5"
+              className={`w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-transform active:scale-95 flex items-center justify-center gap-1.5 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
             >
               <FileText className="w-4 h-4" />
-              <span>अधिकृत आदेश तयार करा (Generate Statutory Order)</span>
+              <span>{t('generateStatutoryOrderBtn', 'अधिकृत आदेश तयार करा (Generate Statutory Order)')}</span>
             </button>
           </div>
         ) : (
@@ -218,7 +237,7 @@ export const MarketClosureModal: React.FC<MarketClosureModalProps> = ({
                 className="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold flex items-center justify-center gap-1.5"
               >
                 {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                <span>{copied ? 'प्रत कॉपी झाली!' : 'प्रत कॉपी करा'}</span>
+                <span>{copied ? t('copiedText', 'कॉपी झाले!') : t('copyMemoBtn', 'आदेश कॉपी करा (Copy)')}</span>
               </button>
 
               <button
@@ -227,7 +246,7 @@ export const MarketClosureModal: React.FC<MarketClosureModalProps> = ({
                 className="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow"
               >
                 <Printer className="w-4 h-4" />
-                <span>प्रिंट / PDF आदेश</span>
+                <span>{currentLanguage === 'en' ? 'Print / PDF Memo' : 'प्रिंट / PDF आदेश'}</span>
               </button>
             </div>
 
@@ -246,12 +265,12 @@ export const MarketClosureModal: React.FC<MarketClosureModalProps> = ({
                 {idspSent ? (
                   <>
                     <Check className="w-4 h-4" />
-                    <span>IDSP / NCDC कडे अलर्ट पाठवला (Alert Dispatched)</span>
+                    <span>{t('idspAlertDispatched', 'IDSP / NCDC कडे अलर्ट पाठवला (Alert Dispatched)')}</span>
                   </>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>IDSP सार्वजनिक आरोग्य अलर्ट पाठवा (One-Health Bridge)</span>
+                    <span>{t('dispatchIdspModalBtn', 'IDSP सार्वजनिक आरोग्य अलर्ट पाठवा (One-Health Bridge)')}</span>
                   </>
                 )}
               </button>

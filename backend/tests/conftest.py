@@ -55,3 +55,18 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield ac
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def isolate_unit_tests_from_live_gemini(request):
+    """Ensure standard unit tests use deterministic local edge evaluator instead of burning live API tokens."""
+    from app.services.triage_service import triage_service
+    if "test_live_gemini" not in request.node.nodeid:
+        original_client = triage_service.client
+        triage_service.client = None
+        try:
+            yield
+        finally:
+            triage_service.client = original_client
+    else:
+        yield

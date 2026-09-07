@@ -5,7 +5,7 @@ import { ArrowLeft, Phone, ShieldCheck, Sparkles, AlertCircle, Volume2 } from 'l
 
 export const LoginView: React.FC = () => {
   const { activeRole, setLoginStep, requestOtp, otpError } = useAuthStore();
-  const { currentLanguage, t } = useLanguageStore();
+  const { currentLanguage, setLanguage, t } = useLanguageStore();
 
   const [phone, setPhone] = useState('');
   const [secondaryId, setSecondaryId] = useState('');
@@ -14,31 +14,61 @@ export const LoginView: React.FC = () => {
 
   const roleMeta = {
     consumer: {
-      badge: 'पशुपालक (Livestock Owner)',
+      badge:
+        currentLanguage === 'en'
+          ? 'Livestock Owner / Farmer'
+          : currentLanguage === 'hi'
+          ? 'पशुपालक (Livestock Owner)'
+          : 'पशुपालक (Livestock Owner)',
       badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800',
       btnClass: 'bg-emerald-600 hover:bg-emerald-700 text-white',
       accentBorder: 'focus:border-emerald-500 focus:ring-emerald-500/20',
       demoPhone: '9822000412',
       demoId: '',
-      voicePrompt: 'कृपया आपला १०-अंकी मोबाईल नंबर प्रविष्ट करा.',
+      voicePrompt:
+        currentLanguage === 'en'
+          ? 'Please enter your 10-digit mobile number.'
+          : currentLanguage === 'hi'
+          ? 'कृपया अपना १०-अंकीय मोबाइल नंबर दर्ज करें।'
+          : 'कृपया आपला १०-अंकी मोबाईल नंबर प्रविष्ट करा.',
     },
     doctor: {
-      badge: 'पशुवैद्य / पशु सखी (Veterinarian)',
+      badge:
+        currentLanguage === 'en'
+          ? 'Veterinarian & Para-vet'
+          : currentLanguage === 'hi'
+          ? 'पशु चिकित्सक / पशु सखी (Veterinarian)'
+          : 'पशुवैद्य / पशु सखी (Veterinarian)',
       badgeClass: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border-blue-300 dark:border-blue-800',
       btnClass: 'bg-blue-600 hover:bg-blue-700 text-white',
       accentBorder: 'focus:border-blue-500 focus:ring-blue-500/20',
       demoPhone: '9423000819',
       demoId: 'MH-VET-2024-8819',
-      voicePrompt: 'कृपया आपला मोबाईल नंबर व पशुवैद्यकीय परवाना क्रमांक प्रविष्ट करा.',
+      voicePrompt:
+        currentLanguage === 'en'
+          ? 'Please enter your mobile number and VCI License / Sakhi ID.'
+          : currentLanguage === 'hi'
+          ? 'कृपया अपना मोबाइल नंबर व पशु चिकित्सा परिषद पंजीकरण दर्ज करें।'
+          : 'कृपया आपला मोबाईल नंबर व पशुवैद्यकीय परवाना क्रमांक प्रविष्ट करा.',
     },
     admin: {
-      badge: 'जिल्हा अधिकारी (District Officer)',
+      badge:
+        currentLanguage === 'en'
+          ? 'District Officer (DVO)'
+          : currentLanguage === 'hi'
+          ? 'जिला अधिकारी (District Officer)'
+          : 'जिल्हा अधिकारी (District Officer)',
       badgeClass: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-300 dark:border-purple-800',
       btnClass: 'bg-purple-600 hover:bg-purple-700 text-white',
       accentBorder: 'focus:border-purple-500 focus:ring-purple-500/20',
       demoPhone: '9158000001',
       demoId: 'DVO-AHM-001',
-      voicePrompt: 'कृपया अधिकृत मोबाईल नंबर व शासकीय पासकोड प्रविष्ट करा.',
+      voicePrompt:
+        currentLanguage === 'en'
+          ? 'Please enter your official mobile number and authorization passkey.'
+          : currentLanguage === 'hi'
+          ? 'कृपया अधिकृत मोबाइल नंबर व शासकीय पासकोड दर्ज करें।'
+          : 'कृपया अधिकृत मोबाईल नंबर व शासकीय पासकोड प्रविष्ट करा.',
     },
   }[activeRole];
 
@@ -62,6 +92,8 @@ export const LoginView: React.FC = () => {
       setLocalError(
         currentLanguage === 'en'
           ? 'Please enter a valid 10-digit Indian mobile number.'
+          : currentLanguage === 'hi'
+          ? 'कृपया वैध १०-अंकीय मोबाइल नंबर दर्ज करें।'
           : 'कृपया वैध १०-अंकी मोबाईल नंबर प्रविष्ट करा.'
       );
       return;
@@ -71,6 +103,8 @@ export const LoginView: React.FC = () => {
       setLocalError(
         currentLanguage === 'en'
           ? 'Veterinary Council registration / Sakhi ID is required.'
+          : currentLanguage === 'hi'
+          ? 'पशु चिकित्सा परिषद पंजीकरण क्रमांक या सखी आईडी आवश्यक है।'
           : 'पशुवैद्यकीय नोंदणी क्रमांक किंवा सखी आयडी आवश्यक आहे.'
       );
       return;
@@ -80,6 +114,8 @@ export const LoginView: React.FC = () => {
       setLocalError(
         currentLanguage === 'en'
           ? 'District officer authorization passkey is required.'
+          : currentLanguage === 'hi'
+          ? 'जिला अधिकारी शासकीय पासकोड आवश्यक है।'
           : 'जिल्हा अधिकारी शासकीय पासकोड आवश्यक आहे.'
       );
       return;
@@ -93,6 +129,8 @@ export const LoginView: React.FC = () => {
       setLocalError(
         currentLanguage === 'en'
           ? 'Could not send OTP. Please check mobile number format.'
+          : currentLanguage === 'hi'
+          ? 'ओटीपी नहीं भेजा जा सका। कृपया नंबर जांचें।'
           : 'ओटीपी पाठवता आला नाही. कृपया नंबर तपासा.'
       );
     }
@@ -108,7 +146,16 @@ export const LoginView: React.FC = () => {
           className="field-touch-target inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>{t('backToPortal', 'मागे (Portal)')}</span>
+          <span>
+            {t(
+              'backToPortal',
+              currentLanguage === 'en'
+                ? 'Back to Portal'
+                : currentLanguage === 'hi'
+                ? 'पीछे (Portal)'
+                : 'मागे (Portal)'
+            )}
+          </span>
         </button>
 
         <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${roleMeta.badgeClass}`}>
@@ -116,16 +163,42 @@ export const LoginView: React.FC = () => {
         </span>
       </div>
 
+      {/* 1-Tap Quick Language Switcher Bar */}
+      <div className="flex items-center justify-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60 max-w-xs mx-auto shadow-inner">
+        {(['hi', 'mr', 'en'] as const).map((lang) => {
+          const isActive = currentLanguage === lang;
+          const label = lang === 'hi' ? '🇮🇳 हिंदी' : lang === 'mr' ? '🇮🇳 मराठी' : '🌐 English';
+          return (
+            <button
+              key={lang}
+              type="button"
+              onClick={() => setLanguage(lang)}
+              className={`field-touch-target flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                isActive
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Screen Title & Voice Prompt Banner */}
       <div className="space-y-1">
         <h1 className={`text-xl font-black text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
           {currentLanguage === 'en'
             ? 'Sign In with Mobile'
+            : currentLanguage === 'hi'
+            ? 'मोबाइल द्वारा लॉगिन करें'
             : 'मोबाईलद्वारे लॉगिन करा'}
         </h1>
         <p className="text-xs text-slate-600 dark:text-slate-400">
           {currentLanguage === 'en'
             ? 'We will send a 6-digit OTP code to verify your identity.'
+            : currentLanguage === 'hi'
+            ? 'आपकी पहचान सत्यापित करने के लिए ६-अंकों का OTP भेजा जाएगा।'
             : 'तुमची ओळख पडताळण्यासाठी ६-अंकी OTP पाठवला जाईल.'}
         </p>
 
@@ -215,7 +288,16 @@ export const LoginView: React.FC = () => {
           className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          <span>{t('fillDemoCredentials', '⚡ SIH Demo: Fill Test Persona Details')}</span>
+          <span>
+            {t(
+              'fillDemoCredentials',
+              currentLanguage === 'en'
+                ? '⚡ SIH Demo: Fill Test Persona Details'
+                : currentLanguage === 'hi'
+                ? '⚡ SIH Demo: टेस्ट विवरण भरें (Auto-Fill)'
+                : '⚡ SIH Demo: चाचणी तपशील भरा'
+            )}
+          </span>
         </button>
 
         {/* Primary 52px Action Button */}
@@ -228,8 +310,22 @@ export const LoginView: React.FC = () => {
         >
           <span>
             {isSubmitting
-              ? t('sendingOtp', 'ओटीपी पाठवत आहे...')
-              : t('sendOtpButton', 'ओटीपी पाठवा (Send OTP)')}
+              ? t(
+                  'sendingOtp',
+                  currentLanguage === 'en'
+                    ? 'Sending OTP...'
+                    : currentLanguage === 'hi'
+                    ? 'ओटीपी भेजा जा रहा है...'
+                    : 'ओटीपी पाठवत आहे...'
+                )
+              : t(
+                  'sendOtpButton',
+                  currentLanguage === 'en'
+                    ? 'Send OTP'
+                    : currentLanguage === 'hi'
+                    ? 'ओटीपी भेजें (Send OTP)'
+                    : 'ओटीपी पाठवा (Send OTP)'
+                )}
           </span>
         </button>
       </form>

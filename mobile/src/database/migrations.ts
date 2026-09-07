@@ -57,6 +57,8 @@ export const SCHEMA_STATEMENTS = [
     status TEXT DEFAULT 'PENDING',
     created_at TEXT NOT NULL,
     synced_at TEXT,
+    gs_uri TEXT,
+    https_url TEXT,
     FOREIGN KEY(sync_id) REFERENCES offline_sync_queue(sync_id)
   );`,
 
@@ -88,5 +90,16 @@ export const SCHEMA_STATEMENTS = [
 export async function runMigrations(db: DatabaseService): Promise<void> {
   for (const statement of SCHEMA_STATEMENTS) {
     await db.execute(statement);
+  }
+  // Idempotent column migrations for media_sync_queue
+  try {
+    await db.execute(`ALTER TABLE media_sync_queue ADD COLUMN gs_uri TEXT;`);
+  } catch {
+    // Column already exists
+  }
+  try {
+    await db.execute(`ALTER TABLE media_sync_queue ADD COLUMN https_url TEXT;`);
+  } catch {
+    // Column already exists
   }
 }

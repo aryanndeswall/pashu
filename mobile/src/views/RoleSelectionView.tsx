@@ -197,9 +197,11 @@ export const RoleSelectionView: React.FC<RoleSelectionViewProps> = ({ onRoleSele
                   <h3 className={`text-base font-bold text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                     {title}
                   </h3>
-                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {p.titleEnglish}
-                  </p>
+                  {currentLanguage !== 'en' && (
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {p.titleEnglish}
+                    </p>
+                  )}
                   <p className={`text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                     {subtitle}
                   </p>

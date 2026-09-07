@@ -145,14 +145,29 @@ class SQLiteDatabaseManager implements DatabaseService {
     if (lower.startsWith('update media_sync_queue set status')) {
       const rows = this.memoryTables.get('media_sync_queue') || [];
       const newStatus = values[0];
-      const hasSyncedAt = values.length === 3;
-      const syncedAt = hasSyncedAt ? values[1] : null;
-      const targetSyncId = hasSyncedAt ? values[2] : values[1];
+      const targetId = values[values.length - 1];
+      const isWhereMediaId = lower.includes('where media_id');
+
+      let syncedAt: string | null = null;
+      let gsUri: string | null = null;
+      let httpsUrl: string | null = null;
+
+      if (values.length >= 5) {
+        syncedAt = values[1];
+        gsUri = values[2];
+        httpsUrl = values[3];
+      } else if (values.length === 3) {
+        syncedAt = values[1];
+      }
+
       let updated = 0;
-      rows.forEach((r) => {
-        if (r.sync_id === targetSyncId) {
+      rows.forEach((r: any) => {
+        const matches = isWhereMediaId ? r.media_id === targetId : r.sync_id === targetId;
+        if (matches) {
           r.status = newStatus;
           if (syncedAt) r.synced_at = syncedAt;
+          if (gsUri) r.gs_uri = gsUri;
+          if (httpsUrl) r.https_url = httpsUrl;
           updated++;
         }
       });

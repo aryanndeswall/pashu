@@ -42,6 +42,12 @@ env/
 *.sln
 *.sw?
 
+# Uploads and Local Storage
+backend/uploads/
+uploads/
+*.db
+*.sqlite
+
 # OS Files
 .DS_Store
 Thumbs.db

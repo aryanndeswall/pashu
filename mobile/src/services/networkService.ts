@@ -69,7 +69,7 @@ class NetworkService {
     } catch {
       // Fallback
       const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
-      this.currentTier = isOnline ? 'CELLULAR_4G_5G' : 'OFFLINE';
+      this.currentTier = isOnline ? 'WIFI' : 'OFFLINE';
       return this.currentTier;
     }
   }

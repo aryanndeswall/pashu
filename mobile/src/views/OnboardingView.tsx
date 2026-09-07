@@ -20,7 +20,7 @@ export const OnboardingView: React.FC = () => {
     completeOnboarding,
   } = useAuthStore();
 
-  const { currentLanguage, t } = useLanguageStore();
+  const { currentLanguage, setLanguage, t } = useLanguageStore();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [fullName, setFullName] = useState('');
@@ -41,23 +41,59 @@ export const OnboardingView: React.FC = () => {
 
   const handleQuickFillDemo = () => {
     if (activeRole === 'consumer') {
-      setFullName('Ramesh Patil (रमेश पाटील)');
+      setFullName(
+        currentLanguage === 'en'
+          ? 'Ramesh Patil'
+          : currentLanguage === 'hi'
+          ? 'Ramesh Patil (रमेश पाटिल)'
+          : 'Ramesh Patil (रमेश पाटील)'
+      );
       setDistrict('Ahmednagar');
       setBlock('Rahuri');
-      setVillage('Rahuri Khurd');
-      setSubDetail('Dairy Cattle & Buffalo (गिर गाय व म्हैस)');
+      setVillage(currentLanguage === 'en' ? 'Rahuri Khurd' : currentLanguage === 'hi' ? 'राहुरी खुर्द' : 'राहुरी खुर्द');
+      setSubDetail(
+        currentLanguage === 'en'
+          ? 'Dairy Cattle & Buffalo'
+          : currentLanguage === 'hi'
+          ? 'गिर गाय व मुर्रा भैंस'
+          : 'गिर गाय व म्हैस'
+      );
     } else if (activeRole === 'doctor') {
-      setFullName('Dr. Anjali Deshmukh (डॉ. अंजली देशमुख)');
+      setFullName(
+        currentLanguage === 'en'
+          ? 'Dr. Anjali Deshmukh'
+          : currentLanguage === 'hi'
+          ? 'Dr. Anjali Deshmukh (डॉ. अंजलि देशमुख)'
+          : 'Dr. Anjali Deshmukh (डॉ. अंजली देशमुख)'
+      );
       setDistrict('Ahmednagar');
       setBlock('Rahuri');
-      setVillage('Dispensary No. 1');
-      setSubDetail('Government Veterinary Dispensary');
+      setVillage(currentLanguage === 'en' ? 'Dispensary No. 1' : 'पशु चिकित्सालय क्रमांक १');
+      setSubDetail(
+        currentLanguage === 'en'
+          ? 'Government Veterinary Dispensary'
+          : currentLanguage === 'hi'
+          ? 'राजकीय पशु चिकित्सालय राहुरी'
+          : 'पशुवैद्यकीय दवाखाना राहुरी'
+      );
     } else {
-      setFullName('Dr. S. K. Kulkarni (डॉ. एस. के. कुलकर्णी)');
+      setFullName(
+        currentLanguage === 'en'
+          ? 'Dr. S. K. Kulkarni'
+          : currentLanguage === 'hi'
+          ? 'Dr. S. K. Kulkarni (डॉ. एस. के. कुलकर्णी)'
+          : 'Dr. S. K. Kulkarni (डॉ. एस. के. कुलकर्णी)'
+      );
       setDistrict('Ahmednagar');
       setBlock('District HQ');
       setVillage('Command Center');
-      setSubDetail('District Veterinary Polyclinic');
+      setSubDetail(
+        currentLanguage === 'en'
+          ? 'District Veterinary Polyclinic'
+          : currentLanguage === 'hi'
+          ? 'जिला पशु चिकित्सालय व वॉर रूम'
+          : 'जिल्हा पशुवैद्यकीय दवाखाना'
+      );
     }
     setError(null);
   };
@@ -68,6 +104,8 @@ export const OnboardingView: React.FC = () => {
       setError(
         currentLanguage === 'en'
           ? 'Please enter your full name.'
+          : currentLanguage === 'hi'
+          ? 'कृपया अपना पूरा नाम दर्ज करें।'
           : 'कृपया आपले पूर्ण नाव प्रविष्ट करा.'
       );
       return;
@@ -82,6 +120,8 @@ export const OnboardingView: React.FC = () => {
       setError(
         currentLanguage === 'en'
           ? 'Please enter your village or clinic name.'
+          : currentLanguage === 'hi'
+          ? 'कृपया अपना गांव या चिकित्सालय का नाम दर्ज करें।'
           : 'कृपया आपले गाव किंवा दवाखान्याचे नाव प्रविष्ट करा.'
       );
       return;
@@ -103,22 +143,82 @@ export const OnboardingView: React.FC = () => {
 
   const roleLabels = {
     consumer: {
-      title: 'पशुपालक नोंदणी (Farmer Registration)',
-      badge: 'पशुपालक',
-      subPrompt: 'जनावरांचा प्रकार / मुख्य पशुधन (उदा. गाई, म्हशी, शेळ्या):',
-      subPlaceholder: 'उदा. ४ गिर गाई, २ म्हशी',
+      title:
+        currentLanguage === 'en'
+          ? 'Farmer Registration'
+          : currentLanguage === 'hi'
+          ? 'पशुपालक पंजीकरण (Farmer Registration)'
+          : 'पशुपालक नोंदणी (Farmer Registration)',
+      badge:
+        currentLanguage === 'en'
+          ? 'Farmer'
+          : currentLanguage === 'hi'
+          ? 'पशुपालक'
+          : 'पशुपालक',
+      subPrompt:
+        currentLanguage === 'en'
+          ? 'Livestock Types / Primary Animals (e.g. Cow, Buffalo, Goat):'
+          : currentLanguage === 'hi'
+          ? 'पशुओं का प्रकार / मुख्य पशुधन (उदा. गाय, भैंस, बकरी):'
+          : 'जनावरांचा प्रकार / मुख्य पशुधन (उदा. गाई, म्हशी, शेळ्या):',
+      subPlaceholder:
+        currentLanguage === 'en'
+          ? 'e.g. 4 Gir Cows, 2 Buffaloes'
+          : currentLanguage === 'hi'
+          ? 'उदा. ४ गिर गाय, २ भैंस'
+          : 'उदा. ४ गिर गाई, २ म्हशी',
     },
     doctor: {
-      title: 'पशुवैद्य / सखी नोंदणी (Veterinarian Registration)',
-      badge: 'पशुवैद्य',
-      subPrompt: 'नेमणूक दवाखाना / कार्यक्षेत्र (Clinic / Dispensary):',
-      subPlaceholder: 'उदा. पशुवैद्यकीय दवाखाना राहुरी',
+      title:
+        currentLanguage === 'en'
+          ? 'Veterinarian / Para-vet Registration'
+          : currentLanguage === 'hi'
+          ? 'पशु चिकित्सक / सखी पंजीकरण (Veterinarian Registration)'
+          : 'पशुवैद्य / सखी नोंदणी (Veterinarian Registration)',
+      badge:
+        currentLanguage === 'en'
+          ? 'Veterinarian'
+          : currentLanguage === 'hi'
+          ? 'पशु चिकित्सक'
+          : 'पशुवैद्य',
+      subPrompt:
+        currentLanguage === 'en'
+          ? 'Assigned Clinic / Dispensary Jurisdiction:'
+          : currentLanguage === 'hi'
+          ? 'नियुक्त औषधालय / कार्यक्षेत्र (Clinic / Dispensary):'
+          : 'नेमणूक दवाखाना / कार्यक्षेत्र (Clinic / Dispensary):',
+      subPlaceholder:
+        currentLanguage === 'en'
+          ? 'e.g. Rahuri Veterinary Dispensary'
+          : currentLanguage === 'hi'
+          ? 'उदा. पशु चिकित्सालय राहुरी'
+          : 'उदा. पशुवैद्यकीय दवाखाना राहुरी',
     },
     admin: {
-      title: 'जिल्हा अधिकारी नोंदणी (Admin Registration)',
-      badge: 'जिल्हा अधिकारी',
-      subPrompt: 'शासकीय पदनाम व कक्ष (Official Designation):',
-      subPlaceholder: 'उदा. जिल्हा पशुसंवर्धन अधिकारी (DVO)',
+      title:
+        currentLanguage === 'en'
+          ? 'District Officer Registration'
+          : currentLanguage === 'hi'
+          ? 'जिला अधिकारी पंजीकरण (Admin Registration)'
+          : 'जिल्हा अधिकारी नोंदणी (Admin Registration)',
+      badge:
+        currentLanguage === 'en'
+          ? 'District Officer'
+          : currentLanguage === 'hi'
+          ? 'जिला अधिकारी'
+          : 'जिल्हा अधिकारी',
+      subPrompt:
+        currentLanguage === 'en'
+          ? 'Official Designation & Department:'
+          : currentLanguage === 'hi'
+          ? 'शासकीय पदनाम व कक्ष (Official Designation):'
+          : 'शासकीय पदनाम व कक्ष (Official Designation):',
+      subPlaceholder:
+        currentLanguage === 'en'
+          ? 'e.g. District Veterinary Officer (DVO)'
+          : currentLanguage === 'hi'
+          ? 'उदा. जिला पशुपालन अधिकारी (DVO)'
+          : 'उदा. जिल्हा पशुसंवर्धन अधिकारी (DVO)',
     },
   }[activeRole];
 
@@ -135,10 +235,14 @@ export const OnboardingView: React.FC = () => {
           className="field-touch-target inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>{step === 2 ? t('previous', 'मागील') : t('changeOtp', 'OTP बदला')}</span>
+          <span>{step === 2 ? t('previous', 'पिछला') : t('changeOtp', 'OTP बदलें')}</span>
         </button>
         <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-          पायरी {step}/२ (Step {step}/2)
+          {currentLanguage === 'en'
+            ? `Step ${step}/2`
+            : currentLanguage === 'hi'
+            ? `चरण ${step}/२ (Step ${step}/2)`
+            : `पायरी ${step}/२ (Step ${step}/2)`}
         </span>
       </div>
 
@@ -148,6 +252,28 @@ export const OnboardingView: React.FC = () => {
           className="bg-emerald-600 h-full transition-all duration-300"
           style={{ width: step === 1 ? '50%' : '100%' }}
         />
+      </div>
+
+      {/* 1-Tap Quick Language Switcher Bar */}
+      <div className="flex items-center justify-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60 max-w-xs mx-auto shadow-inner">
+        {(['hi', 'mr', 'en'] as const).map((lang) => {
+          const isActive = currentLanguage === lang;
+          const label = lang === 'hi' ? '🇮🇳 हिंदी' : lang === 'mr' ? '🇮🇳 मराठी' : '🌐 English';
+          return (
+            <button
+              key={lang}
+              type="button"
+              onClick={() => setLanguage(lang)}
+              className={`field-touch-target flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                isActive
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Title */}
@@ -165,8 +291,16 @@ export const OnboardingView: React.FC = () => {
         </h1>
         <p className="text-xs text-slate-600 dark:text-slate-400">
           {step === 1
-            ? 'पायरी १: वैयक्तिक माहिती प्रविष्ट करा (Personal Information)'
-            : 'पायरी २: स्थानिक स्वराज्य संस्था व कार्यक्षेत्र (LGD Hierarchy)'}
+            ? currentLanguage === 'en'
+              ? 'Step 1: Enter Personal Information'
+              : currentLanguage === 'hi'
+              ? 'चरण १: व्यक्तिगत जानकारी दर्ज करें (Personal Information)'
+              : 'पायरी १: वैयक्तिक माहिती प्रविष्ट करा (Personal Information)'
+            : currentLanguage === 'en'
+              ? 'Step 2: Local Government & Jurisdiction (LGD Hierarchy)'
+              : currentLanguage === 'hi'
+              ? 'चरण २: स्थानीय स्वशासन व कार्यक्षेत्र (LGD Hierarchy)'
+              : 'पायरी २: स्थानिक स्वराज्य संस्था व कार्यक्षेत्र (LGD Hierarchy)'}
         </p>
       </div>
 
@@ -177,7 +311,13 @@ export const OnboardingView: React.FC = () => {
         className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors"
       >
         <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-        <span>⚡ SIH Demo: Auto-Fill Profile Details</span>
+        <span>
+          {currentLanguage === 'en'
+            ? '⚡ SIH Demo: Auto-Fill Profile Details'
+            : currentLanguage === 'hi'
+            ? '⚡ SIH Demo: प्रोफाइल विवरण स्वतः भरें (Auto-Fill)'
+            : '⚡ SIH Demo: Auto-Fill Profile Details'}
+        </span>
       </button>
 
       {/* Error Message */}
@@ -192,7 +332,15 @@ export const OnboardingView: React.FC = () => {
         <form onSubmit={handleStep1Next} className="space-y-4">
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              {t('fullNameLabel', 'पूर्ण नाव (Full Name in Marathi/English)')} <span className="text-red-500">*</span>
+              {t(
+                'fullNameLabel',
+                currentLanguage === 'en'
+                  ? 'Full Name (in Hindi/English)'
+                  : currentLanguage === 'hi'
+                  ? 'पूरा नाम (हिंदी/अंग्रेजी में)'
+                  : 'पूर्ण नाव (मराठी/इंग्रजी)'
+              )}{' '}
+              <span className="text-red-500">*</span>
             </label>
             <div className="relative flex items-center">
               <User className="w-4 h-4 absolute left-3.5 text-slate-400 pointer-events-none" />
@@ -200,7 +348,13 @@ export const OnboardingView: React.FC = () => {
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="उदा. रमेश पाटील / Dr. Anjali Deshmukh"
+                placeholder={
+                  currentLanguage === 'en'
+                    ? 'e.g. Ramesh Patil / Dr. Anjali Deshmukh'
+                    : currentLanguage === 'hi'
+                    ? 'उदा. रमेश पाटिल / डॉ. अंजलि देशमुख'
+                    : 'उदा. रमेश पाटील / Dr. Anjali Deshmukh'
+                }
                 autoFocus
                 className="w-full min-h-[52px] pl-10 pr-4 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
@@ -227,7 +381,16 @@ export const OnboardingView: React.FC = () => {
             type="submit"
             className="w-full min-h-[52px] rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-transform active:scale-[0.98] flex items-center justify-center gap-2"
           >
-            <span>{t('nextJurisdiction', 'पुढील: कार्यक्षेत्र निवडा (Next)')}</span>
+            <span>
+              {t(
+                'nextJurisdiction',
+                currentLanguage === 'en'
+                  ? 'Next: Select Jurisdiction'
+                  : currentLanguage === 'hi'
+                  ? 'आगे बढ़ें: कार्यक्षेत्र चुनें (Next)'
+                  : 'पुढील: कार्यक्षेत्र निवडा (Next)'
+              )}
+            </span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </form>
@@ -239,12 +402,12 @@ export const OnboardingView: React.FC = () => {
           {/* State */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              राज्य (State)
+              {currentLanguage === 'en' ? 'State' : 'राज्य (State)'}
             </label>
             <input
               type="text"
               readOnly
-              value="महाराष्ट्र (Maharashtra)"
+              value={currentLanguage === 'en' ? 'Maharashtra' : 'महाराष्ट्र (Maharashtra)'}
               className="w-full min-h-[52px] px-4 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 select-none cursor-not-allowed"
             />
           </div>
@@ -252,7 +415,12 @@ export const OnboardingView: React.FC = () => {
           {/* District Dropdown */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              जिल्हा (LGD District) <span className="text-red-500">*</span>
+              {currentLanguage === 'en'
+                ? 'District (LGD District)'
+                : currentLanguage === 'hi'
+                ? 'जिला (LGD District)'
+                : 'जिल्हा (LGD District)'}{' '}
+              <span className="text-red-500">*</span>
             </label>
             <select
               value={district}
@@ -261,7 +429,14 @@ export const OnboardingView: React.FC = () => {
             >
               {Object.keys(MAHARASHTRA_DISTRICTS).map((dist) => (
                 <option key={dist} value={dist}>
-                  {dist} ({dist === 'Ahmednagar' ? 'अहिल्यानगर / अहमदनगर' : dist})
+                  {dist}{' '}
+                  {dist === 'Ahmednagar'
+                    ? currentLanguage === 'en'
+                      ? '(Ahilyanagar / Ahmednagar)'
+                      : currentLanguage === 'hi'
+                      ? '(अहिल्यानगर / अहमदनगर)'
+                      : '(अहिल्यानगर / अहमदनगर)'
+                    : ''}
                 </option>
               ))}
             </select>
@@ -270,7 +445,12 @@ export const OnboardingView: React.FC = () => {
           {/* Block / Taluka Dropdown */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              तालुका / ब्लॉक (LGD Taluka/Block) <span className="text-red-500">*</span>
+              {currentLanguage === 'en'
+                ? 'Taluka / Block (LGD Block)'
+                : currentLanguage === 'hi'
+                ? 'तहसील / ब्लॉक (LGD Block)'
+                : 'तालुका / ब्लॉक (LGD Taluka/Block)'}{' '}
+              <span className="text-red-500">*</span>
             </label>
             <select
               value={block}
@@ -288,7 +468,12 @@ export const OnboardingView: React.FC = () => {
           {/* Village / Local Jurisdiction */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              गाव / स्थानिक केंद्र (Village / Local Facility) <span className="text-red-500">*</span>
+              {currentLanguage === 'en'
+                ? 'Village / Local Facility'
+                : currentLanguage === 'hi'
+                ? 'गांव / स्थानीय केंद्र (Village / Local Facility)'
+                : 'गाव / स्थानिक केंद्र (Village / Local Facility)'}{' '}
+              <span className="text-red-500">*</span>
             </label>
             <div className="relative flex items-center">
               <MapPin className="w-4 h-4 absolute left-3.5 text-slate-400 pointer-events-none" />
@@ -296,7 +481,13 @@ export const OnboardingView: React.FC = () => {
                 type="text"
                 value={village}
                 onChange={(e) => setVillage(e.target.value)}
-                placeholder="उदा. राहुरी खुर्द / चिंचोडी"
+                placeholder={
+                  currentLanguage === 'en'
+                    ? 'e.g. Rahuri Khurd'
+                    : currentLanguage === 'hi'
+                    ? 'उदा. राहुरी खुर्द / चिंचोड़ी'
+                    : 'उदा. राहुरी खुर्द / चिंचोडी'
+                }
                 className="w-full min-h-[52px] pl-10 pr-4 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
             </div>
@@ -313,8 +504,22 @@ export const OnboardingView: React.FC = () => {
             <CheckCircle2 className="w-4 h-4" />
             <span>
               {isSubmitting
-                ? t('savingProfile', 'जतन करत आहे...')
-                : t('saveAndSetupPin', 'नोंदणी पूर्ण करा व सुरक्षा पिन सेट करा')}
+                ? t(
+                    'savingProfile',
+                    currentLanguage === 'en'
+                      ? 'Saving Profile...'
+                      : currentLanguage === 'hi'
+                      ? 'सहेजा जा रहा है...'
+                      : 'जतन करत आहे...'
+                  )
+                : t(
+                    'saveAndSetupPin',
+                    currentLanguage === 'en'
+                      ? 'Complete Registration & Set PIN'
+                      : currentLanguage === 'hi'
+                      ? 'पंजीकरण पूर्ण करें व सुरक्षा पिन सेट करें'
+                      : 'नोंदणी पूर्ण करा व सुरक्षा पिन सेट करा'
+                  )}
             </span>
           </button>
         </form>

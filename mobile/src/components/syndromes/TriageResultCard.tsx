@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { TriageResponse } from '../../services/aiTriageService';
 import { hapticsService } from '../../services/hapticsService';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface TriageResultCardProps {
   triage: TriageResponse;
@@ -20,7 +21,14 @@ interface TriageResultCardProps {
 }
 
 export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAcknowledge }) => {
-  const [activeLang, setActiveLang] = useState<'mr' | 'hi'>('mr');
+  const { currentLanguage, t } = useLanguageStore();
+  const [activeLang, setActiveLang] = useState<'mr' | 'hi' | 'en'>(
+    currentLanguage === 'en' ? 'en' : currentLanguage === 'hi' ? 'hi' : 'mr'
+  );
+
+  useEffect(() => {
+    setActiveLang(currentLanguage === 'en' ? 'en' : currentLanguage === 'hi' ? 'hi' : 'mr');
+  }, [currentLanguage]);
 
   const isAnthraxLock = triage.biohazard_alert === 'CRITICAL_ANTHRAX_LOCK';
   const confidencePercent = Math.round(triage.clinical_confidence * 100);
@@ -32,6 +40,28 @@ export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAc
       hapticsService.hapticLight();
     }
   }, [isAnthraxLock]);
+
+  const syndromeName =
+    currentLanguage === 'en'
+      ? triage.syndrome_name_en
+      : currentLanguage === 'hi'
+      ? triage.syndrome_name_hindi || triage.syndrome_name_marathi
+      : triage.syndrome_name_marathi;
+
+  const getAdvisoryText = () => {
+    if (activeLang === 'en') {
+      return (
+        triage.immediate_advisory_en ||
+        (isAnthraxLock
+          ? 'DANGER! DO NOT OPEN OR CUT THE CARCASS. Severe risk of fatal human infection. Bury carcass in a 6-foot deep lime pit.'
+          : 'Isolate affected animals immediately. Wash oral blisters and foot lesions with diluted potassium permanganate (KMnO4) antiseptic.')
+      );
+    }
+    if (activeLang === 'hi') {
+      return triage.immediate_advisory_hindi;
+    }
+    return triage.immediate_advisory_marathi;
+  };
 
   return (
     <div
@@ -51,10 +81,10 @@ export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAc
           <AlertOctagon className="w-6 h-6 flex-shrink-0 animate-bounce text-amber-200" />
           <div>
             <span className="text-xs font-black tracking-wider uppercase block">
-              जीवघेणा धोका (CRITICAL ANTHRAX BIOHAZARD)
+              {currentLanguage === 'en' ? 'CRITICAL ANTHRAX BIOHAZARD' : 'जीवघेणा धोका (CRITICAL ANTHRAX BIOHAZARD)'}
             </span>
             <p className="text-[11px] font-bold text-red-100">
-              शवविच्छेदन अजिबात करू नका (DO NOT CUT OR OPEN CARCASS)
+              {currentLanguage === 'en' ? 'DO NOT CUT OR OPEN CARCASS' : 'शवविच्छेदन अजिबात करू नका (DO NOT CUT OR OPEN CARCASS)'}
             </p>
           </div>
         </div>
@@ -83,17 +113,19 @@ export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAc
               </span>
             </div>
             <h2 className="text-base font-black text-slate-900 dark:text-white">
-              {triage.syndrome_name_marathi}
+              {syndromeName}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              {triage.suspected_disease}
+              {currentLanguage === 'en' && triage.syndrome_name_en ? triage.syndrome_name_en : triage.suspected_disease}
             </p>
           </div>
         </div>
 
         {/* Confidence Pill */}
         <div className="text-right">
-          <span className="text-[10px] text-slate-400 block font-medium">विश्वासार्हता</span>
+          <span className="text-[10px] text-slate-400 block font-medium">
+            {t('confidence', 'Confidence')}
+          </span>
           <span
             data-testid="confidence-badge"
             className={`inline-flex items-center gap-1 text-xs font-black px-2.5 py-1 rounded-full ${
@@ -113,7 +145,7 @@ export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAc
       {/* Clinical Rationale (Explainable AI) */}
       <div className="py-3 text-xs space-y-1">
         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-          लक्षण विश्लेषण (AI Clinical Rationale)
+          {t('aiClinicalRationale', 'AI Clinical Rationale')}
         </span>
         <p className="text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
           {triage.clinical_rationale}
@@ -133,12 +165,12 @@ export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAc
         )}
       </div>
 
-      {/* Vernacular Advisory Card with Marathi/Hindi Tabs */}
+      {/* Vernacular Advisory Card with Marathi/Hindi/English Tabs */}
       <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
             <Volume2 className="w-4 h-4 text-emerald-600" />
-            <span>तातडीचा शेतकरी सल्ला (Farmer Directive)</span>
+            <span>{t('farmerDirective', 'Farmer Advisory Directive')}</span>
           </span>
 
           <div className="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 text-[10px] font-bold">
@@ -164,6 +196,17 @@ export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAc
             >
               हिंदी
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveLang('en')}
+              className={`px-2 py-0.5 rounded-md transition-all ${
+                activeLang === 'en'
+                  ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                  : 'text-slate-500'
+              }`}
+            >
+              English
+            </button>
           </div>
         </div>
 
@@ -175,7 +218,7 @@ export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAc
               : 'bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-emerald-200/60 dark:border-emerald-800/60'
           }`}
         >
-          {activeLang === 'mr' ? triage.immediate_advisory_marathi : triage.immediate_advisory_hindi}
+          {getAdvisoryText()}
         </div>
       </div>
 
@@ -183,7 +226,7 @@ export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAc
       {triage.recommended_containment_actions.length > 0 && (
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-            तातडीच्या जैवसुरक्षा उपाययोजना (Biosecurity Checklist)
+            {t('biosecurityChecklist', 'Emergency Biosecurity Checklist')}
           </span>
           <div className="space-y-1">
             {triage.recommended_containment_actions.map((action, i) => (
@@ -209,7 +252,7 @@ export const TriageResultCard: React.FC<TriageResultCardProps> = ({ triage, onAc
             }`}
             data-testid="btn-acknowledge-triage"
           >
-            <span>सल्ला समजला व स्वीकारला (Acknowledge)</span>
+            <span>{t('acknowledgeAdvisory', 'Acknowledge Advisory')}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

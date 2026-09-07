@@ -9,6 +9,7 @@ import {
   Car,
   ChevronRight,
 } from 'lucide-react';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface VillagePin {
   id: string;
@@ -70,6 +71,7 @@ const CHECKPOINTS = [
 ];
 
 export const CommandMapView: React.FC = () => {
+  const { currentLanguage, t } = useLanguageStore();
   const [showBuffers, setShowBuffers] = useState(true);
   const [showVillages, setShowVillages] = useState(true);
   const [showCheckpoints, setShowCheckpoints] = useState(true);
@@ -85,7 +87,13 @@ export const CommandMapView: React.FC = () => {
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-900 dark:text-white lang-devanagari flex items-center gap-1.5">
-              <span>स्थानिक वेब-जीआयएस नकाशा (Web-GIS Outbreak Map)</span>
+              <span>
+                {currentLanguage === 'en'
+                  ? 'Web-GIS Outbreak Cluster Map'
+                  : currentLanguage === 'hi'
+                  ? 'स्थानिक वेब-जीआईएस प्रकोप मानचित्र (Web-GIS Map)'
+                  : 'स्थानिक वेब-जीआयएस नकाशा (Web-GIS Outbreak Map)'}
+              </span>
               <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-100 text-rose-700 font-mono font-black">
                 OPS 0.84
               </span>
@@ -106,7 +114,7 @@ export const CommandMapView: React.FC = () => {
                 : 'text-slate-400 border-slate-200 dark:border-slate-700'
             }`}
           >
-            बफर
+            {t('bufferToggle', 'बफर')}
           </button>
           <button
             type="button"
@@ -117,7 +125,7 @@ export const CommandMapView: React.FC = () => {
                 : 'text-slate-400 border-slate-200 dark:border-slate-700'
             }`}
           >
-            गावे
+            {t('villagesToggle', 'गावे')}
           </button>
           <button
             type="button"
@@ -128,7 +136,7 @@ export const CommandMapView: React.FC = () => {
                 : 'text-slate-400 border-slate-200 dark:border-slate-700'
             }`}
           >
-            नाके
+            {t('checkpointsToggle', 'नाके')}
           </button>
         </div>
       </div>
@@ -263,15 +271,15 @@ export const CommandMapView: React.FC = () => {
       <div className="grid grid-cols-3 gap-2 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
         <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60">
           <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
-          <span className="truncate">१ किमी हालचाल बंदी</span>
+          <span className="truncate">{t('zone1km', '१ किमी हालचाल बंदी')}</span>
         </div>
         <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
-          <span className="truncate">५ किमी रिंग लस</span>
+          <span className="truncate">{t('zone5km', '५ किमी रिंग लस')}</span>
         </div>
         <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-900/60">
           <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 shrink-0" />
-          <span className="truncate">१० किमी पाळत क्षेत्र</span>
+          <span className="truncate">{t('zone10km', '१० किमी पाळत क्षेत्र')}</span>
         </div>
       </div>
 
@@ -281,13 +289,13 @@ export const CommandMapView: React.FC = () => {
           <div className="space-y-0.5">
             <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
               <MapPin className="w-3.5 h-3.5 text-purple-600" />
-              <span>{selectedVillage.nameMr}</span>
+              <span>{currentLanguage === 'en' ? selectedVillage.name : selectedVillage.nameMr}</span>
               <span className="text-[10px] text-slate-400 font-mono">
                 (LGD {selectedVillage.id})
               </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              पशुधन जनगणना: <strong>{selectedVillage.bovineCount}</strong> | नोंद रुग्ण:{' '}
+              {t('livestockCensus', 'पशुधन जनगणना')}: <strong>{selectedVillage.bovineCount}</strong> | {t('reportedCases', 'नोंद रुग्ण')}:{' '}
               <strong className="text-rose-600 dark:text-rose-400 font-bold">
                 {selectedVillage.cases}
               </strong>

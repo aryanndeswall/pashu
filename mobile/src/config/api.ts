@@ -51,3 +51,50 @@ export function getSyncTelemetryEndpoint(): string {
 export function getSyncMediaEndpoint(): string {
   return getApiUrl('sync/media');
 }
+
+/**
+ * Endpoint helper for presigned storage upload URL generation
+ */
+export function getSyncMediaSignedUrlEndpoint(): string {
+  return getApiUrl('sync/media/signed-url');
+}
+
+/**
+ * Endpoint helper for streaming or redirecting stored media asset
+ */
+export function getSyncMediaStreamEndpoint(mediaId: string): string {
+  return getApiUrl(`sync/media/stream/${mediaId}`);
+}
+
+/**
+ * Endpoint helper for Pashu Aadhaar livestock registry
+ */
+export function getAnimalsEndpoint(): string {
+  return getApiUrl('animals');
+}
+
+/**
+ * Endpoint helper for e-LRF diagnostic laboratory requisitions
+ */
+export function getLabsEndpoint(): string {
+  return getApiUrl('labs/requisitions');
+}
+
+/**
+ * Endpoint helpers for user authentication & session management
+ */
+export function getAuthRequestOtpEndpoint(): string {
+  return getApiUrl('auth/request-otp');
+}
+
+export function getAuthVerifyOtpEndpoint(): string {
+  return getApiUrl('auth/verify-otp');
+}
+
+export function getAuthMeEndpoint(): string {
+  return getApiUrl('auth/me');
+}
+
+export function getAuthPinEndpoint(): string {
+  return getApiUrl('auth/pin');
+}

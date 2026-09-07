@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import React from 'react';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -21,7 +21,10 @@ vi.mock('../services/hapticsService', () => ({
 }));
 
 describe('Phase 11 Wave 1: Authentication State Machine & Views', () => {
+  const originalFetch = global.fetch;
+
   beforeEach(async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('Offline unit test'));
     await dbService.initDatabase();
     useAuthStore.setState({
       activeRole: 'consumer',
@@ -39,6 +42,10 @@ describe('Phase 11 Wave 1: Authentication State Machine & Views', () => {
       lockoutUntil: null,
     });
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
   describe('useAuthStore State Machine', () => {

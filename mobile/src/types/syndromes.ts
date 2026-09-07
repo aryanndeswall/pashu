@@ -49,6 +49,7 @@ export interface SecondarySymptomDefinition {
 
 export interface DifferentialDiagnosis {
   diseaseName: string;
+  diseaseNameEnglish?: string;
   diseaseNameMarathi: string;
   diseaseNameHindi?: string;
   icd11OrOieCode: string;
@@ -56,6 +57,7 @@ export interface DifferentialDiagnosis {
   isBiohazard: boolean;
   isIdspNotifiable: boolean;
   recommendedAction: string;
+  recommendedActionEnglish?: string;
   recommendedActionMarathi: string;
   recommendedActionHindi?: string;
 }

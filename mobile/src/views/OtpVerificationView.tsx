@@ -82,6 +82,8 @@ export const OtpVerificationView: React.FC = () => {
       setLocalError(
         currentLanguage === 'en'
           ? 'Please enter all 6 digits of the OTP.'
+          : currentLanguage === 'hi'
+          ? 'कृपया सभी ६ अंक दर्ज करें।'
           : 'कृपया सर्व ६ अंक प्रविष्ट करा.'
       );
       return;
@@ -95,6 +97,8 @@ export const OtpVerificationView: React.FC = () => {
       setLocalError(
         currentLanguage === 'en'
           ? 'Verification failed. Use SIH Demo OTP 123456.'
+          : currentLanguage === 'hi'
+          ? 'सत्यापन असफल। डेमो OTP 123456 उपयोग करें।'
           : 'पडताळणी अयशस्वी. डेमो OTP 123456 वापरा.'
       );
     }
@@ -118,10 +122,23 @@ export const OtpVerificationView: React.FC = () => {
           className="field-touch-target inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>{t('changeMobile', 'नंबर बदला')}</span>
+          <span>
+            {t(
+              'changeMobile',
+              currentLanguage === 'en'
+                ? 'Change Mobile'
+                : currentLanguage === 'hi'
+                ? 'नंबर बदलें'
+                : 'नंबर बदला'
+            )}
+          </span>
         </button>
         <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-          पायरी २/३ (Step 2/3)
+          {currentLanguage === 'en'
+            ? 'Step 2/3'
+            : currentLanguage === 'hi'
+            ? 'चरण २/३ (Step 2/3)'
+            : 'पायरी २/३ (Step 2/3)'}
         </span>
       </div>
 
@@ -133,10 +150,18 @@ export const OtpVerificationView: React.FC = () => {
         <h1 className={`text-xl font-black text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
           {currentLanguage === 'en'
             ? 'Verify OTP'
+            : currentLanguage === 'hi'
+            ? 'ओटीपी सत्यापन करें'
             : 'ओटीपी पडताळणी करा'}
         </h1>
         <p className="text-xs text-slate-600 dark:text-slate-400">
-          <span>{currentLanguage === 'en' ? 'Code sent to: ' : 'या क्रमांकावर पाठवलेला कोड: '}</span>
+          <span>
+            {currentLanguage === 'en'
+              ? 'Code sent to: '
+              : currentLanguage === 'hi'
+              ? 'इस नंबर पर भेजा गया कोड: '
+              : 'या क्रमांकावर पाठवलेला कोड: '}
+          </span>
           <span className="font-bold text-slate-900 dark:text-white font-mono">{maskedDisplay}</span>
         </p>
       </div>
@@ -177,7 +202,13 @@ export const OtpVerificationView: React.FC = () => {
           className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/20 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 transition-colors"
         >
           <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-          <span>⚡ SIH Demo: Auto-Fill OTP (123456)</span>
+          <span>
+            {currentLanguage === 'en'
+              ? '⚡ SIH Demo: Auto-Fill OTP (123456)'
+              : currentLanguage === 'hi'
+              ? '⚡ SIH Demo: ओटीपी स्वतः भरें (123456)'
+              : '⚡ SIH Demo: Auto-Fill OTP (123456)'}
+          </span>
         </button>
 
         {/* Resend Countdown / Link */}
@@ -186,6 +217,8 @@ export const OtpVerificationView: React.FC = () => {
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               {currentLanguage === 'en'
                 ? `Resend OTP in ${otpCountdown}s`
+                : currentLanguage === 'hi'
+                ? `पुनः ओटीपी भेजें: ${otpCountdown} सेकंड`
                 : `पुन्हा ओटीपी पाठवा: ${otpCountdown} सेकंद`}
             </p>
           ) : (
@@ -195,7 +228,16 @@ export const OtpVerificationView: React.FC = () => {
               className="field-touch-target text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 underline inline-flex items-center gap-1"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>{t('resendOtp', 'पुन्हा ओटीपी पाठवा (Resend OTP)')}</span>
+              <span>
+                {t(
+                  'resendOtp',
+                  currentLanguage === 'en'
+                    ? 'Resend OTP'
+                    : currentLanguage === 'hi'
+                    ? 'पुनः ओटीपी भेजें (Resend OTP)'
+                    : 'पुन्हा ओटीपी पाठवा (Resend OTP)'
+                )}
+              </span>
             </button>
           )}
         </div>
@@ -210,8 +252,22 @@ export const OtpVerificationView: React.FC = () => {
         >
           <span>
             {isVerifying
-              ? t('verifying', 'पडताळणी करत आहे...')
-              : t('verifyAndContinue', 'सत्यापित करा व पुढे जा (Verify & Continue)')}
+              ? t(
+                  'verifying',
+                  currentLanguage === 'en'
+                    ? 'Verifying...'
+                    : currentLanguage === 'hi'
+                    ? 'सत्यापन हो रहा है...'
+                    : 'पडताळणी करत आहे...'
+                )
+              : t(
+                  'verifyAndContinue',
+                  currentLanguage === 'en'
+                    ? 'Verify & Continue'
+                    : currentLanguage === 'hi'
+                    ? 'सत्यापित करें व आगे बढ़ें (Verify & Continue)'
+                    : 'सत्यापित करा व पुढे जा (Verify & Continue)'
+                )}
           </span>
         </button>
       </form>

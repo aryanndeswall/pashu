@@ -1,4 +1,5 @@
 import { dbService } from '../database/sqliteConnection';
+import { getApiUrl } from '../config/api';
 
 export type ColdChainStatus = 'OPTIMAL' | 'WARNING' | 'BREACHED';
 export type RequisitionStatus =
@@ -306,6 +307,41 @@ class MobileLabService {
     };
 
     this.inMemoryRequisitions.unshift(newReq);
+
+    // Attempt direct cloud sync if online (skip in test runner)
+    if (
+      (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') ||
+      (typeof import.meta !== 'undefined' && (import.meta as any).env?.MODE === 'test')
+    ) {
+      return newReq;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      await fetch(getApiUrl('labs/requisitions'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          animal_tag_id: payload.animalTagId,
+          incident_id: payload.incidentId,
+          cluster_id: payload.clusterId,
+          vet_id: payload.vetId || 'VET-MAH-4821',
+          village_name: payload.villageName || 'Ashwi Budruk',
+          district_name: payload.districtName || 'Ahmednagar',
+          sample_type: payload.sampleType,
+          suspected_disease: payload.suspectedDisease,
+          preservative: payload.preservative || '50% Glycerol-PBS (pH 7.4-7.6)',
+          destination_lab: payload.destinationLab,
+          initial_temp_c: temp,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch {
+      // Offline or network error; local state preserved
+    }
+
     return newReq;
   }
 
