@@ -83,6 +83,7 @@ describe('Real-Time Biosecurity Outbreak Alert Stream Service (CLOUD-05)', () =>
 describe('RealtimeAlertBanner Component', () => {
   beforeEach(() => {
     liveAlertService.clearAll();
+    vi.spyOn(liveAlertService, 'connect').mockImplementation(() => {});
   });
 
   it('renders nothing when there are no active outbreak alerts', () => {

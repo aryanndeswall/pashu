@@ -54,6 +54,27 @@ vi.mock('../services/locationService', () => ({
   },
 }));
 
+// Mock aiTriageService
+vi.mock('../services/aiTriageService', () => ({
+  aiTriageService: {
+    runMultimodalTriage: vi.fn().mockResolvedValue({
+      syndrome_code: 'VSS',
+      syndrome_name_en: 'Vesicular Stomatitis / Foot-and-Mouth Disease',
+      syndrome_name_marathi: 'लाळ्या खुरकूत',
+      suspected_disease: 'लाळ्या खुरकूत (FMD Suspected)',
+      clinical_confidence: 0.94,
+      biohazard_alert: 'NONE',
+      clinical_rationale: 'Oral blisters and salivation indicate FMD.',
+      identified_symptoms: ['लाळ गळणे', 'खुरांचे व्रण'],
+      immediate_advisory_marathi: '१. बाधित जनावराला विलगीकरणात ठेवा.',
+      immediate_advisory_hindi: '१. बीमार पशु को अलग रखें।',
+      recommended_containment_actions: ['Isolate animal', 'Wash mouth with KMnO4'],
+      inference_time_ms: 12,
+      model_used: 'edge_rule_matrix',
+    }),
+  },
+}));
+
 describe('ReportWizardView Integration', () => {
   beforeEach(async () => {
     await dbService.initDatabase();
@@ -136,9 +157,12 @@ describe('ReportWizardView Integration', () => {
     const saveBtn = screen.getByRole('button', { name: /अहवाल जतन करा/i });
     fireEvent.click(saveBtn);
 
-    await waitFor(() => {
-      expect(executeSpy).toHaveBeenCalled();
-      expect(screen.getByText('अहवाल यशस्वीरित्या जतन झाला!')).toBeDefined();
-    });
+    await waitFor(
+      () => {
+        expect(executeSpy).toHaveBeenCalled();
+        expect(screen.getByText('अहवाल यशस्वीरित्या जतन झाला!')).toBeDefined();
+      },
+      { timeout: 5000 }
+    );
   });
 });

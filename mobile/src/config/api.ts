@@ -114,3 +114,14 @@ export function getClusterStreamEndpoint(): string {
   return getApiUrl('clusters/stream');
 }
 
+/**
+ * Endpoint helpers for Clinical Cases & Doctor-Farmer Cross-Connection
+ */
+export function getCasesEndpoint(caseId?: string): string {
+  return caseId ? getApiUrl(`cases/${caseId}`) : getApiUrl('cases');
+}
+
+export function getCaseConsultEndpoint(caseId: string): string {
+  return getApiUrl(`cases/${caseId}/consult`);
+}
+

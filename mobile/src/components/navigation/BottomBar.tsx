@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Activity, Shield, FlaskConical } from 'lucide-react';
+import { FileText, Activity, Shield, FlaskConical, Stethoscope } from 'lucide-react';
 import { useNavigationStore, TabType } from '../../store/navigationStore';
 import { useAuthStore, UserRole } from '../../store/authStore';
 import { useLanguageStore } from '../../store/languageStore';
@@ -34,6 +34,13 @@ export const BottomBar: React.FC = () => {
         return {
           left: [
             {
+              id: 'dashboard',
+              labelMarathi: 'स्थानिक स्थिती',
+              labelHindi: 'स्थानिक स्थिति',
+              labelEnglish: 'Status',
+              icon: Activity,
+            },
+            {
               id: 'report',
               labelMarathi: 'लक्षणे नोंदवा',
               labelHindi: 'लक्षण दर्ज करें',
@@ -43,11 +50,11 @@ export const BottomBar: React.FC = () => {
           ],
           right: [
             {
-              id: 'dashboard',
-              labelMarathi: 'स्थानिक स्थिती',
-              labelHindi: 'स्थानिक स्थिति',
-              labelEnglish: 'Status',
-              icon: Activity,
+              id: 'doctors',
+              labelMarathi: 'पशुवैद्यक',
+              labelHindi: 'पशु चिकित्सक',
+              labelEnglish: 'Doctors',
+              icon: Stethoscope,
             },
             {
               id: 'animals',

@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft, CheckCircle2, ShieldAlert, ArrowRight, Tag, Info, Check } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle2,
+  ShieldAlert,
+  ArrowRight,
+  Tag,
+  Info,
+  Check,
+  Sparkles,
+  Phone,
+  Stethoscope,
+  AlertTriangle,
+  Radio,
+} from 'lucide-react';
 import { SyndromeGrid } from '../components/syndromes/SyndromeGrid';
 import { SyndromeDefinition } from '../types/syndromes';
 import { AnatomicalBadge } from '../components/syndromes/AnatomicalBadge';
@@ -14,10 +28,14 @@ import { hapticsService } from '../services/hapticsService';
 import { decisionTreeService } from '../services/decisionTreeService';
 import { syncEngineService } from '../services/syncEngineService';
 import { useSyncStore } from '../store/syncStore';
+import { useNavigationStore } from '../store/navigationStore';
+import { aiTriageService, TriageResponse } from '../services/aiTriageService';
 import { SecondarySymptomsSelector } from '../components/syndromes/SecondarySymptomsSelector';
 import { ClinicalGuidanceCard } from '../components/syndromes/ClinicalGuidanceCard';
 import { AnthraxBiohazardModal } from '../components/modals/AnthraxBiohazardModal';
 import { useLanguageStore } from '../store/languageStore';
+import { useAuthStore } from '../store/authStore';
+import { caseService } from '../services/caseService';
 import { Skull } from 'lucide-react';
 
 export interface ReportWizardViewProps {
@@ -44,9 +62,12 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
   const [snappedVillage, setSnappedVillage] = useState<SnappedLgdResult | null>(null);
   const [pashuAadhaar, setPashuAadhaar] = useState('');
 
-  // Submission State
+  // Submission & AI Triage State
+  const setActiveTab = useNavigationStore((state) => state.setActiveTab);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [triageResponse, setTriageResponse] = useState<TriageResponse | null>(null);
+  const [isTriageAnalyzing, setIsTriageAnalyzing] = useState(false);
 
   // Step 1 -> Step 2
   const handleProceedToStep2 = () => {
@@ -55,10 +76,29 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
     setCurrentStep(2);
   };
 
-  // Step 2 -> Step 3
-  const handleProceedToStep3 = () => {
+  // Step 2 -> Step 3 with Multimodal AI Triage & Provisional First-Aid
+  const handleProceedToStep3 = async () => {
     hapticsService.hapticLight();
     setCurrentStep(3);
+
+    if (selectedSyndrome) {
+      try {
+        setIsTriageAnalyzing(true);
+        const res = await aiTriageService.runMultimodalTriage({
+          photo_base64: capturedPhoto?.dataUrl,
+          audio_base64: recordedAudio?.recordDataBase64,
+          audio_transcript: recordedAudio?.durationSeconds ? 'Symptomatic livestock incident reported' : undefined,
+          species: 'Bovine',
+          secondary_symptoms: selectedSecondarySymptoms,
+          village_lgd_code: snappedVillage?.lgd_code || 558301,
+        });
+        setTriageResponse(res);
+      } catch (err) {
+        console.warn('AI Triage error:', err);
+      } finally {
+        setIsTriageAnalyzing(false);
+      }
+    }
   };
 
   // Evaluate Decision Tree dynamically
@@ -115,6 +155,11 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
         syndrome_name: selectedSyndrome.nameMarathi,
         secondary_symptoms: selectedSecondarySymptoms,
         decision_tree_differential: decisionResult?.primaryDifferential?.diseaseName || null,
+        ai_triage_differential: triageResponse?.suspected_disease || null,
+        immediate_advisory: triageResponse?.immediate_advisory_marathi || null,
+        assigned_doctor: 'Dr. Ananya Deshmukh (BVO Rahuri)',
+        assigned_doctor_phone: '+919422001842',
+        sync_status: 'QUEUED_FOR_VET_SYNC',
         photo_webp: capturedPhoto?.dataUrl || null,
         photo_size_kb: capturedPhoto?.sizeKB || 0,
         audio_base64: recordedAudio?.recordDataBase64 || null,
@@ -134,6 +179,40 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
       await syncEngineService.enqueueReportWithSplit(syncId, 'SYNDROMIC_INCIDENT', payload, priority);
       await useSyncStore.getState().refreshQueue();
 
+      // Create synchronized clinical case for Doctor-Farmer bridge
+      const currentProfile = useAuthStore.getState().userProfile;
+      try {
+        await caseService.createCase(
+          {
+            report_id: payload.report_id,
+            farmer_id: currentProfile?.id || 'usr_farmer_01',
+            farmer_name: currentProfile?.nameMarathi || currentProfile?.name || 'रमेश पाटील (Ramesh Patil)',
+            animal_tag: pashuAadhaar || '1002-9384-7561',
+            species: 'गाय (Cow)',
+            breed: 'गिर (Gir)',
+            syndrome_code: selectedSyndrome.code,
+            syndrome_name: selectedSyndrome.nameMarathi,
+            symptoms: selectedSecondarySymptoms.join(', ') || selectedSyndrome.nameEnglish,
+            ai_differential: triageResponse?.suspected_disease || decisionResult?.primaryDifferential?.diseaseName || 'लाळ्या खुरकूत संशयित (FMD Suspected)',
+            urgency: selectedSyndrome.severity === 'CRITICAL_BIOHAZARD' ? 'CRITICAL' : 'HIGH',
+            status: 'AWAITING_DOCTOR',
+            interim_advice: triageResponse?.immediate_advisory_marathi || (
+              selectedSyndrome.code === 'VSS'
+                ? '1. बाधित गाईला इतर जनावरांपासून किमान १५ मीटर दूर मोकळ्या जागेत विलगीकरणात ठेवा.\n2. तोंड व खुरांचे व्रण पोटॅशियम परमँगनेटच्या हलक्या गुलाबी पाण्याने धुवा.\n3. कोरडा चारा देऊ नका; मऊ भाताची पेज किंवा लापशी खाऊ घाला.'
+                : '1. जनावरास सावलीत व कोरड्या जागेत बांधा.\n2. ताजे व स्वच्छ पाणी मुबलक प्रमाणात उपलब्ध करा.\n3. पशुवैद्यकीय अधिकारी येईपर्यंत जनावरास विश्रांती द्या.'
+            ),
+            village_name: snappedVillage?.village_name || 'Ashwi Budruk',
+            block_name: snappedVillage?.block_name || 'Sangamner',
+            district_name: snappedVillage?.district_name || 'Ahmednagar',
+            latitude: coordinates?.latitude || 19.3912,
+            longitude: coordinates?.longitude || 74.6521,
+          },
+          '9822000412'
+        );
+      } catch (caseErr) {
+        console.warn('Could not register clinical case:', caseErr);
+      }
+
       setShowSuccessModal(true);
       if (onReportSaved) onReportSaved();
     } catch (err) {
@@ -151,6 +230,7 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
     setCapturedPhoto(null);
     setRecordedAudio(null);
     setPashuAadhaar('');
+    setTriageResponse(null);
     setShowSuccessModal(false);
   };
 
@@ -320,6 +400,65 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
       {/* STEP 3: LOCATION & PASHU AADHAAR */}
       {currentStep === 3 && (
         <div className="space-y-4">
+          {/* Interim AI Triage & Provisional First-Aid Card */}
+          {isTriageAnalyzing ? (
+            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-center space-y-2 animate-pulse">
+              <div className="flex items-center justify-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
+                <Sparkles className="w-4 h-4 text-emerald-600 animate-spin" />
+                <span>AI लक्षणे, फोटो व व्हॉइस विश्लेषण करत आहे (Multimodal Triage Processing)...</span>
+              </div>
+              <p className="text-[10px] text-slate-500">Gemini 3.7 Flash • उप-सेकंद क्लिनिकल विश्लेषण</p>
+            </div>
+          ) : triageResponse ? (
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-300 dark:border-amber-800/80 shadow-sm space-y-3">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200">
+                    <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-300" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase text-amber-700 dark:text-amber-400 font-bold">
+                      तात्काळ AI निष्कर्ष • {Math.round(triageResponse.clinical_confidence * 100)}% अचूकता
+                    </span>
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white">
+                      {triageResponse.suspected_disease}
+                    </h4>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                  ● डॉक्टर समन्वय
+                </span>
+              </div>
+
+              {/* Provisional First-Aid Instructions */}
+              <div className="p-3 rounded-xl bg-white dark:bg-slate-900/90 border border-amber-200 dark:border-amber-800 space-y-1.5">
+                <p className="text-xs font-bold text-amber-950 dark:text-amber-200 flex items-center gap-1">
+                  <span>⚡ डॉक्टर येईपर्यंत तात्पुरते प्रथमोपचार (Provisional Care):</span>
+                </p>
+                <p className="text-[11px] text-slate-850 dark:text-slate-200 leading-relaxed font-medium">
+                  {currentLanguage === 'hi'
+                    ? triageResponse.immediate_advisory_hindi
+                    : triageResponse.immediate_advisory_marathi}
+                </p>
+                {triageResponse.recommended_containment_actions && triageResponse.recommended_containment_actions.length > 0 && (
+                  <ul className="text-[10px] text-slate-600 dark:text-slate-400 list-disc pl-4 space-y-0.5 pt-1">
+                    {triageResponse.recommended_containment_actions.map((act, i) => (
+                      <li key={i}>{act}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Doctor Sync Meta */}
+              <div className="flex items-center justify-between text-[11px] text-emerald-800 dark:text-emerald-300 bg-emerald-100/60 dark:bg-emerald-950/60 p-2.5 rounded-xl">
+                <span className="flex items-center gap-1.5 font-semibold">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>हा अहवाल थेट स्थानिक पशुवैद्यकाकडे (डॉ. अनन्या देशमुख) समक्रमित केला जाईल</span>
+                </span>
+              </div>
+            </div>
+          ) : null}
+
           {/* Location Picker Card */}
           <LocationPickerCard
             coordinates={coordinates}
@@ -392,36 +531,75 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
                 {t('reportSuccessTitle', 'अहवाल यशस्वीरित्या जतन झाला!')}
               </h3>
               <p className={`text-xs text-slate-600 dark:text-slate-300 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                {t('reportSuccessSubtitle', 'स्थानिक SQLite रांगेमध्ये अहवाल सुरक्षित ठेवण्यात आला आहे.')}
+                स्थानिक SQLite मध्ये सुरक्षित ठेवून तालुका पशुवैद्यकाकडे (डॉ. अनन्या देशमुख) थेट पाठवला आहे.
               </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-left text-xs space-y-1">
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-left text-xs space-y-1.5">
               <p className={`font-semibold text-slate-800 dark:text-slate-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                 {t('syndromeLabel', 'लक्षण')}: {currentLanguage === 'en' ? selectedSyndrome?.nameEnglish : currentLanguage === 'hi' ? (selectedSyndrome?.nameHindi || selectedSyndrome?.nameMarathi) : selectedSyndrome?.nameMarathi} ({selectedSyndrome?.code})
               </p>
+              {triageResponse && (
+                <p className="text-amber-700 dark:text-amber-400 font-medium">
+                  संशयित: {triageResponse.suspected_disease}
+                </p>
+              )}
               <p className={`text-slate-500 dark:text-slate-400 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                 {t('villageLabel', 'गाव')}: {snappedVillage?.village_name || (currentLanguage === 'en' ? 'Rahuri Khurd' : 'राहुरी खुर्द')}
               </p>
-              {capturedPhoto && (
-                <p className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px]">
-                  {t('photoAttachedLabel', '✓ WebP फोटो जोडला')} ({capturedPhoto.sizeKB} KB)
-                </p>
-              )}
-              {recordedAudio && (
-                <p className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px]">
-                  {t('voiceAttachedLabel', '✓ व्हॉइस नोट जोडली')} ({recordedAudio.durationSeconds.toFixed(1)}s)
-                </p>
-              )}
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                <Stethoscope className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>डॉ. अनन्या देशमुख (राहुरी दवाखाना • २.४ किमी) कडे समक्रमित</span>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={resetWizard}
-              className={`field-touch-target w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md shadow-emerald-900/20 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
-            >
-              {t('newReportBtn', 'नवीन अहवाल नोंदवा (New Report)')}
-            </button>
+            {/* Quick Actions */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = 'tel:+919422001842';
+                }}
+                className="field-touch-target w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>नियुक्त पशुवैद्यकास कॉल करा (+91 94220 01842)</span>
+              </button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    setActiveTab('doctors');
+                  }}
+                  className="field-touch-target py-2 px-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 text-blue-700 dark:text-blue-300 font-bold text-[11px] border border-blue-200 dark:border-blue-800 flex items-center justify-center gap-1"
+                >
+                  <Stethoscope className="w-3.5 h-3.5" />
+                  <span>सर्व डॉक्टर पहा</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    setActiveTab('dashboard');
+                  }}
+                  className="field-touch-target py-2 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-bold text-[11px] flex items-center justify-center gap-1"
+                >
+                  <Radio className="w-3.5 h-3.5" />
+                  <span>डॅशबोर्डवर जा</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={resetWizard}
+                className={`field-touch-target w-full py-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 font-semibold text-xs ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}
+              >
+                {t('newReportBtn', 'नवीन अहवाल नोंदवा (New Report)')}
+              </button>
+            </div>
           </div>
         </div>
       )}

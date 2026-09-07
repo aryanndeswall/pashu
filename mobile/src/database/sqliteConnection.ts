@@ -70,6 +70,7 @@ class SQLiteDatabaseManager implements DatabaseService {
     if (!this.memoryTables.has('media_sync_queue')) this.memoryTables.set('media_sync_queue', []);
     if (!this.memoryTables.has('auth_session')) this.memoryTables.set('auth_session', []);
     if (!this.memoryTables.has('user_credentials')) this.memoryTables.set('user_credentials', []);
+    if (!this.memoryTables.has('clinical_cases')) this.memoryTables.set('clinical_cases', []);
     this.isInitialized = true;
   }
 
@@ -264,6 +265,68 @@ class SQLiteDatabaseManager implements DatabaseService {
       return { changes: { changes: 0 } };
     }
 
+    if (lower.startsWith('insert or replace into clinical_cases') || lower.startsWith('insert into clinical_cases')) {
+      let rows = this.memoryTables.get('clinical_cases') || [];
+      const existingIdx = rows.findIndex((r: any) => r.id === values[0]);
+      const caseRow = {
+        id: values[0],
+        report_id: values[1],
+        farmer_id: values[2],
+        farmer_name: values[3],
+        farmer_phone_masked: values[4],
+        doctor_id: values[5],
+        doctor_name: values[6],
+        doctor_phone_masked: values[7],
+        animal_tag: values[8],
+        species: values[9],
+        breed: values[10],
+        syndrome_code: values[11],
+        syndrome_name: values[12],
+        symptoms: values[13],
+        ai_differential: values[14],
+        urgency: values[15],
+        status: values[16],
+        interim_advice: values[17],
+        doctor_notes: values[18],
+        prescription: values[19],
+        visit_eta: values[20],
+        village_name: values[21],
+        block_name: values[22],
+        district_name: values[23],
+        latitude: values[24],
+        longitude: values[25],
+        created_at: values[26] ?? new Date().toISOString(),
+        updated_at: values[27] ?? new Date().toISOString(),
+      };
+      if (existingIdx >= 0) {
+        rows[existingIdx] = caseRow;
+      } else {
+        rows.push(caseRow);
+      }
+      this.memoryTables.set('clinical_cases', rows);
+      return { changes: { changes: 1 } };
+    }
+
+    if (lower.startsWith('update clinical_cases set status')) {
+      let rows = this.memoryTables.get('clinical_cases') || [];
+      const status = values[0];
+      const doctorNotes = values[1];
+      const prescription = values[2];
+      const visitEta = values[3];
+      const updatedAt = values[4];
+      const id = values[5];
+      const target = rows.find((r: any) => r.id === id);
+      if (target) {
+        target.status = status;
+        target.doctor_notes = doctorNotes;
+        target.prescription = prescription;
+        target.visit_eta = visitEta;
+        target.updated_at = updatedAt;
+        return { changes: { changes: 1 } };
+      }
+      return { changes: { changes: 0 } };
+    }
+
     return { changes: { changes: 0 } };
   }
 
@@ -341,6 +404,20 @@ class SQLiteDatabaseManager implements DatabaseService {
       }
       if (values && values.length > 0 && lower.includes('sync_id = ?')) {
         return rows.filter((r) => r.sync_id === values[0]) as T[];
+      }
+      return [...rows] as T[];
+    }
+
+    if (lower.includes('from clinical_cases')) {
+      let rows = this.memoryTables.get('clinical_cases') || [];
+      if (values && values.length > 0 && lower.includes('id = ?')) {
+        return rows.filter((r: any) => r.id === values[0]) as T[];
+      }
+      if (values && values.length > 0 && lower.includes('doctor_id = ?')) {
+        return rows.filter((r: any) => r.doctor_id === values[0]) as T[];
+      }
+      if (values && values.length > 0 && lower.includes('farmer_id = ?')) {
+        return rows.filter((r: any) => r.farmer_id === values[0]) as T[];
       }
       return [...rows] as T[];
     }

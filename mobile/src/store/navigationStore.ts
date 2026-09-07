@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type TabType = 'report' | 'dashboard' | 'animals' | 'labs';
+export type TabType = 'report' | 'dashboard' | 'animals' | 'labs' | 'doctors';
 
 interface NavigationState {
   activeTab: TabType;
@@ -13,12 +13,15 @@ interface NavigationState {
 }
 
 export const useNavigationStore = create<NavigationState>((set, get) => ({
-  activeTab: 'report',
+  activeTab: 'dashboard',
   setActiveTab: (tab) => set({ activeTab: tab }),
   validateTabForRole: (role) => {
     const current = get().activeTab;
     if (role === 'consumer' && current === 'labs') {
       set({ activeTab: 'report' });
+    }
+    if (role !== 'consumer' && current === 'doctors') {
+      set({ activeTab: 'dashboard' });
     }
   },
   isEmergencyModalOpen: false,

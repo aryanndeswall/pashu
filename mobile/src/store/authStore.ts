@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { dbService } from '../database/sqliteConnection';
 import { hapticsService } from '../services/hapticsService';
 import { useNavigationStore } from './navigationStore';
-import { getAuthRequestOtpEndpoint, getAuthVerifyOtpEndpoint, getAuthPinEndpoint } from '../config/api';
+import { getAuthRequestOtpEndpoint, getAuthVerifyOtpEndpoint, getAuthPinEndpoint, getAuthMeEndpoint } from '../config/api';
 
 export type UserRole = 'consumer' | 'doctor' | 'admin';
 
@@ -507,6 +507,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('pashu_auth_token');
+    }
     try {
       await dbService.execute(`DELETE FROM auth_session WHERE id = 'current_session'`);
     } catch (err) {
@@ -551,11 +554,98 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initSession: async () => {
     try {
       await dbService.initDatabase();
+
+      // 1. Validate session against backend /api/v1/auth/me if JWT token is stored
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('pashu_auth_token') : null;
+      if (token) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 2500);
+          const resp = await fetch(getAuthMeEndpoint(), {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
+
+          if (resp.ok) {
+            const userData = await resp.json();
+            const serverProfile: UserProfile = {
+              id: userData.id,
+              name: userData.name,
+              nameMarathi: userData.name_marathi || userData.name,
+              nameHindi: userData.name_hindi || userData.name,
+              role: userData.role as UserRole,
+              mobileNumberMasked: userData.mobile_number_masked,
+              district: userData.district,
+              block: userData.block,
+              village: userData.village || '',
+              titleMarathi: userData.title_marathi || DEMO_PERSONAS[userData.role as UserRole]?.titleMarathi,
+              titleHindi: userData.title_hindi || DEMO_PERSONAS[userData.role as UserRole]?.titleHindi,
+              titleEnglish: userData.title_english || DEMO_PERSONAS[userData.role as UserRole]?.titleEnglish,
+              licenseOrId: userData.license_or_id,
+              offlinePinHash: userData.has_offline_pin ? 'configured' : undefined,
+            };
+
+            // Cache to SQLite auth_session
+            await dbService.execute(
+              `INSERT OR REPLACE INTO auth_session (id, active_role, display_name, district, block, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?)`,
+              ['current_session', serverProfile.role, serverProfile.nameMarathi, serverProfile.district, serverProfile.block, new Date().toISOString()]
+            );
+
+            set({
+              activeRole: serverProfile.role,
+              userProfile: serverProfile,
+              isAuthenticated: true,
+              loginStep: 'authenticated',
+              isInitialized: true,
+            });
+            return;
+          }
+        } catch {
+          // Cloud backend offline; fall back to local SQLite session cache
+        }
+      }
+
+      // 2. Fallback to cached SQLite auth_session
       const rows = await dbService.query<{ active_role: string }>(
         `SELECT active_role FROM auth_session WHERE id = 'current_session' LIMIT 1`
       );
       if (rows && rows.length > 0 && rows[0].active_role) {
         const savedRole = rows[0].active_role as UserRole;
+        const creds = await dbService.query<any>(
+          `SELECT * FROM user_credentials WHERE role = ? ORDER BY updated_at DESC LIMIT 1`,
+          [savedRole]
+        );
+        if (creds && creds.length > 0) {
+          const user = creds[0];
+          set({
+            activeRole: savedRole,
+            userProfile: {
+              id: user.id,
+              name: user.full_name,
+              nameMarathi: user.full_name,
+              role: user.role as UserRole,
+              mobileNumberMasked: user.mobile_masked,
+              district: user.district,
+              block: user.block,
+              village: user.village || '',
+              titleMarathi: DEMO_PERSONAS[savedRole]?.titleMarathi || 'वापरकर्ता',
+              titleEnglish: DEMO_PERSONAS[savedRole]?.titleEnglish || 'User',
+              licenseOrId: user.license_or_id || undefined,
+              offlinePinHash: user.offline_pin_hash || undefined,
+            },
+            isAuthenticated: true,
+            loginStep: 'authenticated',
+            isInitialized: true,
+          });
+          return;
+        }
+
         if (DEMO_PERSONAS[savedRole]) {
           set({
             activeRole: savedRole,

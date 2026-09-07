@@ -17,6 +17,7 @@ import { OtpVerificationView } from './views/OtpVerificationView';
 import { OnboardingView } from './views/OnboardingView';
 import { OfflinePinView } from './views/OfflinePinView';
 import { UserProfileView } from './views/UserProfileView';
+import { NearbyDoctorsView } from './views/NearbyDoctorsView';
 import { SyncQueueDrawer } from './components/sync/SyncQueueDrawer';
 import { useSyncStore } from './store/syncStore';
 import { useLanguageStore } from './store/languageStore';
@@ -93,8 +94,10 @@ export function App() {
         return <AnimalRegistryView />;
       case 'labs':
         return activeRole === 'consumer' ? <ReportView /> : <LabReferralView />;
+      case 'doctors':
+        return <NearbyDoctorsView />;
       default:
-        return <ReportView />;
+        return <DashboardView />;
     }
   };
 
