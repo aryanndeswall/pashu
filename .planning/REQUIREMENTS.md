@@ -18,8 +18,8 @@
 - [x] **CLOUD-03**: Dynamic Mobile API Gateway Configuration — Mobile client reads `VITE_API_BASE_URL` from `.env`, connects to the cloud backend over HTTPS/WSS, and gracefully falls back to local SQLite operations when offline or when cloud requests timeout.
 
 ### Live Outbreak Streaming & Push Notifications (CLOUD-STREAM)
-- [ ] **CLOUD-04**: Production Cloud Database & Redis Pub/Sub — Backend connects to a live PostgreSQL 16 + PostGIS 3.4 database and Redis instance, streaming real-time outbreak detection events via WebSockets/SSE to connected clients.
-- [ ] **CLOUD-05**: Containment Alert Broadcast Bridge — Push notification pipeline (via Firebase Cloud Messaging / SMS Gateway) to broadcast 1-5-10 km biosecurity movement freeze directives to field workers in affected jurisdictions.
+- [x] **CLOUD-04**: Production Cloud Database & Redis Pub/Sub — Backend connects to a live PostgreSQL 16 + PostGIS 3.4 database and Redis instance, streaming real-time outbreak detection events via WebSockets/SSE to connected clients.
+- [x] **CLOUD-05**: Containment Alert Broadcast Bridge — Push notification pipeline (via Firebase Cloud Messaging / SMS Gateway) to broadcast 1-5-10 km biosecurity movement freeze directives to field workers in affected jurisdictions.
 
 ---
 
@@ -30,5 +30,6 @@
 | **CLOUD-01** | Cloud Multimodal Perception | Phase 12 | Completed |
 | **CLOUD-02** | Cloud Media Storage & Sync | Phase 13 | Completed |
 | **CLOUD-03** | Mobile Dynamic Networking | Phase 12 | Completed |
-| **CLOUD-04** | Live Outbreak Streaming | Phase 14 | Pending |
-| **CLOUD-05** | Containment Alert Broadcast | Phase 14 | Pending |
+| **CLOUD-04** | Live Outbreak Streaming | Phase 14 | Completed |
+| **CLOUD-05** | Containment Alert Broadcast | Phase 14 | Completed |
+

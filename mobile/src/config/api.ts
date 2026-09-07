@@ -98,3 +98,19 @@ export function getAuthMeEndpoint(): string {
 export function getAuthPinEndpoint(): string {
   return getApiUrl('auth/pin');
 }
+
+/**
+ * WebSocket endpoint for real-time biosecurity outbreak cluster streaming
+ */
+export function getClusterWebSocketUrl(): string {
+  const httpUrl = getApiUrl('clusters/ws');
+  return httpUrl.replace(/^https?:\/\//i, (match) => (match.toLowerCase() === 'https://' ? 'wss://' : 'ws://'));
+}
+
+/**
+ * Server-Sent Events (SSE) endpoint for cluster alerts
+ */
+export function getClusterStreamEndpoint(): string {
+  return getApiUrl('clusters/stream');
+}
+

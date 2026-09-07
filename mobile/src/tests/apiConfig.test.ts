@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { API_CONFIG, getApiUrl, getTriageEndpoint, getSyncTelemetryEndpoint, getSyncMediaEndpoint } from '../config/api';
+import {
+  API_CONFIG,
+  getApiUrl,
+  getTriageEndpoint,
+  getSyncTelemetryEndpoint,
+  getSyncMediaEndpoint,
+  getClusterWebSocketUrl,
+  getClusterStreamEndpoint,
+} from '../config/api';
 
 describe('API Gateway Configuration (CLOUD-03)', () => {
   it('loads API_CONFIG with valid baseUrl and timeoutMs', () => {
@@ -24,5 +32,14 @@ describe('API Gateway Configuration (CLOUD-03)', () => {
     expect(getTriageEndpoint()).toBe(`${API_CONFIG.baseUrl}/triage/multimodal`);
     expect(getSyncTelemetryEndpoint()).toBe(`${API_CONFIG.baseUrl}/sync/telemetry`);
     expect(getSyncMediaEndpoint()).toBe(`${API_CONFIG.baseUrl}/sync/media`);
+  });
+
+  it('provides cluster WebSocket and SSE endpoints', () => {
+    const wsUrl = getClusterWebSocketUrl();
+    expect(wsUrl).toContain('/clusters/ws');
+    expect(wsUrl.startsWith('ws://') || wsUrl.startsWith('wss://')).toBe(true);
+
+    const sseUrl = getClusterStreamEndpoint();
+    expect(sseUrl).toBe(`${API_CONFIG.baseUrl}/clusters/stream`);
   });
 });

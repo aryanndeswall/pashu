@@ -1,12 +1,17 @@
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi.responses import StreamingResponse
 from app.schemas.cluster import (
     IncidentCreate,
     ClusterEvaluationRequest,
     ClusterEvaluationResponse,
+    ContainmentBroadcastRequest,
+    ContainmentBroadcastResponse,
 )
 from app.services.satscan_service import satscan_service
 from app.services.buffer_service import generate_containment_buffers
+from app.services.pubsub_service import pubsub_service, OutbreakAlertEvent
+from app.services.notification_service import notification_service
 
 router = APIRouter()
 
@@ -55,10 +60,99 @@ async def evaluate_incident(payload: ClusterEvaluationRequest) -> ClusterEvaluat
         )
         _BUFFER_STORE[evaluation.cluster_id] = buffers
         _CLUSTER_STORE[evaluation.cluster_id] = evaluation
+
+        # Broadcast live outbreak alert via Redis Pub/Sub & WebSockets
+        try:
+            syndrome_names = {
+                "SARF": "Anthrax / काळपुळी",
+                "VSS": "Foot & Mouth Disease (FMD) / लाळ्या खुरकूत",
+                "NSLS": "Lumpy Skin Disease (LSD) / लंपी",
+                "HSDS": "Hemorrhagic Septicemia (HS) / घटसर्प",
+                "BQ": "Black Quarter (BQ) / एकटांग्या",
+                "PPR": "Peste des Petits Ruminants (PPR)",
+            }
+            disease_name = getattr(evaluation, "suspected_disease", None) or syndrome_names.get(
+                incident.syndrome_code, f"Syndrome {incident.syndrome_code} Outbreak"
+            )
+            await pubsub_service.publish_outbreak_event(
+                OutbreakAlertEvent(
+                    cluster_id=evaluation.cluster_id,
+                    syndrome_code=incident.syndrome_code,
+                    suspected_disease=disease_name,
+                    epicenter_lat=evaluation.epicenter_lat,
+                    epicenter_lon=evaluation.epicenter_lon,
+                    village_name=incident.village_name or "Ashwi Budruk",
+                    movement_freeze_radius_km=1.0,
+                    ring_vaccination_radius_km=5.0,
+                    surveillance_radius_km=10.0,
+                    alert_level="CRITICAL" if evaluation.status == "OUTBREAK_DECLARED" else "WARNING",
+                    containment_directive=f"Biosecurity containment declared for {incident.syndrome_code}. 1 km Movement Freeze active.",
+                )
+            )
+
+            # If full outbreak declared, dispatch high-priority FCM containment push & SMS
+            if evaluation.status == "OUTBREAK_DECLARED":
+                await notification_service.broadcast_containment_directive(
+                    cluster_id=evaluation.cluster_id,
+                    syndrome_code=incident.syndrome_code,
+                    village_name=incident.village_name or "Ashwi Budruk",
+                    district_name="Ahmednagar",
+                    epicenter_lat=evaluation.epicenter_lat,
+                    epicenter_lon=evaluation.epicenter_lon,
+                    movement_freeze_radius_km=1.0,
+                    ring_vaccination_radius_km=5.0,
+                    surveillance_radius_km=10.0,
+                    alert_level="CRITICAL",
+                )
+        except Exception:
+            pass
     elif evaluation.status == "WARNING":
         _CLUSTER_STORE[evaluation.cluster_id] = evaluation
 
     return evaluation
+
+
+@router.websocket("/ws")
+async def websocket_cluster_alerts(websocket: WebSocket):
+    """
+    Full-duplex WebSocket endpoint for Web-GIS Command War Room and field dashboards.
+    Streams instantaneous outbreak cluster triggers, biosecurity ring updates, and emergency directives.
+    """
+    await pubsub_service.manager.connect(websocket)
+    try:
+        # Send initial connection handshake with recent events
+        await websocket.send_json({
+            "type": "CONNECTION_ESTABLISHED",
+            "message": "Connected to Pashu-Suraksha Real-Time Outbreak Stream",
+            "recent_events": pubsub_service.get_recent_events()[-3:],
+        })
+        while True:
+            text = await websocket.receive_text()
+            if text == "ping":
+                await websocket.send_text("pong")
+    except WebSocketDisconnect:
+        pubsub_service.manager.disconnect(websocket)
+    except Exception:
+        pubsub_service.manager.disconnect(websocket)
+
+
+@router.get(
+    "/stream",
+    summary="Real-Time Server-Sent Events (SSE) Outbreak Alert Stream",
+)
+async def sse_cluster_alerts(limit: Optional[int] = None):
+    """
+    Lightweight HTTP Server-Sent Events (SSE) stream for web browsers and GIS dashboards.
+    """
+    return StreamingResponse(
+        pubsub_service.sse_stream(max_events=limit),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @router.get(
@@ -118,3 +212,34 @@ async def get_cluster_buffers(cluster_id: str) -> Dict[str, Any]:
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Containment buffers for cluster ID '{cluster_id}' not found",
     )
+
+
+@router.post(
+    "/broadcast",
+    response_model=ContainmentBroadcastResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Broadcast Statutory Biosecurity Containment Directives (FCM + SMS)",
+)
+async def broadcast_containment_order(
+    payload: ContainmentBroadcastRequest,
+) -> ContainmentBroadcastResponse:
+    """
+    Dispatches high-priority Firebase Cloud Messaging (FCM) containment notifications to
+    district veterinarians & field Pashu Sakhis, and generates statutory SMS alerts citing
+    Sections 6, 10, and 20 of PCICDA 2009.
+    """
+    result = await notification_service.broadcast_containment_directive(
+        cluster_id=payload.cluster_id,
+        syndrome_code=payload.syndrome_code,
+        village_name=payload.village_name,
+        district_name=payload.district_name,
+        epicenter_lat=payload.epicenter_lat,
+        epicenter_lon=payload.epicenter_lon,
+        movement_freeze_radius_km=payload.movement_freeze_radius_km,
+        ring_vaccination_radius_km=payload.ring_vaccination_radius_km,
+        surveillance_radius_km=payload.surveillance_radius_km,
+        alert_level=payload.alert_level,
+        custom_topic=payload.target_topic,
+    )
+    return ContainmentBroadcastResponse(**result)
+

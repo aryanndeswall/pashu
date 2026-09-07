@@ -22,6 +22,8 @@ from app.schemas.sync import (
 from app.services.satscan_service import satscan_service
 from app.services.buffer_service import generate_containment_buffers
 from app.services.storage_service import storage_service
+from app.services.pubsub_service import pubsub_service, OutbreakAlertEvent
+from app.services.notification_service import notification_service
 
 router = APIRouter()
 
@@ -100,6 +102,54 @@ async def sync_telemetry(
     containment_triggered = (
         cluster_eval.requires_containment_buffers or cluster_eval.status == "OUTBREAK_DECLARED"
     )
+
+    # If outbreak containment triggered, broadcast real-time alert via Redis & WebSockets
+    if containment_triggered:
+        try:
+            syndrome_names = {
+                "SARF": "Anthrax / काळपुळी",
+                "VSS": "Foot & Mouth Disease (FMD) / लाळ्या खुरकूत",
+                "NSLS": "Lumpy Skin Disease (LSD) / लंपी",
+                "HSDS": "Hemorrhagic Septicemia (HS) / घटसर्प",
+                "BQ": "Black Quarter (BQ) / एकटांग्या",
+                "PPR": "Peste des Petits Ruminants (PPR)",
+            }
+            disease_name = getattr(cluster_eval, "suspected_disease", None) or syndrome_names.get(
+                payload.syndrome_code, f"Syndrome {payload.syndrome_code} Outbreak"
+            )
+            await pubsub_service.publish_outbreak_event(
+                OutbreakAlertEvent(
+                    cluster_id=cluster_eval.cluster_id,
+                    syndrome_code=payload.syndrome_code,
+                    suspected_disease=disease_name,
+                    epicenter_lat=cluster_eval.epicenter_lat,
+                    epicenter_lon=cluster_eval.epicenter_lon,
+                    village_name=payload.village_name or "Ashwi Budruk",
+                    district_name=payload.district_name or "Ahmednagar",
+                    movement_freeze_radius_km=1.0,
+                    ring_vaccination_radius_km=5.0,
+                    surveillance_radius_km=10.0,
+                    alert_level="CRITICAL" if cluster_eval.status == "OUTBREAK_DECLARED" else "WARNING",
+                    containment_directive=f"Automated 1 km biosecurity movement freeze initiated for {payload.village_name or 'Ahmednagar'}.",
+                )
+            )
+
+            # Dispatch FCM topic push notification & statutory SMS to jurisdiction
+            await notification_service.broadcast_containment_directive(
+                cluster_id=cluster_eval.cluster_id,
+                syndrome_code=payload.syndrome_code,
+                village_name=payload.village_name or "Ashwi Budruk",
+                district_name=payload.district_name or "Ahmednagar",
+                epicenter_lat=cluster_eval.epicenter_lat,
+                epicenter_lon=cluster_eval.epicenter_lon,
+                movement_freeze_radius_km=1.0,
+                ring_vaccination_radius_km=5.0,
+                surveillance_radius_km=10.0,
+                alert_level="CRITICAL" if cluster_eval.status == "OUTBREAK_DECLARED" else "WARNING",
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).exception("Failed to publish outbreak event: %s", e)
 
     return TelemetrySyncResponse(
         sync_id=payload.sync_id,

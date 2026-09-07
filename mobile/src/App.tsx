@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HeaderBar } from './components/common/HeaderBar';
+import { RealtimeAlertBanner } from './components/common/RealtimeAlertBanner';
 import { BottomBar } from './components/navigation/BottomBar';
 import { EmergencySOSModal } from './components/modals/EmergencySOSModal';
 import { useNavigationStore } from './store/navigationStore';
@@ -148,6 +149,9 @@ export function App() {
               : undefined
           }
         />
+
+        {/* Real-time Biosecurity Outbreak Alert Banner (WebSocket & SSE Push) */}
+        <RealtimeAlertBanner />
 
         {/* User Persona Context Greeting Banner (shown when authenticated and not in overlays) */}
         {!isAuthFlowActive && !showProfile && (

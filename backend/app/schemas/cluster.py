@@ -65,3 +65,29 @@ class ClusterSummary(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ContainmentBroadcastRequest(BaseModel):
+    cluster_id: str = Field(..., description="Unique cluster or outbreak ID")
+    syndrome_code: str = Field(..., description="Syndrome code (VSS, SARF, etc.)")
+    village_name: str = Field(default="Ashwi Budruk", description="Epicenter village name")
+    district_name: str = Field(default="Ahmednagar", description="District name")
+    epicenter_lat: float = Field(..., description="Epicenter latitude")
+    epicenter_lon: float = Field(..., description="Epicenter longitude")
+    movement_freeze_radius_km: float = Field(default=1.0, description="Movement freeze radius in km")
+    ring_vaccination_radius_km: float = Field(default=5.0, description="Ring vaccination radius in km")
+    surveillance_radius_km: float = Field(default=10.0, description="Surveillance radius in km")
+    alert_level: str = Field(default="CRITICAL", description="Alert level: WARNING or CRITICAL")
+    target_topic: Optional[str] = Field(default=None, description="Optional custom FCM topic")
+
+
+class ContainmentBroadcastResponse(BaseModel):
+    status: str
+    broadcast_id: str
+    cluster_id: str
+    fcm_topic: str
+    fcm_message_id: Optional[str]
+    statutory_sms_en: str
+    statutory_sms_mr: str
+    timestamp: str
+
