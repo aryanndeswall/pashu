@@ -10,12 +10,23 @@ Your backend is already connected to real managed cloud infrastructure:
 
 | Component | Provider / Technology | Status | Cloud URL / Host |
 |---|---|---|---|
-| **Spatial Database** | **Neon Cloud PostgreSQL 16 + PostGIS** |  **ACTIVE & SEEDED** | `ep-lingering-mud-b3aks14j-pooler.c-4.ap-southeast-1.aws.neon.tech` |
-| **Outbreak Pub/Sub** | **Upstash Serverless Redis** |  **ACTIVE & RESPONDING** | `able-tiger-81031.upstash.io:6379` |
-| **Multimodal AI** | **Google Gemini 3.7 / 2.5 Flash** |  **CONFIGURED** | Google GenAI Cloud API |
-| **Identity & Storage** | **Firebase Auth & Cloud Storage** |  **ACTIVE** | `pashu-f51a1.firebasestorage.app` |
+| **Production API Gateway** | **Render.com Web Service** | ✅ **LIVE & HEALTHY** | `https://pashu-suraksha-backend.onrender.com` |
+| **Spatial Database** | **Neon Cloud PostgreSQL 16 + PostGIS** | ✅ **ACTIVE & SEEDED** | `ep-lingering-mud-b3aks14j-pooler.c-4.ap-southeast-1.aws.neon.tech` |
+| **Outbreak Pub/Sub** | **Upstash Serverless Redis** | ✅ **ACTIVE & RESPONDING** | `able-tiger-81031.upstash.io:6379` |
+| **Multimodal AI** | **Google Gemini 3.7 / 2.5 Flash** | ✅ **CONFIGURED** | Google GenAI Cloud API |
+| **Identity & Storage** | **Firebase Auth & Cloud Storage** | ✅ **ACTIVE** | `pashu-f51a1.firebasestorage.app` |
+
+### Active Production Service Metadata
+- **Service Name**: `pashu-suraksha-backend`
+- **Render Service ID**: `srv-dajdau67bikc73bkrgeg`
+- **Dashboard**: [https://dashboard.render.com/web/srv-dajdau67bikc73bkrgeg](https://dashboard.render.com/web/srv-dajdau67bikc73bkrgeg)
+- **Live Health Check**: [https://pashu-suraksha-backend.onrender.com/health](https://pashu-suraksha-backend.onrender.com/health)
+- **OpenAPI Interactive Documentation**: [https://pashu-suraksha-backend.onrender.com/docs](https://pashu-suraksha-backend.onrender.com/docs)
+- **Region**: `singapore` (`ap-southeast-1`)
+- **Auto-Deploy**: Enabled on `git push origin main`
 
 All 9 official users and registered INAPH tagged livestock have already been synchronized directly into both **Firebase Auth** and **Neon PostgreSQL**.
+
 
 ---
 
