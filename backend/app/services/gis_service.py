@@ -362,7 +362,7 @@ District Collector & District Magistrate, {payload.district_name}
                                 if "administrative_area_level_1" in types:
                                     state = c.get("long_name", "")
                                 elif "administrative_area_level_2" in types:
-                                    district = c.get("long_name", "")
+                                    district = c.get("long_name", "").replace(" Division", "").replace(" District", "").strip()
                                 elif "administrative_area_level_3" in types or "sublocality_level_1" in types:
                                     if not subdistrict:
                                         subdistrict = c.get("long_name", "")

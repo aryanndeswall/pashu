@@ -301,7 +301,7 @@ export class LocationService {
             for (const c of comps) {
               const types = c.types || [];
               if (types.includes('administrative_area_level_1')) state = c.long_name;
-              else if (types.includes('administrative_area_level_2')) district = c.long_name;
+              else if (types.includes('administrative_area_level_2')) district = c.long_name.replace(/ Division/i, '').replace(/ District/i, '').trim();
               else if (types.includes('administrative_area_level_3') || types.includes('sublocality_level_1')) {
                 if (!block) block = c.long_name;
               } else if (types.includes('sublocality_level_2') || types.includes('neighborhood') || types.includes('locality')) {
