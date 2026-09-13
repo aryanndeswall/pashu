@@ -8,10 +8,45 @@ from app.schemas.gis import (
     IdspDispatchPayload,
     IdspDispatchResponse,
     SimulationResponse,
+    ReverseGeocodeResponse,
+    LocationSearchResponse,
 )
 from app.services.gis_service import gis_service
 
 router = APIRouter()
+
+
+@router.get(
+    "/reverse-geocode",
+    response_model=ReverseGeocodeResponse,
+    summary="Reverse Geocode GPS Coordinates to State, District, Tehsil, and Village",
+)
+async def reverse_geocode_location(
+    lat: float = Query(..., description="Latitude coordinate in WGS-84"),
+    lon: float = Query(..., description="Longitude coordinate in WGS-84"),
+) -> ReverseGeocodeResponse:
+    """
+    Reverse-geocodes real-time GPS coordinates into administrative hierarchy:
+    State, District, Subdistrict/Tehsil, and Village across any location in India.
+    """
+    return await gis_service.reverse_geocode(latitude=lat, longitude=lon)
+
+
+@router.get(
+    "/search-locations",
+    response_model=LocationSearchResponse,
+    summary="Nationwide Search for Any Village, Town, or District in India",
+)
+async def search_locations(
+    q: str = Query(..., min_length=2, description="Village, town, tehsil, or district name"),
+    limit: int = Query(8, ge=1, le=20, description="Max result count"),
+) -> LocationSearchResponse:
+    """
+    Nationwide geocoding search for Indian villages, tehsils, and districts.
+    """
+    return await gis_service.search_locations(query=q, limit=limit)
+
+
 
 
 @router.get(

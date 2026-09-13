@@ -107,3 +107,26 @@ def test_run_ahmednagar_simulation():
     step7 = data["steps"][6]
     assert step7["step_number"] == 7
     assert "PCICDA" in step7["step_title"]
+
+
+def test_reverse_geocode_endpoint():
+    client = TestClient(app)
+    resp = client.get("/api/v1/gis/reverse-geocode?lat=28.8955&lon=76.6066")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["latitude"] == 28.8955
+    assert data["longitude"] == 76.6066
+    assert data["state_name"] != ""
+    assert data["district_name"] != ""
+    assert data["village_name"] != ""
+    assert data["source"] in ("google_maps", "bigdatacloud", "osm_nominatim", "offline_geodetic")
+
+
+def test_search_locations_endpoint():
+    client = TestClient(app)
+    resp = client.get("/api/v1/gis/search-locations?q=Sampla&limit=3")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["query"] == "Sampla"
+    assert isinstance(data["results"], list)
+

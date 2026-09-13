@@ -92,3 +92,35 @@ class SimulationResponse(BaseModel):
     execution_time_ms: float
     steps: List[SimulationStep]
     final_containment_status: str
+
+
+class ReverseGeocodeResponse(BaseModel):
+    latitude: float
+    longitude: float
+    state_name: str
+    district_name: str
+    block_name: str
+    village_name: str
+    pincode: Optional[str] = None
+    formatted_address: str
+    source: str
+    accuracy_level: str = "HIGH"
+
+
+class LocationSearchResult(BaseModel):
+    latitude: float
+    longitude: float
+    state_name: str
+    district_name: str
+    block_name: str
+    village_name: str
+    pincode: Optional[str] = None
+    formatted_address: str
+
+
+class LocationSearchResponse(BaseModel):
+    query: str
+    total: int
+    results: List[LocationSearchResult]
+
+

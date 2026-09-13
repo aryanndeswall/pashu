@@ -243,12 +243,13 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
         photo_size_kb: capturedPhoto?.sizeKB || 0,
         audio_base64: recordedAudio?.recordDataBase64 || null,
         audio_duration_sec: recordedAudio?.durationSeconds || 0,
-        latitude: coordinates?.latitude || 19.3912,
-        longitude: coordinates?.longitude || 74.6521,
-        lgd_code: snappedVillage?.lgd_code || 558301,
-        village_name: snappedVillage?.village_name || 'Ashwi Budruk',
-        block_name: snappedVillage?.block_name || 'Sangamner',
-        district_name: snappedVillage?.district_name || 'Ahmednagar',
+        latitude: coordinates?.latitude || 28.8955,
+        longitude: coordinates?.longitude || 76.6066,
+        lgd_code: snappedVillage?.lgd_code || 0,
+        state_name: snappedVillage?.state_name || 'State',
+        village_name: snappedVillage?.village_name || 'Village',
+        block_name: snappedVillage?.block_name || 'Tehsil',
+        district_name: snappedVillage?.district_name || 'District',
         pashu_aadhaar: pashuAadhaar || 'UNTAGGED',
         reported_at: new Date().toISOString(),
       };
@@ -314,11 +315,12 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
                     ? '1. बाधित गाईला इतर जनावरांपासून किमान १५ मीटर दूर मोकळ्या जागेत विलगीकरणात ठेवा.\n2. तोंड व खुरांचे व्रण पोटॅशियम परमँगनेटच्या हलक्या गुलाबी पाण्याने धुवा.\n3. कोरडा चारा देऊ नका; मऊ भाताची पेज किंवा लापशी खाऊ घाला.'
                     : '1. जनावरास सावलीत व कोरड्या जागेत बांधा.\n2. ताजे व स्वच्छ पाणी मुबलक प्रमाणात उपलब्ध करा.\n3. पशुवैद्यकीय अधिकारी येईपर्यंत जनावरास विश्रांती द्या.'
                 ),
-            village_name: snappedVillage?.village_name || currentProfile?.village || 'Ashwi Budruk',
-            block_name: snappedVillage?.block_name || currentProfile?.block || 'Rahuri',
-            district_name: snappedVillage?.district_name || currentProfile?.district || 'Ahmednagar',
-            latitude: coordinates?.latitude || 19.3912,
-            longitude: coordinates?.longitude || 74.6521,
+            state_name: snappedVillage?.state_name || 'State',
+            village_name: snappedVillage?.village_name || currentProfile?.village || 'Village',
+            block_name: snappedVillage?.block_name || currentProfile?.block || 'Tehsil',
+            district_name: snappedVillage?.district_name || currentProfile?.district || 'District',
+            latitude: coordinates?.latitude || 28.8955,
+            longitude: coordinates?.longitude || 76.6066,
             photo_url: capturedPhoto?.dataUrl || null,
             audio_url: recordedAudio?.recordDataBase64 || null,
             audio_transcript: recordedAudio?.durationSeconds
@@ -911,8 +913,8 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
                   {t('suspectedLabel', 'संशयित')}: {localizeTriageDisease(triageResponse, currentLanguage)}
                 </p>
               )}
-              <p className={`text-slate-500 dark:text-slate-400 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                {t('villageLabel', 'गाव')}: {snappedVillage?.village_name || (currentLanguage === 'en' ? 'Rahuri Khurd' : 'राहुरी खुर्द')}
+              <p className={`text-slate-600 dark:text-slate-300 font-medium ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                {t('locationLabel', 'स्थान')}: {snappedVillage?.village_name || 'Village'}{snappedVillage?.district_name ? `, ${snappedVillage.district_name}` : ''}{snappedVillage?.state_name ? ` (${snappedVillage.state_name})` : ''}
               </p>
               <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
                 <Stethoscope className="w-3.5 h-3.5 text-emerald-600 shrink-0" />

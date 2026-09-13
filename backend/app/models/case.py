@@ -59,6 +59,7 @@ class ClinicalCase(Base):
     visit_eta: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
     # Geospatial Context
+    state_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     village_name: Mapped[str] = mapped_column(String(100), nullable=False)
     block_name: Mapped[str] = mapped_column(String(100), nullable=False)
     district_name: Mapped[str] = mapped_column(String(100), default="Ahmednagar")

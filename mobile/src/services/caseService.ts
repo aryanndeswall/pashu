@@ -24,6 +24,7 @@ export interface ClinicalCase {
   doctor_notes?: string;
   prescription?: string;
   visit_eta?: string;
+  state_name?: string;
   village_name: string;
   block_name: string;
   district_name: string;
@@ -242,9 +243,10 @@ class CaseService {
       doctor_notes: caseData.doctor_notes || '',
       prescription: caseData.prescription || '',
       visit_eta: caseData.visit_eta || '',
-      village_name: caseData.village_name || 'Ashwi Budruk',
-      block_name: caseData.block_name || 'Rahuri',
-      district_name: caseData.district_name || 'Ahmednagar',
+      state_name: caseData.state_name || '',
+      village_name: caseData.village_name || 'Village',
+      block_name: caseData.block_name || 'Block',
+      district_name: caseData.district_name || 'District',
       latitude: caseData.latitude || 19.3912,
       longitude: caseData.longitude || 74.6521,
       photo_url: caseData.photo_url || null,
@@ -346,6 +348,7 @@ class CaseService {
           biohazard_alert: fullCase.biohazard_alert,
           model_used: fullCase.model_used,
           ai_report_json: fullCase.ai_report_json,
+          state_name: fullCase.state_name,
           village_name: fullCase.village_name,
           block_name: fullCase.block_name,
           district_name: fullCase.district_name,

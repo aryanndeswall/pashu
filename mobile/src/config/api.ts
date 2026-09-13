@@ -129,3 +129,15 @@ export function getCaseConsultEndpoint(caseId: string): string {
   return getApiUrl(`cases/${caseId}/consult`);
 }
 
+/**
+ * Endpoint helpers for Geospatial Reverse Geocoding & Nationwide Search
+ */
+export function getReverseGeocodeEndpoint(lat: number, lon: number): string {
+  return getApiUrl(`gis/reverse-geocode?lat=${lat}&lon=${lon}`);
+}
+
+export function getSearchLocationsEndpoint(query: string, limit: number = 8): string {
+  return getApiUrl(`gis/search-locations?q=${encodeURIComponent(query)}&limit=${limit}`);
+}
+
+

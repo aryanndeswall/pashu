@@ -36,6 +36,7 @@ class CaseCreate(BaseModel):
     model_used: Optional[str] = Field(default=None, description="Inference model e.g. Gemini 3.7 Flash")
     ai_report_json: Optional[str] = Field(default=None, description="Full raw TriageResponse JSON")
     
+    state_name: Optional[str] = Field(default=None, description="State name")
     village_name: Optional[str] = Field(default="Ashwi Budruk", description="Village name")
     block_name: Optional[str] = Field(default="Rahuri", description="Taluka / Block name")
     district_name: Optional[str] = Field(default="Ahmednagar", description="District name")
@@ -95,6 +96,7 @@ class CaseResponse(BaseModel):
     biohazard_alert: Optional[str] = None
     model_used: Optional[str] = None
     ai_report_json: Optional[str] = None
+    state_name: Optional[str] = None
     village_name: str
     block_name: str
     district_name: str

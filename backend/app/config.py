@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     # Redis Pub/Sub Live Alert Broker
     REDIS_URL: Optional[str] = None
 
+    # Geocoding & GIS API Keys
+    GOOGLE_MAPS_API_KEY: Optional[str] = None
+    MAPLIBRE_API_KEY: Optional[str] = None
+
     model_config = SettingsConfigDict(
         env_file=(".env", "backend/.env"),
         env_file_encoding="utf-8",
