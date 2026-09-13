@@ -11,7 +11,7 @@ export interface ApiConfiguration {
 }
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8000/api/v1';
-const DEFAULT_TIMEOUT_MS = 2500;
+const DEFAULT_TIMEOUT_MS = 20000;
 
 export const API_CONFIG: ApiConfiguration = {
   baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || DEFAULT_API_BASE_URL,

@@ -21,6 +21,9 @@ import {
   ExternalLink,
   Eye,
   Camera,
+  Volume2,
+  VolumeX,
+  AlertOctagon,
 } from 'lucide-react';
 import { RadarSweep } from '../../components/animations/RadarSweep';
 import { CountUpTicker } from '../../components/animations/CountUpTicker';
@@ -49,6 +52,25 @@ export const FarmerDashboardView: React.FC = () => {
   const [selectedRxCase, setSelectedRxCase] = useState<ClinicalCase | null>(null);
   const [activeClusters, setActiveClusters] = useState<any[]>([]);
   const [nearbyDoctors, setNearbyDoctors] = useState<any[]>([]);
+  const [speakingCaseId, setSpeakingCaseId] = useState<string | null>(null);
+
+  const handleSpeakAdvice = (caseId: string, adviceText: string) => {
+    if (!('speechSynthesis' in window)) return;
+    if (speakingCaseId === caseId) {
+      window.speechSynthesis.cancel();
+      setSpeakingCaseId(null);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const clean = adviceText.replace(/[*#•]/g, ' ').replace(/\s+/g, ' ').trim();
+    const utterance = new SpeechSynthesisUtterance(clean);
+    utterance.lang = currentLanguage === 'hi' ? 'hi-IN' : currentLanguage === 'mr' ? 'mr-IN' : 'en-IN';
+    utterance.rate = 0.9;
+    utterance.onend = () => setSpeakingCaseId(null);
+    utterance.onerror = () => setSpeakingCaseId(null);
+    setSpeakingCaseId(caseId);
+    window.speechSynthesis.speak(utterance);
+  };
 
   // Sync clinical cases, active outbreak clusters, and real doctors
   const loadDashboardData = async () => {
@@ -106,6 +128,9 @@ export const FarmerDashboardView: React.FC = () => {
     return () => {
       unsubscribe();
       clearInterval(interval);
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
     };
   }, []);
 
@@ -281,14 +306,45 @@ export const FarmerDashboardView: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Interim Advice / First-Aid */}
-                <div className="bg-amber-50/80 dark:bg-amber-950/30 p-2.5 rounded-2xl border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-900 dark:text-amber-200">
-                  <div className="font-bold flex items-center gap-1.5 mb-0.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    <span>{currentLanguage === 'en' ? 'Provisional First-Aid:' : 'तात्पुरते प्रथमोपचार व काळजी:'}</span>
+                {/* Interim Advice / First-Aid Protocol Card */}
+                <div className="bg-gradient-to-br from-amber-50/90 via-orange-50/40 to-amber-50/90 dark:from-amber-950/40 dark:via-slate-900 dark:to-amber-950/30 p-3 rounded-2xl border-2 border-amber-300/70 dark:border-amber-800/60 text-[11px] text-amber-950 dark:text-amber-100 space-y-2 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-amber-200/60 dark:border-amber-800/40 pb-1.5">
+                    <div className="font-black flex items-center gap-1.5 text-amber-900 dark:text-amber-200 text-xs">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>
+                        {currentLanguage === 'en'
+                          ? '⚡ AI Temporary First-Aid (Until Doctor Consult):'
+                          : '⚡ तात्पुरते प्रथमोपचार व घरगुती काळजी:'}
+                      </span>
+                    </div>
+
+                    {/* TTS Audio Listen Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleSpeakAdvice(caseItem.id, caseItem.interim_advice || '')}
+                      className={`px-2.5 py-1 rounded-xl flex items-center gap-1 text-[10px] font-bold shadow-2xs transition-all active:scale-95 shrink-0 ${
+                        speakingCaseId === caseItem.id
+                          ? 'bg-rose-600 text-white animate-pulse'
+                          : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      }`}
+                      title={currentLanguage === 'en' ? 'Listen in Audio' : 'आवाजात ऐका'}
+                    >
+                      {speakingCaseId === caseItem.id ? (
+                        <>
+                          <VolumeX className="w-3 h-3" />
+                          <span>{currentLanguage === 'en' ? 'Stop' : 'थांबवा'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-3 h-3" />
+                          <span>{currentLanguage === 'en' ? 'Listen' : 'आवाजात ऐका'}</span>
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <p className="whitespace-pre-line pl-4 text-[11px] leading-relaxed">
-                    {caseItem.interim_advice || 'Keep isolated in dry shade and give clean water.'}
+
+                  <p className="whitespace-pre-line text-[11px] leading-relaxed font-medium pl-1 text-slate-850 dark:text-slate-200">
+                    {caseItem.interim_advice || (currentLanguage === 'en' ? 'Keep animal isolated in dry shade with clean water.' : 'जनावरास कोरड्या सावलीत वेगळे बांधा आणि स्वच्छ पाणी द्या.')}
                   </p>
                 </div>
 

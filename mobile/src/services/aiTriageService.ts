@@ -12,6 +12,22 @@ export interface TriageRequest {
   village_lgd_code?: number;
 }
 
+export interface TemporaryFirstAid {
+  summary_mr: string;
+  summary_hi?: string;
+  summary_en: string;
+  immediate_actions_mr: string[];
+  immediate_actions_hi?: string[];
+  immediate_actions_en: string[];
+  do_not_do_mr: string[];
+  do_not_do_hi?: string[];
+  do_not_do_en: string[];
+  warning_signs_mr: string[];
+  warning_signs_en: string[];
+  doctor_urgency: 'ROUTINE' | 'URGENT' | 'EMERGENCY';
+  teleconsult_recommended: boolean;
+}
+
 export interface TriageResponse {
   syndrome_code: SyndromeCode;
   syndrome_name_en: string;
@@ -30,6 +46,7 @@ export interface TriageResponse {
   immediate_advisory_en?: string;
   recommended_containment_actions: string[];
   recommended_containment_actions_en?: string[];
+  temporary_first_aid?: TemporaryFirstAid;
   inference_time_ms: number;
   model_used: string;
 }

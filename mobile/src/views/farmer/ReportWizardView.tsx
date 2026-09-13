@@ -15,6 +15,11 @@ import {
   Radio,
   Skull,
   User,
+  Volume2,
+  VolumeX,
+  AlertOctagon,
+  Clock,
+  ShieldCheck,
 } from 'lucide-react';
 import { SyndromeGrid } from '../../components/syndromes/SyndromeGrid';
 import { SyndromeDefinition } from '../../types/syndromes';
@@ -81,8 +86,27 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [triageResponse, setTriageResponse] = useState<TriageResponse | null>(null);
   const [isTriageAnalyzing, setIsTriageAnalyzing] = useState(false);
+  const [isSpeakingFirstAid, setIsSpeakingFirstAid] = useState(false);
 
-  // Load registered herd from SQLite
+  const handleSpeakFirstAid = (textToSpeak: string) => {
+    if (!('speechSynthesis' in window)) return;
+    if (isSpeakingFirstAid) {
+      window.speechSynthesis.cancel();
+      setIsSpeakingFirstAid(false);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const cleanText = textToSpeak.replace(/[*#•]/g, ' ').replace(/\s+/g, ' ').trim();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = currentLanguage === 'hi' ? 'hi-IN' : currentLanguage === 'mr' ? 'mr-IN' : 'en-IN';
+    utterance.rate = 0.9;
+    utterance.onend = () => setIsSpeakingFirstAid(false);
+    utterance.onerror = () => setIsSpeakingFirstAid(false);
+    setIsSpeakingFirstAid(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Load registered herd from SQLite & cleanup speech synthesis
   useEffect(() => {
     animalService
       .getAllAnimals()
@@ -90,6 +114,12 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
         if (animals && animals.length > 0) setMyAnimals(animals);
       })
       .catch(() => {});
+
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
   }, []);
 
   const handleSelectRegisteredAnimal = (animal: LocalAnimal) => {
@@ -273,11 +303,17 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
             ai_differential: triageResponse?.suspected_disease || decisionResult?.primaryDifferential?.diseaseName || selectedSyndrome.nameEnglish,
             urgency: selectedSyndrome.severity === 'CRITICAL_BIOHAZARD' ? 'CRITICAL' : 'HIGH',
             status: 'AWAITING_DOCTOR',
-            interim_advice: triageResponse?.immediate_advisory_marathi || (
-              selectedSyndrome.code === 'VSS'
-                ? '1. बाधित गाईला इतर जनावरांपासून किमान १५ मीटर दूर मोकळ्या जागेत विलगीकरणात ठेवा.\n2. तोंड व खुरांचे व्रण पोटॅशियम परमँगनेटच्या हलक्या गुलाबी पाण्याने धुवा.\n3. कोरडा चारा देऊ नका; मऊ भाताची पेज किंवा लापशी खाऊ घाला.'
-                : '1. जनावरास सावलीत व कोरड्या जागेत बांधा.\n2. ताजे व स्वच्छ पाणी मुबलक प्रमाणात उपलब्ध करा.\n3. पशुवैद्यकीय अधिकारी येईपर्यंत जनावरास विश्रांती द्या.'
-            ),
+            interim_advice: triageResponse?.temporary_first_aid
+              ? (currentLanguage === 'en'
+                  ? `${triageResponse.temporary_first_aid.summary_en}\n\nImmediate Actions:\n${triageResponse.temporary_first_aid.immediate_actions_en.map((a, i) => `${i + 1}. ${a}`).join('\n')}\n\nWhat NOT to do:\n${triageResponse.temporary_first_aid.do_not_do_en.map((d) => `• ${d}`).join('\n')}`
+                  : currentLanguage === 'hi' && triageResponse.temporary_first_aid.summary_hi
+                  ? `${triageResponse.temporary_first_aid.summary_hi}\n\nप्राथमिक उपचार:\n${(triageResponse.temporary_first_aid.immediate_actions_hi || triageResponse.temporary_first_aid.immediate_actions_mr).map((a, i) => `${i + 1}. ${a}`).join('\n')}\n\nक्या न करें:\n${(triageResponse.temporary_first_aid.do_not_do_hi || triageResponse.temporary_first_aid.do_not_do_mr).map((d) => `• ${d}`).join('\n')}`
+                  : `${triageResponse.temporary_first_aid.summary_mr}\n\nतात्काळ करावयाचे प्रथमोपचार:\n${triageResponse.temporary_first_aid.immediate_actions_mr.map((a, i) => `${i + 1}. ${a}`).join('\n')}\n\nकाय करू नये:\n${triageResponse.temporary_first_aid.do_not_do_mr.map((d) => `• ${d}`).join('\n')}`)
+              : triageResponse?.immediate_advisory_marathi || (
+                  selectedSyndrome.code === 'VSS'
+                    ? '1. बाधित गाईला इतर जनावरांपासून किमान १५ मीटर दूर मोकळ्या जागेत विलगीकरणात ठेवा.\n2. तोंड व खुरांचे व्रण पोटॅशियम परमँगनेटच्या हलक्या गुलाबी पाण्याने धुवा.\n3. कोरडा चारा देऊ नका; मऊ भाताची पेज किंवा लापशी खाऊ घाला.'
+                    : '1. जनावरास सावलीत व कोरड्या जागेत बांधा.\n2. ताजे व स्वच्छ पाणी मुबलक प्रमाणात उपलब्ध करा.\n3. पशुवैद्यकीय अधिकारी येईपर्यंत जनावरास विश्रांती द्या.'
+                ),
             village_name: snappedVillage?.village_name || currentProfile?.village || 'Ashwi Budruk',
             block_name: snappedVillage?.block_name || currentProfile?.block || 'Rahuri',
             district_name: snappedVillage?.district_name || currentProfile?.district || 'Ahmednagar',
@@ -591,53 +627,144 @@ export const ReportWizardView: React.FC<ReportWizardViewProps> = ({ onReportSave
               </p>
             </div>
           ) : triageResponse ? (
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-300 dark:border-amber-800/80 shadow-sm space-y-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200">
-                    <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-300" />
+            <div className="p-4 rounded-3xl bg-gradient-to-br from-amber-50 via-orange-50/50 to-emerald-50/40 dark:from-amber-950/40 dark:via-slate-900 dark:to-emerald-950/30 border-2 border-amber-300/80 dark:border-amber-700/60 shadow-md space-y-3.5">
+              {/* Card Header: AI badge, Disease, Urgency and TTS Speech */}
+              <div className="flex items-start justify-between gap-2 border-b border-amber-200/80 dark:border-amber-800/60 pb-3">
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <div className="p-2.5 rounded-2xl bg-amber-500 text-white shadow-xs shrink-0 mt-0.5">
+                    <Sparkles className="w-5 h-5 text-yellow-200 animate-spin" />
                   </div>
-                  <div>
-                    <span className="text-[10px] font-mono uppercase text-amber-700 dark:text-amber-400 font-bold">
-                      {t('instantAIFinding', 'तात्काळ AI निष्कर्ष')} • {Math.round(triageResponse.clinical_confidence * 100)}% {t('aiAccuracy', 'अचूकता')}
-                    </span>
-                    <h4 className={`text-xs font-black text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] font-mono font-black uppercase text-amber-800 dark:text-amber-300">
+                        {triageResponse.model_used || 'Gemini Flash AI'} • {Math.round(triageResponse.clinical_confidence * 100)}% {t('aiAccuracy', 'अचूकता')}
+                      </span>
+                      {triageResponse.temporary_first_aid?.doctor_urgency === 'EMERGENCY' || triageResponse.biohazard_alert === 'CRITICAL_ANTHRAX_LOCK' ? (
+                        <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[9px] font-black uppercase tracking-wider">
+                          आणीबाणी (Emergency)
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider">
+                          तातडीचे (Urgent)
+                        </span>
+                      )}
+                    </div>
+                    <h4 className={`text-sm font-black text-slate-900 dark:text-white leading-snug mt-0.5 truncate ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
                       {localizeTriageDisease(triageResponse, currentLanguage)}
                     </h4>
                   </div>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                  ● {t('doctorCoordination', 'डॉक्टर समन्वय')}
-                </span>
+
+                {/* TTS Audio Speech button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    hapticsService.hapticLight();
+                    const textToSpeak = triageResponse.temporary_first_aid
+                      ? currentLanguage === 'en'
+                        ? `${triageResponse.temporary_first_aid.summary_en}. Immediate actions: ${triageResponse.temporary_first_aid.immediate_actions_en.join('. ')}. Do not do: ${triageResponse.temporary_first_aid.do_not_do_en.join('. ')}`
+                        : `${triageResponse.temporary_first_aid.summary_mr}. प्रथमोपचार: ${triageResponse.temporary_first_aid.immediate_actions_mr.join('. ')}. काय करू नये: ${triageResponse.temporary_first_aid.do_not_do_mr.join('. ')}`
+                      : triageResponse.immediate_advisory_marathi;
+                    handleSpeakFirstAid(textToSpeak);
+                  }}
+                  className={`field-touch-target px-3 py-2 rounded-2xl flex items-center gap-1.5 text-xs font-bold shadow-xs shrink-0 transition-all active:scale-95 ${
+                    isSpeakingFirstAid
+                      ? 'bg-rose-600 text-white animate-pulse'
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  }`}
+                  title={currentLanguage === 'en' ? 'Listen in Audio' : 'आवाजात ऐका'}
+                >
+                  {isSpeakingFirstAid ? (
+                    <>
+                      <VolumeX className="w-4 h-4" />
+                      <span>{currentLanguage === 'en' ? 'Stop' : 'थांबवा'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-4 h-4" />
+                      <span>{currentLanguage === 'en' ? 'Listen' : 'आवाजात ऐका'}</span>
+                    </>
+                  )}
+                </button>
               </div>
 
-              {/* Provisional First-Aid Instructions */}
-              <div className="p-3 rounded-xl bg-white dark:bg-slate-900/90 border border-amber-200 dark:border-amber-800 space-y-1.5">
-                <p className={`text-xs font-bold text-amber-950 dark:text-amber-200 flex items-center gap-1 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                  <span>{t('provisionalCareTitle', '⚡ डॉक्टर येईपर्यंत तात्पुरते प्रथमोपचार (Provisional Care):')}</span>
-                </p>
-                <p className={`text-[11px] text-slate-850 dark:text-slate-200 leading-relaxed font-medium ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                  {localizeTriageAdvisory(triageResponse, currentLanguage)}
-                </p>
-                {triageResponse.recommended_containment_actions && triageResponse.recommended_containment_actions.length > 0 && (
-                  <ul className={`text-[10px] text-slate-600 dark:text-slate-400 list-disc pl-4 space-y-0.5 pt-1 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                    {localizeContainmentActions(
-                      triageResponse.recommended_containment_actions,
-                      currentLanguage,
-                      triageResponse.syndrome_code,
-                      triageResponse.recommended_containment_actions_en
-                    ).map((act, i) => (
-                      <li key={i}>{act}</li>
+              {/* TEMPORARY FIRST-AID CONTAINER (What to do while waiting for doctor) */}
+              <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900/90 border border-amber-200 dark:border-amber-800/80 space-y-3 shadow-xs">
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs font-black text-amber-950 dark:text-amber-200 uppercase tracking-wide mb-1">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>
+                      {currentLanguage === 'en'
+                        ? '⚡ Temporary First-Aid (Until Doctor Responds):'
+                        : '⚡ डॉक्टर येईपर्यंत तात्पुरते प्रथमोपचार व घरगुती काळजी:'}
+                    </span>
+                  </div>
+                  <p className={`text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-semibold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                    {triageResponse.temporary_first_aid
+                      ? currentLanguage === 'en'
+                        ? triageResponse.temporary_first_aid.summary_en
+                        : currentLanguage === 'hi' && triageResponse.temporary_first_aid.summary_hi
+                        ? triageResponse.temporary_first_aid.summary_hi
+                        : triageResponse.temporary_first_aid.summary_mr
+                      : localizeTriageAdvisory(triageResponse, currentLanguage)}
+                  </p>
+                </div>
+
+                {/* 1. Immediate Actions Checklist */}
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[10px] font-mono uppercase font-black tracking-wider text-emerald-700 dark:text-emerald-400 block">
+                    {currentLanguage === 'en' ? '✓ Immediate Actions to Take:' : '✓ तात्काळ करावयाचे उपाय:'}
+                  </span>
+                  <ul className={`text-xs space-y-1.5 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                    {(triageResponse.temporary_first_aid
+                      ? currentLanguage === 'en'
+                        ? triageResponse.temporary_first_aid.immediate_actions_en
+                        : currentLanguage === 'hi' && triageResponse.temporary_first_aid.immediate_actions_hi
+                        ? triageResponse.temporary_first_aid.immediate_actions_hi
+                        : triageResponse.temporary_first_aid.immediate_actions_mr
+                      : triageResponse.recommended_containment_actions || []
+                    ).map((action, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-slate-800 dark:text-slate-200">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                        <span className="leading-snug">{action}</span>
+                      </li>
                     ))}
                   </ul>
+                </div>
+
+                {/* 2. Strict Prohibitions: What NOT to do */}
+                {(triageResponse.temporary_first_aid?.do_not_do_mr?.length || 0) > 0 && (
+                  <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 space-y-1">
+                    <span className="text-[10px] font-mono uppercase font-black tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1">
+                      <AlertOctagon className="w-3.5 h-3.5 text-rose-600" />
+                      <span>{currentLanguage === 'en' ? '🚫 Strict Prohibitions (What NOT to do):' : '🚫 काय करू नये (सक्त मनाई):'}</span>
+                    </span>
+                    <ul className={`text-[11px] space-y-1 pl-1 text-rose-900 dark:text-rose-200 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                      {(currentLanguage === 'en'
+                        ? triageResponse.temporary_first_aid?.do_not_do_en
+                        : currentLanguage === 'hi' && triageResponse.temporary_first_aid?.do_not_do_hi
+                        ? triageResponse.temporary_first_aid.do_not_do_hi
+                        : triageResponse.temporary_first_aid?.do_not_do_mr || []
+                      )?.map((dont, idx) => (
+                        <li key={idx} className="flex items-start gap-1.5 leading-snug">
+                          <span className="text-rose-500 font-bold">•</span>
+                          <span>{dont}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
 
-              {/* Doctor Sync Meta */}
-              <div className="flex items-center justify-between text-[11px] text-emerald-800 dark:text-emerald-300 bg-emerald-100/60 dark:bg-emerald-950/60 p-2.5 rounded-xl">
-                <span className={`flex items-center gap-1.5 font-semibold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>{t('doctorSyncNotice', 'हा अहवाल थेट स्थानिक पशुवैद्यकाकडे (डॉ. अनन्या देशमुख) समक्रमित केला जाईल')}</span>
+              {/* Doctor Coordination & Video Call Bridge Notification */}
+              <div className="flex items-center justify-between text-[11px] text-blue-900 dark:text-blue-200 bg-blue-100/70 dark:bg-blue-950/60 p-3 rounded-2xl border border-blue-200/80 dark:border-blue-900">
+                <span className={`flex items-center gap-2 font-bold ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
+                  <Clock className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
+                  <span>
+                    {currentLanguage === 'en'
+                      ? 'Report queued for Dr. Ananya Deshmukh (BVO). Awaiting Video Call or e-Prescription.'
+                      : 'अहवाल डॉ. अनन्या देशमुख (BVO) यांच्याकडे पाठवला आहे. लवकरच व्हिडिओ सल्ला किंवा ई-प्रिस्क्रिप्शन मिळेल.'}
+                  </span>
                 </span>
               </div>
             </div>
