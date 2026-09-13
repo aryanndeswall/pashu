@@ -39,11 +39,15 @@ Progress: [==========] 100%
 - **Phase 12 (Milestone v1.1):** Shipped 2026-09-06. Dynamic API gateway, live Gemini perception harness, on-device fallback, 195 tests passing (43 backend + 152 mobile).
 - **Phase 13 (Milestone v1.1):** Shipped 2026-09-07. Firebase Cloud Storage pipeline, resumable media sync engine, signed URLs, 214 tests passing (58 backend + 156 mobile).
 
+### Roadmap Evolution
+- Phase 14.1 inserted after Phase 14: Production audit and functional stabilization (URGENT)
+
 ## Quick Tasks Completed
 
 | Date | Task ID | Description | Status | Verification |
 |------|---------|-------------|--------|--------------|
 | 2026-09-06 | `20260906-role-dashboards-and-english-i18n` | Role-specific dashboards (Doctor & Admin) and complete English localization across UI | complete ✓ | 30/30 Vitest suites (152 tests green), tsc green, browser verified |
+| 2026-09-13 | `20260913-fix-farmer-report-button` | Fix missing action/save button in Farmer syndromic report wizard (z-index & bottom bar conflict) | complete ✓ | tsc & vite build green, Capacitor synced, Gradle assembleDebug 0 errors, APK generated |
 
 ## Active Target: Phase 14
 - Goal: Connect cloud PostgreSQL 16 + PostGIS 3.4 database and Upstash Redis broker, stream live outbreak cluster events via WebSocket/SSE to Web-GIS command center, and bridge push containment notifications via FCM / SMS.

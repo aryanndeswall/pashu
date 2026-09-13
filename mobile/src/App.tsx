@@ -6,22 +6,43 @@ import { BottomBar } from './components/navigation/BottomBar';
 import { EmergencySOSModal } from './components/modals/EmergencySOSModal';
 import { useNavigationStore } from './store/navigationStore';
 import { useAuthStore } from './store/authStore';
-import { ReportView } from './views/ReportView';
-import { DashboardView } from './views/DashboardView';
-import { AnimalRegistryView } from './views/AnimalRegistryView';
-import { LabReferralView } from './views/LabReferralView';
-import { RoleSelectionView } from './views/RoleSelectionView';
-import { RolePortalView } from './views/RolePortalView';
-import { LoginView } from './views/LoginView';
-import { OtpVerificationView } from './views/OtpVerificationView';
-import { OnboardingView } from './views/OnboardingView';
-import { OfflinePinView } from './views/OfflinePinView';
-import { UserProfileView } from './views/UserProfileView';
-import { NearbyDoctorsView } from './views/NearbyDoctorsView';
+
+// Common / Auth Views
+import {
+  RolePortalView,
+  LoginView,
+  RoleSelectionView,
+  UserProfileView,
+} from './views/common';
+
+// Farmer Views
+import {
+  FarmerDashboardView,
+  FarmerReportView,
+  FarmerAnimalsView,
+  NearbyDoctorsView,
+} from './views/farmer';
+
+// Vet Views
+import {
+  VetDashboardView,
+  TriageQueueView,
+  VetAnimalRegistryView,
+  VetLabReferralView,
+} from './views/vet';
+
+// Admin Views
+import {
+  AdminDashboardView,
+  AdminReportsView,
+  AdminCensusView,
+  AdminLabAuditView,
+} from './views/admin';
+
 import { SyncQueueDrawer } from './components/sync/SyncQueueDrawer';
 import { useSyncStore } from './store/syncStore';
 import { useLanguageStore } from './store/languageStore';
-import { Users } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,13 +63,14 @@ export function App() {
     loginStep,
     initSession,
   } = useAuthStore();
-  const { currentLanguage, t } = useLanguageStore();
+  const { currentLanguage, t, setLanguage } = useLanguageStore();
   const [showRoleSelector, setShowRoleSelector] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     initSession();
     useSyncStore.getState().initSyncStore();
+    setLanguage('en');
   }, [initSession]);
 
   const isAuthFlowActive = !isAuthenticated || isLocked;
@@ -60,15 +82,9 @@ export function App() {
         case 'portal':
           return <RolePortalView />;
         case 'login':
+        case 'doctor_login':
+        case 'admin_login':
           return <LoginView />;
-        case 'otp':
-          return <OtpVerificationView />;
-        case 'onboarding':
-          return <OnboardingView />;
-        case 'pin_setup':
-          return <OfflinePinView mode="setup" />;
-        case 'pin_unlock':
-          return <OfflinePinView mode="unlock" />;
         default:
           return <RolePortalView />;
       }
@@ -79,25 +95,54 @@ export function App() {
       return <UserProfileView onClose={() => setShowProfile(false)} />;
     }
 
-    // 3. Demo Role Selection Screen Overlay
+    // 3. Role Info Screen Overlay (read-only — no role switching)
     if (showRoleSelector) {
-      return <RoleSelectionView onRoleSelected={() => setShowRoleSelector(false)} />;
+      return <RoleSelectionView onClose={() => setShowRoleSelector(false)} />;
     }
 
-    // 4. Primary Application Tab Viewport
-    switch (activeTab) {
-      case 'report':
-        return <ReportView />;
-      case 'dashboard':
-        return <DashboardView />;
-      case 'animals':
-        return <AnimalRegistryView />;
-      case 'labs':
-        return activeRole === 'consumer' ? <ReportView /> : <LabReferralView />;
-      case 'doctors':
-        return <NearbyDoctorsView />;
+    // 4. Role-Specific Application Viewport
+    switch (activeRole) {
+      case 'consumer':
+        switch (activeTab) {
+          case 'report':
+            return <FarmerReportView />;
+          case 'doctors':
+            return <NearbyDoctorsView />;
+          case 'animals':
+            return <FarmerAnimalsView />;
+          case 'dashboard':
+          default:
+            return <FarmerDashboardView />;
+        }
+
+      case 'doctor':
+        switch (activeTab) {
+          case 'triage':
+            return <TriageQueueView />;
+          case 'animals':
+            return <VetAnimalRegistryView />;
+          case 'labs':
+            return <VetLabReferralView />;
+          case 'dashboard':
+          default:
+            return <VetDashboardView />;
+        }
+
+      case 'admin':
+        switch (activeTab) {
+          case 'report':
+            return <AdminReportsView />;
+          case 'animals':
+            return <AdminCensusView />;
+          case 'labs':
+            return <AdminLabAuditView />;
+          case 'dashboard':
+          default:
+            return <AdminDashboardView />;
+        }
+
       default:
-        return <DashboardView />;
+        return <FarmerDashboardView />;
     }
   };
 
@@ -168,14 +213,15 @@ export function App() {
                   ({getBlockText()})
                 </span>
               </div>
+              {/* Role info button — opens read-only role screen, no switching */}
               <button
                 type="button"
                 onClick={() => setShowRoleSelector(!showRoleSelector)}
-                aria-label="Toggle Full Role Selection View"
+                aria-label="View Role Information"
                 className="field-touch-target text-[11px] font-bold underline flex items-center gap-1 opacity-90 hover:opacity-100 flex-shrink-0"
               >
-                <Users className="w-3.5 h-3.5" />
-                <span>{showRoleSelector ? t('goToApp', 'Go to App') : t('switchRole', 'Switch Role')}</span>
+                <Shield className="w-3.5 h-3.5" />
+                <span>{showRoleSelector ? t('goToApp', 'Go to App') : t('myRole', 'My Role')}</span>
               </button>
             </div>
           </div>
@@ -192,8 +238,8 @@ export function App() {
         {/* Offline Sync Queue Drawer */}
         <SyncQueueDrawer />
 
-        {/* Bottom Navigation Bar */}
-        {!isAuthFlowActive && !showRoleSelector && !showProfile && <BottomBar />}
+        {/* Bottom Navigation Bar (hidden during active farmer reporting wizard to prevent overlap) */}
+        {!isAuthFlowActive && !showRoleSelector && !showProfile && !(activeRole === 'consumer' && activeTab === 'report') && <BottomBar />}
       </div>
     </QueryClientProvider>
   );
