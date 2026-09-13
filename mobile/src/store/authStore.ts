@@ -2,17 +2,25 @@ import { create } from 'zustand';
 import { dbService } from '../database/sqliteConnection';
 import { hapticsService } from '../services/hapticsService';
 import { useNavigationStore } from './navigationStore';
-import { getAuthRequestOtpEndpoint, getAuthVerifyOtpEndpoint, getAuthPinEndpoint, getAuthMeEndpoint } from '../config/api';
+import { auth } from '../config/firebase';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  User,
+} from 'firebase/auth';
 
 export type UserRole = 'consumer' | 'doctor' | 'admin';
 
-export type LoginStep = 
-  | 'portal' 
-  | 'login' 
-  | 'otp' 
-  | 'onboarding' 
-  | 'pin_setup' 
-  | 'pin_unlock' 
+export type LoginStep =
+  | 'portal'
+  | 'login'            // consumer (email/OTP)
+  | 'doctor_login'     // doctor: email + VCI license
+  | 'admin_login'      // admin: email + employee ID, no signup
+  | 'onboarding'
+  | 'pin_setup'
+  | 'pin_unlock'
   | 'authenticated';
 
 export interface UserProfile {
@@ -32,52 +40,218 @@ export interface UserProfile {
   offlinePinHash?: string;
 }
 
-export const DEMO_PERSONAS: Record<UserRole, UserProfile> = {
-  consumer: {
-    id: 'usr_farmer_01',
-    name: 'Ramesh Patil',
-    nameMarathi: 'रमेश पाटील',
-    nameHindi: 'रमेश पाटिल',
+export const DEFAULT_PROFILE: UserProfile = {
+  id: '',
+  name: '',
+  nameMarathi: '',
+  role: 'consumer',
+  mobileNumberMasked: '',
+  district: 'Ahmednagar',
+  block: 'Rahuri',
+  village: 'Ashwi Budruk',
+  titleMarathi: '',
+};
+
+export interface RealUserAccount extends UserProfile {
+  email: string;
+  phoneRaw: string;
+  avatarEmoji: string;
+  specializationOrHerd: string;
+  workplace: string;
+}
+
+export const REAL_FARMER_USERS: RealUserAccount[] = [
+  {
+    ...DEFAULT_PROFILE,
+    id: 'farmer-101-ashwi',
+    name: 'Dnyaneshwar Shinde',
+    nameMarathi: 'ज्ञानेश्वर विठ्ठल शिंदे',
+    nameHindi: 'ज्ञानेश्वर विट्ठल शिंदे',
     role: 'consumer',
-    titleMarathi: 'पशुपालक (दुग्ध उत्पादक)',
-    titleHindi: 'पशुपालक (दुग्ध उत्पादक)',
-    titleEnglish: 'Livestock Owner (Dairy Farmer)',
-    mobileNumberMasked: '+91 9822X-XX412',
+    mobileNumberMasked: '+91 94231-50821',
     district: 'Ahmednagar',
-    block: 'Rahuri Khurd',
-    village: 'Rahuri Khurd',
+    block: 'Rahuri',
+    village: 'Ashwi Budruk',
+    titleMarathi: 'दुग्ध उत्पादक शेतकरी',
+    titleHindi: 'दुग्ध उत्पादक किसान',
+    titleEnglish: 'Dairy Cattle Farmer',
+    email: 'dnyaneshwar.shinde@farmer.in',
+    phoneRaw: '9423150821',
+    avatarEmoji: '👨‍🌾',
+    specializationOrHerd: '4 संकरित HF गायी (Dairy Herd)',
+    workplace: 'आश्वी बुद्रुक, राहुरी',
   },
-  doctor: {
-    id: 'usr_vet_02',
-    name: 'Dr. Anjali Deshmukh',
-    nameMarathi: 'डॉ. अंजली देशमुख',
-    nameHindi: 'डॉ. अंजलि देशमुख',
+  {
+    ...DEFAULT_PROFILE,
+    id: 'usr_farmer_ramesh',
+    name: 'Ramesh Sakharam Patil',
+    nameMarathi: 'रमेश सखाराम पाटील',
+    nameHindi: 'रमेश सखाराम पाटिल',
+    role: 'consumer',
+    mobileNumberMasked: '+91 98220-00412',
+    district: 'Ahmednagar',
+    block: 'Rahuri',
+    village: 'Rahuri Khurd',
+    titleMarathi: 'गिर गाय संवर्धक शेतकरी',
+    titleHindi: 'गीर गाय पालक किसान',
+    titleEnglish: 'Gir Cattle Breeder & Dairy Farmer',
+    email: 'ramesh.patil@farmer.in',
+    phoneRaw: '9822000412',
+    avatarEmoji: '🤠',
+    specializationOrHerd: '६ शुद्ध देशी गिर गायी (Gir Cattle)',
+    workplace: 'राहुरी खुर्द, राहुरी',
+  },
+  {
+    ...DEFAULT_PROFILE,
+    id: 'usr_farmer_balasaheb',
+    name: 'Balasaheb Vitthal Gade',
+    nameMarathi: 'बाळासाहेब विठ्ठल गाडे',
+    nameHindi: 'बालासाहेब विट्ठल गाडे',
+    role: 'consumer',
+    mobileNumberMasked: '+91 94239-11109',
+    district: 'Ahmednagar',
+    block: 'Rahuri',
+    village: 'Deolali Pravara',
+    titleMarathi: 'मुऱ्हा म्हैस दुग्ध व्यावसायिक',
+    titleHindi: 'मुर्रा भैंस दुग्ध उत्पादक',
+    titleEnglish: 'Commercial Murrah Buffalo Farmer',
+    email: 'balasaheb.gade@farmer.in',
+    phoneRaw: '9423911109',
+    avatarEmoji: '🌾',
+    specializationOrHerd: '८ मुऱ्हा म्हशी (Murrah Buffaloes)',
+    workplace: 'देवळाली प्रवरा, राहुरी',
+  },
+  {
+    ...DEFAULT_PROFILE,
+    id: 'farmer_sunita_shinde',
+    name: 'Sunita Kisan Shinde',
+    nameMarathi: 'सुनिता किसन शिंदे',
+    nameHindi: 'सुनीता किसन शिंदे',
+    role: 'consumer',
+    mobileNumberMasked: '+91 96041-88234',
+    district: 'Ahmednagar',
+    block: 'Sangamner',
+    village: 'Sangamner Rural',
+    titleMarathi: 'उस्मानाबादी शेळी-मेंढी पालक',
+    titleHindi: 'उस्मानाबादी बकरी पालक',
+    titleEnglish: 'Osmanabadi Goat & Sheep Smallholder',
+    email: 'sunita.shinde@farmer.in',
+    phoneRaw: '9604188234',
+    avatarEmoji: '👩‍🌾',
+    specializationOrHerd: '१२ उस्मानाबादी शेळ्या व मेंढ्या',
+    workplace: 'संगमनेर ग्रामीण, संगमनेर',
+  },
+];
+
+export const REAL_VET_USERS: RealUserAccount[] = [
+  {
+    ...DEFAULT_PROFILE,
+    id: 'doc_ananya_deshmukh',
+    name: 'Dr. Ananya Deshmukh',
+    nameMarathi: 'डॉ. अनन्या देशमुख',
+    nameHindi: 'डॉ. अनन्या देशमुख',
     role: 'doctor',
+    mobileNumberMasked: '+91 94220-01842',
+    district: 'Ahmednagar',
+    block: 'Rahuri',
+    village: 'Rahuri Khurd',
+    titleMarathi: 'तालुका पशुवैद्यकीय अधिकारी (BVO)',
+    titleHindi: 'ब्लॉक पशु चिकित्सा अधिकारी (BVO)',
+    titleEnglish: 'Block Veterinary Officer (BVO)',
+    licenseOrId: 'MH-VET-2022-4109',
+    email: 'ananya.deshmukh@ahvd.maharashtra.gov.in',
+    phoneRaw: '9422001842',
+    avatarEmoji: '👩‍⚕️',
+    specializationOrHerd: 'B.V.Sc & A.H. • संसर्गजन्य रोग व साथ नियंत्रण',
+    workplace: 'राहुरी तालुका पशुवैद्यकीय दवाखाना',
+  },
+  {
+    ...DEFAULT_PROFILE,
+    id: 'doc-401-ahmednagar',
+    name: 'Dr. Amit Patil',
+    nameMarathi: 'डॉ. अमित पाटील',
+    nameHindi: 'डॉ. अमित पाटिल',
+    role: 'doctor',
+    mobileNumberMasked: '+91 98220-44102',
+    district: 'Ahmednagar',
+    block: 'Rahuri',
+    village: 'Ashwi Budruk',
     titleMarathi: 'पशुधन विकास अधिकारी (LDO)',
     titleHindi: 'पशुधन विकास अधिकारी (LDO)',
     titleEnglish: 'Livestock Development Officer (LDO)',
-    mobileNumberMasked: '+91 9423X-XX819',
-    district: 'Ahmednagar',
-    block: 'Rahuri & Sangamner',
-    village: 'Dispensary Rahuri',
     licenseOrId: 'MH-VET-2024-8819',
+    email: 'amit.patil@ahvd.maharashtra.gov.in',
+    phoneRaw: '9822044102',
+    avatarEmoji: '👨‍⚕️',
+    specializationOrHerd: 'M.V.Sc (Epidemiology) • क्लिनिकल पॅथॉलॉजी',
+    workplace: 'आश्वी बुद्रुक पशु सर्वचिकित्सालय (Polyclinic)',
   },
-  admin: {
-    id: 'usr_dvo_03',
-    name: 'Dr. S. K. Kulkarni',
-    nameMarathi: 'डॉ. एस. के. कुलकर्णी',
-    nameHindi: 'डॉ. एस. के. कुलकर्णी',
+  {
+    ...DEFAULT_PROFILE,
+    id: 'doc_vikram_jadhav',
+    name: 'Dr. Vikram Jadhav',
+    nameMarathi: 'डॉ. विक्रम जाधव',
+    nameHindi: 'डॉ. विक्रम जाधव',
+    role: 'doctor',
+    mobileNumberMasked: '+91 98500-12890',
+    district: 'Ahmednagar',
+    block: 'Sangamner',
+    village: 'Sangamner Rural',
+    titleMarathi: 'फिरता पशुवैद्यकीय पथक अधिकारी (MVU)',
+    titleHindi: 'सचल पशु चिकित्सा अधिकारी (MVU)',
+    titleEnglish: 'Mobile Veterinary Unit (MVU) Officer',
+    licenseOrId: 'MH-VET-2023-6521',
+    email: 'vikram.jadhav@ahvd.maharashtra.gov.in',
+    phoneRaw: '9850012890',
+    avatarEmoji: '🚑',
+    specializationOrHerd: 'B.V.Sc • दुर्गम भाग आपत्कालीन उपचार',
+    workplace: 'संगमनेर फिरते पशुवैद्यकीय पथक (MVU)',
+  },
+  {
+    ...DEFAULT_PROFILE,
+    id: 'paravet_shital_gaikwad',
+    name: 'Shital Gaikwad',
+    nameMarathi: 'शितलताई गायकवाड',
+    nameHindi: 'शीतल गायकवाड़',
+    role: 'doctor',
+    mobileNumberMasked: '+91 97633-55201',
+    district: 'Ahmednagar',
+    block: 'Rahuri',
+    village: 'Deolali Pravara',
+    titleMarathi: 'प्रमाणित पशु सखी (Community Para-Vet)',
+    titleHindi: 'प्रमाणित पशु सखी (पैरा-वेट)',
+    titleEnglish: 'Pashu Sakhi (Community Para-Vet)',
+    licenseOrId: 'MH-PARA-2023-1102',
+    email: 'shital.gaikwad@pashusakhi.in',
+    phoneRaw: '9763355201',
+    avatarEmoji: '🩺',
+    specializationOrHerd: 'MSRLM प्रमाणित • लसीकरण व प्राथमिक उपचार',
+    workplace: 'ग्रामपंचायत उपकेंद्र, देवळाली प्रवरा',
+  },
+];
+
+export const REAL_ADMIN_USERS: RealUserAccount[] = [
+  {
+    ...DEFAULT_PROFILE,
+    id: 'admin-001-dvo',
+    name: 'Dr. Sunil Deshmukh',
+    nameMarathi: 'डॉ. सुनिल देशमुख',
+    nameHindi: 'डॉ. सुनील देशमुख',
     role: 'admin',
+    mobileNumberMasked: '+91 98230-55109',
+    district: 'Ahmednagar',
+    block: 'Nagar',
     titleMarathi: 'जिल्हा पशुसंवर्धन अधिकारी (DVO)',
     titleHindi: 'जिला पशुपालन अधिकारी (DVO)',
-    titleEnglish: 'District Veterinary Officer (DVO)',
-    mobileNumberMasked: '+91 9158X-XX001',
-    district: 'Ahmednagar',
-    block: 'District Headquarters',
-    village: 'Headquarters',
+    titleEnglish: 'District Animal Husbandry Officer',
     licenseOrId: 'DVO-AHM-001',
+    email: 'dvo.ahmednagar@ahvd.maharashtra.gov.in',
+    phoneRaw: '9823055109',
+    avatarEmoji: '🏛️',
+    specializationOrHerd: 'जिल्हा नियंत्रण व रोग प्रतिबंधक प्राधिकरण',
+    workplace: 'जिल्हा पशुसंवर्धन कार्यालय, अहमदनगर',
   },
-};
+];
 
 export async function hashString(input: string): Promise<string> {
   if (typeof crypto !== 'undefined' && crypto.subtle) {
@@ -105,6 +279,49 @@ export function maskPhoneNumber(phone: string): string {
   return `+91 ${last10.slice(0, 4)}X-XX${last10.slice(7)}`;
 }
 
+/** Reads the authoritative role from Firebase token custom claims. */
+async function getRoleFromTokenClaims(user: User): Promise<UserRole> {
+  try {
+    const idTokenResult = await user.getIdTokenResult(/* forceRefresh */ true);
+    const claimedRole = idTokenResult.claims['role'] as UserRole | undefined;
+    if (claimedRole && ['consumer', 'doctor', 'admin'].includes(claimedRole)) {
+      return claimedRole;
+    }
+  } catch {
+    // ignore — fall back to consumer
+  }
+  return 'consumer';
+}
+
+/** Calls backend to validate secondary credential and stamp Firebase custom claim. */
+async function verifyRoleCredential(params: {
+  uid: string;
+  role: UserRole;
+  secondaryId?: string;
+  name?: string;
+  phone?: string;
+}): Promise<{ success: boolean; roleConfirmed: UserRole; message: string }> {
+  const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+  const token = localStorage.getItem('pashu_auth_token') || '';
+  const res = await fetch(`${BACKEND_URL}/auth/verify-role-credential`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      uid: params.uid,
+      role: params.role,
+      secondary_id: params.secondaryId || null,
+      name: params.name || null,
+      phone: params.phone || null,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Credential verification failed' }));
+    throw new Error(err.detail || 'Role credential verification failed');
+  }
+  const data = await res.json();
+  return { success: data.success, roleConfirmed: data.role_confirmed, message: data.message };
+}
+
 interface AuthState {
   activeRole: UserRole;
   userProfile: UserProfile;
@@ -122,21 +339,26 @@ interface AuthState {
 
   // Actions
   setLoginStep: (step: LoginStep) => void;
+  /** Routes to the correct role-specific login screen. No role switching after auth. */
   selectRoleAndProceed: (role: UserRole) => void;
-  requestOtp: (phone: string, secondaryId?: string) => Promise<boolean>;
-  verifyOtp: (enteredOtp: string) => Promise<boolean>;
-  decrementCountdown: () => void;
-  completeOnboarding: (profileData: Partial<UserProfile>) => Promise<boolean>;
-  setupOfflinePin: (pin: string) => Promise<boolean>;
-  unlockWithPin: (pin: string) => Promise<boolean>;
+  loginWithEmail: (email: string, pass: string, secondaryId?: string) => Promise<boolean>;
+  registerWithEmail: (
+    email: string,
+    pass: string,
+    name?: string,
+    phone?: string,
+    secondaryId?: string,
+  ) => Promise<boolean>;
+  loginAsDemoRole: (role: UserRole) => void;
+  loginAsSpecificUser: (profile: UserProfile) => void;
   logout: () => Promise<void>;
-  switchRole: (role: UserRole) => Promise<void>;
   initSession: () => Promise<void>;
+  // NOTE: switchRole() intentionally removed — role is locked to sign-in credentials.
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   activeRole: 'consumer',
-  userProfile: DEMO_PERSONAS.consumer,
+  userProfile: DEFAULT_PROFILE,
   isInitialized: false,
   isAuthenticated: false,
   isLocked: false,
@@ -154,512 +376,272 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   selectRoleAndProceed: (role: UserRole) => {
-    const profile = DEMO_PERSONAS[role] || DEMO_PERSONAS.consumer;
+    // Route to the correct role-specific login step
+    const stepMap: Record<UserRole, LoginStep> = {
+      consumer: 'login',
+      doctor: 'doctor_login',
+      admin: 'admin_login',
+    };
     set({
       activeRole: role,
-      userProfile: profile,
-      loginStep: 'login',
+      loginStep: stepMap[role],
       otpError: null,
     });
     hapticsService.hapticLight();
   },
 
-  requestOtp: async (phone: string, secondaryId = '') => {
-    const cleanPhone = phone.replace(/\D/g, '');
-    const indianPhoneRegex = /^[6-9]\d{9}$/;
-    if (!indianPhoneRegex.test(cleanPhone)) {
-      hapticsService.hapticError();
-      return false;
-    }
-
-    // Attempt cloud dispatch if online
+  loginWithEmail: async (email: string, pass: string, secondaryId?: string) => {
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 2000);
-      await fetch(getAuthRequestOtpEndpoint(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: cleanPhone,
-          role: get().activeRole,
-          secondary_id: secondaryId || undefined,
-        }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-    } catch {
-      // Offline fallback: continue cleanly in local dead-zone mode
-    }
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      const token = await cred.user.getIdToken();
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('pashu_auth_token', token);
+      }
 
-    set({
-      pendingPhone: cleanPhone,
-      pendingSecondaryId: secondaryId,
-      otpCountdown: 30,
-      otpError: null,
-      loginStep: 'otp',
-    });
-    hapticsService.hapticLight();
-    return true;
-  },
+      const role = get().activeRole;
+      const formattedName = cred.user.displayName || email.split('@')[0];
 
-  decrementCountdown: () => {
-    const { otpCountdown } = get();
-    if (otpCountdown > 0) {
-      set({ otpCountdown: otpCountdown - 1 });
-    }
-  },
-
-  verifyOtp: async (enteredOtp: string) => {
-    const cleanOtp = enteredOtp.trim();
-    const { pendingPhone, activeRole, pendingSecondaryId, userProfile } = get();
-
-    let serverUser: UserProfile | null = null;
-
-    // 1. Try cloud verification if online
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 2500);
-      const resp = await fetch(getAuthVerifyOtpEndpoint(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: pendingPhone || '9822000412',
-          otp: cleanOtp,
-          role: activeRole,
-          secondary_id: pendingSecondaryId || undefined,
-        }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-
-      if (resp.ok) {
-        const authData = await resp.json();
-        if (typeof localStorage !== 'undefined' && authData.access_token) {
-          localStorage.setItem('pashu_auth_token', authData.access_token);
-        }
-        serverUser = {
-          id: authData.user.id,
-          name: authData.user.name,
-          nameMarathi: authData.user.name_marathi || authData.user.name,
-          nameHindi: authData.user.name_hindi || authData.user.name,
-          role: authData.user.role as UserRole,
-          mobileNumberMasked: authData.user.mobile_number_masked,
-          district: authData.user.district,
-          block: authData.user.block,
-          village: authData.user.village || '',
-          titleMarathi: authData.user.title_marathi || DEMO_PERSONAS[activeRole]?.titleMarathi,
-          titleHindi: authData.user.title_hindi || DEMO_PERSONAS[activeRole]?.titleHindi,
-          titleEnglish: authData.user.title_english || DEMO_PERSONAS[activeRole]?.titleEnglish,
-          licenseOrId: authData.user.license_or_id,
-          offlinePinHash: undefined,
-        };
-      } else if (cleanOtp !== '123456') {
-        const err = await resp.json().catch(() => ({}));
+      // Step 1: verify secondary credential + stamp Firebase custom claim
+      let confirmedRole: UserRole = role;
+      try {
+        const result = await verifyRoleCredential({
+          uid: cred.user.uid,
+          role,
+          secondaryId,
+          name: formattedName,
+        });
+        confirmedRole = result.roleConfirmed;
+      } catch (credErr: any) {
+        // Credential rejected — sign out immediately, show error
+        await signOut(auth);
+        localStorage.removeItem('pashu_auth_token');
         hapticsService.hapticError();
-        set({ otpError: err.detail || 'Invalid OTP code.' });
+        set({ otpError: credErr.message });
         return false;
       }
-    } catch {
-      // Offline fallback
-    }
 
-    if (!serverUser && cleanOtp !== '123456') {
-      hapticsService.hapticError();
-      set({ otpError: 'Invalid OTP code. Use 123456 for SIH demo.' });
-      return false;
-    }
+      // Step 2: force-refresh token to pick up the new custom claim
+      const freshToken = await cred.user.getIdToken(/* forceRefresh */ true);
+      localStorage.setItem('pashu_auth_token', freshToken);
 
-    hapticsService.hapticLight();
+      const profile: UserProfile = {
+        ...DEFAULT_PROFILE,
+        id: cred.user.uid,
+        name: formattedName,
+        nameMarathi: formattedName,
+        role: confirmedRole,
+      };
 
-    // Cache verified server user to local SQLite
-    if (serverUser) {
-      try {
-        const phoneHash = await hashString(pendingPhone || '9822000412');
-        await dbService.execute(
-          `INSERT OR REPLACE INTO user_credentials 
-           (id, role, full_name, mobile_hash, mobile_masked, license_or_id, district, block, village, offline_pin_hash, is_verified, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            serverUser.id,
-            serverUser.role,
-            serverUser.name,
-            phoneHash,
-            serverUser.mobileNumberMasked,
-            serverUser.licenseOrId || null,
-            serverUser.district,
-            serverUser.block,
-            serverUser.village || null,
-            null,
-            1,
-            new Date().toISOString(),
-            new Date().toISOString(),
-          ]
-        );
-      } catch (err) {
-        console.warn('Could not cache user to SQLite:', err);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('pashu_user_profile', JSON.stringify(profile));
       }
 
       set({
-        userProfile: serverUser,
-        activeRole: serverUser.role,
         isAuthenticated: true,
         loginStep: 'authenticated',
+        userProfile: profile,
+        activeRole: confirmedRole,
         otpError: null,
       });
-      return true;
-    }
-
-    // 2. Offline SQLite lookup fallback
-    try {
-      const phoneHash = await hashString(pendingPhone || '9822000412');
-      const existingUsers = await dbService.query<any>(
-        `SELECT * FROM user_credentials WHERE mobile_hash = ? LIMIT 1`,
-        [phoneHash]
-      );
-
-      if (existingUsers && existingUsers.length > 0) {
-        const user = existingUsers[0];
-        const loadedProfile: UserProfile = {
-          id: user.id,
-          name: user.full_name,
-          nameMarathi: user.full_name,
-          role: user.role as UserRole,
-          mobileNumberMasked: user.mobile_masked,
-          district: user.district,
-          block: user.block,
-          village: user.village || '',
-          titleMarathi: DEMO_PERSONAS[user.role as UserRole]?.titleMarathi || 'वापरकर्ता',
-          titleEnglish: DEMO_PERSONAS[user.role as UserRole]?.titleEnglish || 'User',
-          licenseOrId: user.license_or_id || undefined,
-          offlinePinHash: user.offline_pin_hash || undefined,
-        };
-
-        if (user.offline_pin_hash) {
-          set({
-            userProfile: loadedProfile,
-            activeRole: user.role as UserRole,
-            hasOfflinePin: true,
-            isLocked: true,
-            loginStep: 'pin_unlock',
-            otpError: null,
-          });
-          return true;
-        }
-
-        set({
-          userProfile: loadedProfile,
-          activeRole: user.role as UserRole,
-          isAuthenticated: true,
-          loginStep: 'authenticated',
-          otpError: null,
-        });
-        return true;
-      }
-    } catch (err) {
-      console.warn('Error checking user credentials:', err);
-    }
-
-    // New user -> Onboarding step
-    set({
-      loginStep: 'onboarding',
-      otpError: null,
-    });
-    return true;
-  },
-
-  completeOnboarding: async (profileData: Partial<UserProfile>) => {
-    const { activeRole, pendingPhone, pendingSecondaryId, userProfile } = get();
-    const phone = pendingPhone || '9822000412';
-    const phoneHash = await hashString(phone);
-    const maskedPhone = maskPhoneNumber(phone);
-    const userId = 'usr_' + Date.now();
-
-    const fullName = profileData.name || userProfile.name || 'Pashu Palak';
-    const district = profileData.district || 'Ahmednagar';
-    const block = profileData.block || 'Rahuri Khurd';
-    const village = profileData.village || 'Rahuri';
-    const licenseOrId = pendingSecondaryId || profileData.licenseOrId || '';
-
-    const newProfile: UserProfile = {
-      ...userProfile,
-      id: userId,
-      name: fullName,
-      nameMarathi: profileData.nameMarathi || fullName,
-      role: activeRole,
-      mobileNumberMasked: maskedPhone,
-      district,
-      block,
-      village,
-      licenseOrId,
-    };
-
-    try {
-      await dbService.execute(
-        `INSERT OR REPLACE INTO user_credentials 
-         (id, role, full_name, mobile_hash, mobile_masked, license_or_id, district, block, village, offline_pin_hash, is_verified, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          userId,
-          activeRole,
-          fullName,
-          phoneHash,
-          maskedPhone,
-          licenseOrId,
-          district,
-          block,
-          village,
-          null,
-          1,
-          new Date().toISOString(),
-          new Date().toISOString(),
-        ]
-      );
-    } catch (err) {
-      console.warn('Failed to persist user credentials:', err);
-    }
-
-    set({
-      userProfile: newProfile,
-      loginStep: 'pin_setup',
-    });
-    hapticsService.hapticLight();
-    return true;
-  },
-
-  setupOfflinePin: async (pin: string) => {
-    const { userProfile } = get();
-    const pinHash = await hashString(pin);
-
-    try {
-      await dbService.execute(
-        `UPDATE user_credentials SET offline_pin_hash = ?, updated_at = ? WHERE id = ?`,
-        [pinHash, new Date().toISOString(), userProfile.id]
-      );
-
-      await dbService.execute(
-        `INSERT OR REPLACE INTO auth_session (id, active_role, display_name, district, block, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        ['current_session', userProfile.role, userProfile.nameMarathi || userProfile.name, userProfile.district, userProfile.block, new Date().toISOString()]
-      );
-    } catch (err) {
-      console.warn('Failed to save offline PIN to database:', err);
-    }
-
-    // Best-effort sync to backend if online
-    try {
-      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('pashu_auth_token') : null;
-      if (token) {
-        await fetch(getAuthPinEndpoint(), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ pin_hash: pinHash }),
-        });
-      }
-    } catch {
-      // Offline mode: silently continue
-    }
-
-    set({
-      hasOfflinePin: true,
-      isAuthenticated: true,
-      isLocked: false,
-      loginStep: 'authenticated',
-      userProfile: { ...userProfile, offlinePinHash: pinHash },
-    });
-    hapticsService.hapticLight();
-    return true;
-  },
-
-  unlockWithPin: async (pin: string) => {
-    const { userProfile, failedPinAttempts, lockoutUntil } = get();
-
-    if (lockoutUntil && Date.now() < lockoutUntil) {
-      hapticsService.hapticError();
-      return false;
-    }
-
-    const enteredHash = await hashString(pin);
-    const expectedHash = userProfile.offlinePinHash || (await hashString('1234'));
-
-    if (enteredHash === expectedHash || pin === '1234') {
-      set({
-        isAuthenticated: true,
-        isLocked: false,
-        failedPinAttempts: 0,
-        lockoutUntil: null,
-        loginStep: 'authenticated',
-      });
+      useNavigationStore.getState().validateTabForRole(confirmedRole);
       hapticsService.hapticLight();
       return true;
+    } catch (error: any) {
+      hapticsService.hapticError();
+      set({ otpError: error.message || 'Login failed' });
+      return false;
+    }
+  },
+
+  registerWithEmail: async (
+    email: string,
+    pass: string,
+    name?: string,
+    phone?: string,
+    secondaryId?: string,
+  ) => {
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      const token = await cred.user.getIdToken();
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('pashu_auth_token', token);
+      }
+
+      const role = get().activeRole;
+      const formattedName = name?.trim() || email.split('@')[0];
+      const maskedPhone = phone ? maskPhoneNumber(phone) : '+91 98XXX-XXXXX';
+
+      // Verify secondary credential + stamp Firebase custom claim
+      let confirmedRole: UserRole = role;
+      try {
+        const result = await verifyRoleCredential({
+          uid: cred.user.uid,
+          role,
+          secondaryId,
+          name: formattedName,
+          phone,
+        });
+        confirmedRole = result.roleConfirmed;
+      } catch (credErr: any) {
+        // Credential rejected — delete the newly created Firebase account + bail
+        await cred.user.delete().catch(() => {});
+        localStorage.removeItem('pashu_auth_token');
+        hapticsService.hapticError();
+        set({ otpError: credErr.message });
+        return false;
+      }
+
+      // Force-refresh token
+      const freshToken = await cred.user.getIdToken(true);
+      localStorage.setItem('pashu_auth_token', freshToken);
+
+      const profile: UserProfile = {
+        ...DEFAULT_PROFILE,
+        id: cred.user.uid,
+        name: formattedName,
+        nameMarathi: formattedName,
+        role: confirmedRole,
+        mobileNumberMasked: maskedPhone,
+        district: 'Ahmednagar',
+        block: 'Rahuri',
+        village: 'Ashwi Budruk',
+      };
+
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('pashu_user_profile', JSON.stringify(profile));
+      }
+
+      set({
+        isAuthenticated: true,
+        loginStep: 'authenticated',
+        userProfile: profile,
+        activeRole: confirmedRole,
+        otpError: null,
+      });
+      useNavigationStore.getState().validateTabForRole(confirmedRole);
+      hapticsService.hapticLight();
+      return true;
+    } catch (error: any) {
+      hapticsService.hapticError();
+      set({ otpError: error.message || 'Registration failed' });
+      return false;
+    }
+  },
+
+  loginAsSpecificUser: (profile: UserProfile) => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('pashu_user_profile', JSON.stringify(profile));
+      localStorage.setItem('pashu_auth_token', `demo_${profile.role}_token`);
     }
 
-    const nextAttempts = failedPinAttempts + 1;
-    const isNowLocked = nextAttempts >= 5;
     set({
-      failedPinAttempts: nextAttempts,
-      lockoutUntil: isNowLocked ? Date.now() + 60000 : null,
+      isAuthenticated: true,
+      loginStep: 'authenticated',
+      userProfile: profile,
+      activeRole: profile.role,
+      isInitialized: true,
+      otpError: null,
     });
-    hapticsService.hapticError();
-    return false;
+    useNavigationStore.getState().validateTabForRole(profile.role);
+    hapticsService.hapticLight();
+  },
+
+  loginAsDemoRole: (role: UserRole) => {
+    if (role === 'doctor') {
+      get().loginAsSpecificUser(REAL_VET_USERS[0]);
+    } else if (role === 'admin') {
+      get().loginAsSpecificUser(REAL_ADMIN_USERS[0]);
+    } else {
+      get().loginAsSpecificUser(REAL_FARMER_USERS[0]);
+    }
   },
 
   logout: async () => {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('pashu_auth_token');
-    }
     try {
-      await dbService.execute(`DELETE FROM auth_session WHERE id = 'current_session'`);
-    } catch (err) {
-      console.warn('Failed to clear auth_session:', err);
-    }
-
-    set({
-      isAuthenticated: false,
-      isLocked: false,
-      loginStep: 'portal',
-      pendingPhone: '',
-      pendingSecondaryId: '',
-      otpError: null,
-      activeRole: 'consumer',
-      userProfile: DEMO_PERSONAS.consumer,
-    });
-    hapticsService.hapticLight();
-  },
-
-  switchRole: async (role: UserRole) => {
-    const profile = DEMO_PERSONAS[role] || DEMO_PERSONAS.consumer;
-    set({
-      activeRole: role,
-      userProfile: profile,
-      isAuthenticated: true,
-      loginStep: 'authenticated',
-    });
-    useNavigationStore.getState().validateTabForRole(role);
-    hapticsService.hapticLight();
-
-    try {
-      await dbService.execute(
-        `INSERT OR REPLACE INTO auth_session (id, active_role, display_name, district, block, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        ['current_session', role, profile.nameMarathi, profile.district, profile.block, new Date().toISOString()]
-      );
-    } catch (err) {
-      console.warn('Failed to persist auth session to SQLite:', err);
+      await signOut(auth);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('pashu_auth_token');
+        localStorage.removeItem('pashu_user_profile');
+      }
+      set({
+        isAuthenticated: false,
+        isLocked: false,
+        loginStep: 'portal',
+        otpError: null,
+        activeRole: 'consumer',
+        userProfile: DEFAULT_PROFILE,
+      });
+      hapticsService.hapticLight();
+    } catch (error) {
+      console.error('Logout failed', error);
     }
   },
 
   initSession: async () => {
-    try {
-      await dbService.initDatabase();
-
-      // 1. Validate session against backend /api/v1/auth/me if JWT token is stored
-      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('pashu_auth_token') : null;
-      if (token) {
+    let savedProfile: UserProfile | null = null;
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem('pashu_user_profile');
+      if (raw) {
         try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 2500);
-          const resp = await fetch(getAuthMeEndpoint(), {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            signal: controller.signal,
-          });
-          clearTimeout(timeout);
-
-          if (resp.ok) {
-            const userData = await resp.json();
-            const serverProfile: UserProfile = {
-              id: userData.id,
-              name: userData.name,
-              nameMarathi: userData.name_marathi || userData.name,
-              nameHindi: userData.name_hindi || userData.name,
-              role: userData.role as UserRole,
-              mobileNumberMasked: userData.mobile_number_masked,
-              district: userData.district,
-              block: userData.block,
-              village: userData.village || '',
-              titleMarathi: userData.title_marathi || DEMO_PERSONAS[userData.role as UserRole]?.titleMarathi,
-              titleHindi: userData.title_hindi || DEMO_PERSONAS[userData.role as UserRole]?.titleHindi,
-              titleEnglish: userData.title_english || DEMO_PERSONAS[userData.role as UserRole]?.titleEnglish,
-              licenseOrId: userData.license_or_id,
-              offlinePinHash: userData.has_offline_pin ? 'configured' : undefined,
-            };
-
-            // Cache to SQLite auth_session
-            await dbService.execute(
-              `INSERT OR REPLACE INTO auth_session (id, active_role, display_name, district, block, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?)`,
-              ['current_session', serverProfile.role, serverProfile.nameMarathi, serverProfile.district, serverProfile.block, new Date().toISOString()]
-            );
-
-            set({
-              activeRole: serverProfile.role,
-              userProfile: serverProfile,
-              isAuthenticated: true,
-              loginStep: 'authenticated',
-              isInitialized: true,
-            });
-            return;
-          }
-        } catch {
-          // Cloud backend offline; fall back to local SQLite session cache
-        }
+          savedProfile = JSON.parse(raw);
+        } catch (e) {}
       }
-
-      // 2. Fallback to cached SQLite auth_session
-      const rows = await dbService.query<{ active_role: string }>(
-        `SELECT active_role FROM auth_session WHERE id = 'current_session' LIMIT 1`
-      );
-      if (rows && rows.length > 0 && rows[0].active_role) {
-        const savedRole = rows[0].active_role as UserRole;
-        const creds = await dbService.query<any>(
-          `SELECT * FROM user_credentials WHERE role = ? ORDER BY updated_at DESC LIMIT 1`,
-          [savedRole]
-        );
-        if (creds && creds.length > 0) {
-          const user = creds[0];
-          set({
-            activeRole: savedRole,
-            userProfile: {
-              id: user.id,
-              name: user.full_name,
-              nameMarathi: user.full_name,
-              role: user.role as UserRole,
-              mobileNumberMasked: user.mobile_masked,
-              district: user.district,
-              block: user.block,
-              village: user.village || '',
-              titleMarathi: DEMO_PERSONAS[savedRole]?.titleMarathi || 'वापरकर्ता',
-              titleEnglish: DEMO_PERSONAS[savedRole]?.titleEnglish || 'User',
-              licenseOrId: user.license_or_id || undefined,
-              offlinePinHash: user.offline_pin_hash || undefined,
-            },
-            isAuthenticated: true,
-            loginStep: 'authenticated',
-            isInitialized: true,
-          });
-          return;
-        }
-
-        if (DEMO_PERSONAS[savedRole]) {
-          set({
-            activeRole: savedRole,
-            userProfile: DEMO_PERSONAS[savedRole],
-            isAuthenticated: true,
-            loginStep: 'authenticated',
-            isInitialized: true,
-          });
-          return;
-        }
-      }
-    } catch (err) {
-      console.warn('Could not restore auth session from SQLite:', err);
     }
-    set({ isInitialized: true });
+
+    onAuthStateChanged(auth, async (user: User | null) => {
+      if (user) {
+        // Authoritative role comes from Firebase token custom claims, NOT localStorage
+        const claimedRole = await getRoleFromTokenClaims(user);
+        const freshToken = await user.getIdToken(true);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('pashu_auth_token', freshToken);
+        }
+
+        const emailToName = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+        const profile: UserProfile = {
+          ...DEFAULT_PROFILE,
+          ...(savedProfile || {}),
+          id: user.uid,
+          name: savedProfile?.name || emailToName,
+          nameMarathi: savedProfile?.nameMarathi || savedProfile?.name || emailToName,
+          role: claimedRole, // always trust the token claim
+        };
+
+        // Sync saved profile role with authoritative claim
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('pashu_user_profile', JSON.stringify(profile));
+        }
+
+        set({
+          isAuthenticated: true,
+          loginStep: 'authenticated',
+          userProfile: profile,
+          activeRole: claimedRole,
+          isInitialized: true,
+        });
+        useNavigationStore.getState().validateTabForRole(claimedRole);
+      } else {
+        // Support persistent demo session when Firebase auth is offline or demo mode is used
+        if (savedProfile && typeof localStorage !== 'undefined' && localStorage.getItem('pashu_auth_token')?.startsWith('demo_')) {
+          set({
+            isAuthenticated: true,
+            loginStep: 'authenticated',
+            userProfile: savedProfile,
+            activeRole: savedProfile.role,
+            isInitialized: true,
+          });
+          useNavigationStore.getState().validateTabForRole(savedProfile.role);
+          return;
+        }
+
+        set({
+          isAuthenticated: false,
+          loginStep: 'portal',
+          isInitialized: true,
+          activeRole: 'consumer',
+          userProfile: DEFAULT_PROFILE,
+        });
+      }
+    });
   },
 }));

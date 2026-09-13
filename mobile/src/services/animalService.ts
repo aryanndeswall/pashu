@@ -41,85 +41,140 @@ export function maskMobileNumber(phone: string): string {
   return '+91-XXXXX-0000';
 }
 
-export const DEMO_ANIMALS: LocalAnimal[] = [
-  {
-    tagNumber: '100293847561',
-    ownerName: 'रमेश पाटील (Ramesh Patil)',
-    ownerMobileMasked: '+91-XXXXX-9842',
-    species: 'गाय (Cow - Bovine)',
-    breed: 'गीर (Gir)',
-    ageMonths: 36,
-    villageLgdCode: 558301,
-    villageName: 'Ashwi Budruk (राहुरी)',
-    vaccinationStatus: 'BOOSTER_DUE',
-    lastSyncedAt: new Date().toISOString(),
-  },
-  {
-    tagNumber: '100293847562',
-    ownerName: 'रमेश पाटील (Ramesh Patil)',
-    ownerMobileMasked: '+91-XXXXX-9842',
-    species: 'म्हैस (Buffalo)',
-    breed: 'मुऱ्हा (Murrah)',
-    ageMonths: 48,
-    villageLgdCode: 558301,
-    villageName: 'Ashwi Budruk (राहुरी)',
-    vaccinationStatus: 'UP_TO_DATE',
-    lastSyncedAt: new Date().toISOString(),
-  },
-  {
-    tagNumber: '100293847563',
-    ownerName: 'सुरेश काळे (Suresh Kale)',
-    ownerMobileMasked: '+91-XXXXX-5678',
-    species: 'शेळी (Goat)',
-    breed: 'उस्मानाबादी (Osmanabadi)',
-    ageMonths: 18,
-    villageLgdCode: 558301,
-    villageName: 'Ashwi Budruk (राहुरी)',
-    vaccinationStatus: 'UP_TO_DATE',
-    lastSyncedAt: new Date().toISOString(),
-  },
-];
-
 class AnimalService {
   /**
-   * Seed demo animals if local_animals SQLite table is empty
+   * Get all registered animals from cloud API and offline SQLite
    */
-  async seedDemoAnimalsIfEmpty(): Promise<void> {
-    const countRes = await dbService.query<{ count: number }>(
-      `SELECT COUNT(*) as count FROM local_animals`
-    );
-    const count = countRes[0]?.count || 0;
-    if (count === 0) {
-      for (const a of DEMO_ANIMALS) {
+  async getAllAnimals(): Promise<LocalAnimal[]> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(getApiUrl('animals'), { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        const serverAnimals = data.items || [];
+        for (const a of serverAnimals) {
+          await dbService.execute(
+            `INSERT OR REPLACE INTO local_animals (
+              tag_number, owner_name, owner_mobile_masked, species, breed,
+              age_months, village_lgd_code, village_name, vaccination_status, last_synced_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              a.tag_number,
+              a.owner_name,
+              a.owner_phone_masked,
+              a.species,
+              a.breed || '',
+              a.age_months || 0,
+              a.village_lgd_code || 0,
+              a.village_name || '',
+              a.vaccination_status || 'UP_TO_DATE',
+              a.updated_at || new Date().toISOString(),
+            ]
+          );
+        }
+      }
+    } catch {
+      // offline: read from local SQLite
+    }
+
+    let rows = await dbService.query<any>(`SELECT * FROM local_animals ORDER BY tag_number ASC`);
+    if (!rows || rows.length === 0) {
+      // Baseline seed for real farmers
+      const DEFAULT_ANIMALS = [
+        {
+          tag_number: '100294819201',
+          owner_name: 'रमेश सखाराम पाटील (Ramesh Patil)',
+          owner_mobile_masked: '+91 98220-00412',
+          species: 'Cow (गाय)',
+          breed: 'गिर (Gir)',
+          age_months: 36,
+          village_lgd_code: 558301,
+          village_name: 'Rahuri Khurd',
+          vaccination_status: 'BOOSTER_DUE',
+        },
+        {
+          tag_number: '100294819202',
+          owner_name: 'रमेश सखाराम पाटील (Ramesh Patil)',
+          owner_mobile_masked: '+91 98220-00412',
+          species: 'Cow (गाय)',
+          breed: 'गिर (Gir)',
+          age_months: 24,
+          village_lgd_code: 558301,
+          village_name: 'Rahuri Khurd',
+          vaccination_status: 'UP_TO_DATE',
+        },
+        {
+          tag_number: '100847291044',
+          owner_name: 'बाळासाहेब विठ्ठल गाडे (Balasaheb Gade)',
+          owner_mobile_masked: '+91 94239-11109',
+          species: 'Buffalo (म्हैस)',
+          breed: 'मुऱ्हा (Murrah)',
+          age_months: 42,
+          village_lgd_code: 558302,
+          village_name: 'Deolali Pravara',
+          vaccination_status: 'OVERDUE',
+        },
+        {
+          tag_number: '100847291045',
+          owner_name: 'बाळासाहेब विठ्ठल गाडे (Balasaheb Gade)',
+          owner_mobile_masked: '+91 94239-11109',
+          species: 'Buffalo (म्हैस)',
+          breed: 'मुऱ्हा (Murrah)',
+          age_months: 28,
+          village_lgd_code: 558302,
+          village_name: 'Deolali Pravara',
+          vaccination_status: 'UP_TO_DATE',
+        },
+        {
+          tag_number: '100294819200',
+          owner_name: 'ज्ञानेश्वर विठ्ठल शिंदे (Dnyaneshwar Shinde)',
+          owner_mobile_masked: '+91 94231-50821',
+          species: 'Cow (गाय)',
+          breed: 'संकरित जर्सी (HF Cross)',
+          age_months: 30,
+          village_lgd_code: 558300,
+          village_name: 'Ashwi Budruk',
+          vaccination_status: 'UP_TO_DATE',
+        },
+        {
+          tag_number: '100918273645',
+          owner_name: 'सुनिता किसन शिंदे (Sunita Shinde)',
+          owner_mobile_masked: '+91 96041-88234',
+          species: 'Goat (शेळी)',
+          breed: 'उस्मानाबादी (Osmanabadi)',
+          age_months: 18,
+          village_lgd_code: 558310,
+          village_name: 'Sangamner Rural',
+          vaccination_status: 'UP_TO_DATE',
+        },
+      ];
+
+      for (const a of DEFAULT_ANIMALS) {
         await dbService.execute(
-          `INSERT OR REPLACE INTO local_animals (
+          `INSERT OR IGNORE INTO local_animals (
             tag_number, owner_name, owner_mobile_masked, species, breed,
             age_months, village_lgd_code, village_name, vaccination_status, last_synced_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
-            a.tagNumber,
-            a.ownerName,
-            a.ownerMobileMasked,
+            a.tag_number,
+            a.owner_name,
+            a.owner_mobile_masked,
             a.species,
             a.breed,
-            a.ageMonths,
-            a.villageLgdCode,
-            a.villageName,
-            a.vaccinationStatus,
-            a.lastSyncedAt,
+            a.age_months,
+            a.village_lgd_code,
+            a.village_name,
+            a.vaccination_status,
+            new Date().toISOString(),
           ]
         );
       }
+      rows = await dbService.query<any>(`SELECT * FROM local_animals ORDER BY tag_number ASC`);
     }
-  }
 
-  /**
-   * Get all registered animals from offline SQLite
-   */
-  async getAllAnimals(): Promise<LocalAnimal[]> {
-    await this.seedDemoAnimalsIfEmpty();
-    const rows = await dbService.query<any>(`SELECT * FROM local_animals ORDER BY tag_number ASC`);
-    return rows.map((r) => ({
+    return (rows || []).map((r) => ({
       tagNumber: r.tag_number,
       ownerName: r.owner_name,
       ownerMobileMasked: r.owner_mobile_masked,
@@ -137,8 +192,52 @@ class AnimalService {
    * Lookup single animal by 12-digit RFID tag
    */
   async getAnimalByTag(tagNumber: string): Promise<LocalAnimal | null> {
-    await this.seedDemoAnimalsIfEmpty();
     const cleaned = tagNumber.replace(/\D/g, '');
+    if (!cleaned) return null;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch(`${getApiUrl('animals')}/${cleaned}`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const a = await res.json();
+        const localObj: LocalAnimal = {
+          tagNumber: a.tag_number,
+          ownerName: a.owner_name,
+          ownerMobileMasked: a.owner_phone_masked,
+          species: a.species,
+          breed: a.breed || '',
+          ageMonths: a.age_months || 0,
+          villageLgdCode: a.village_lgd_code || 0,
+          villageName: a.village_name || '',
+          vaccinationStatus: a.vaccination_status || 'UP_TO_DATE',
+          lastSyncedAt: a.updated_at || new Date().toISOString(),
+        };
+        await dbService.execute(
+          `INSERT OR REPLACE INTO local_animals (
+            tag_number, owner_name, owner_mobile_masked, species, breed,
+            age_months, village_lgd_code, village_name, vaccination_status, last_synced_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            localObj.tagNumber,
+            localObj.ownerName,
+            localObj.ownerMobileMasked,
+            localObj.species,
+            localObj.breed,
+            localObj.ageMonths,
+            localObj.villageLgdCode,
+            localObj.villageName,
+            localObj.vaccinationStatus,
+            localObj.lastSyncedAt,
+          ]
+        );
+        return localObj;
+      }
+    } catch {
+      // offline: read from SQLite
+    }
+
     const rows = await dbService.query<any>(
       `SELECT * FROM local_animals WHERE tag_number = ?`,
       [cleaned]
@@ -282,63 +381,33 @@ class AnimalService {
   }
 
   /**
-   * Computes DAHD standard vaccination timeline and booster due countdowns
+   * Computes DAHD standard vaccination timeline from real animal records
    */
-  getVaccinationSchedule(tagNumber: string): VaccineRecord[] {
-    const now = new Date();
-    const isBoosterDueTag = tagNumber.endsWith('1'); // Tag 100293847561 is due soon
-
-    // FMD: 180 days interval
-    const fmdDaysAgo = isBoosterDueTag ? 172 : 60; // If 172 days ago, 8 days remaining
-    const fmdAdminDate = new Date(now.getTime() - fmdDaysAgo * 24 * 60 * 60 * 1000);
-    const fmdDueDate = new Date(fmdAdminDate.getTime() + 180 * 24 * 60 * 60 * 1000);
-    const fmdDaysRemaining = Math.round((fmdDueDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
-    const fmdStatus = fmdDaysRemaining < 0 ? 'OVERDUE' : fmdDaysRemaining <= 14 ? 'BOOSTER_DUE' : 'UP_TO_DATE';
-
-    // LSD: 365 days interval
-    const lsdDaysAgo = 120;
-    const lsdAdminDate = new Date(now.getTime() - lsdDaysAgo * 24 * 60 * 60 * 1000);
-    const lsdDueDate = new Date(lsdAdminDate.getTime() + 365 * 24 * 60 * 60 * 1000);
-    const lsdDaysRemaining = Math.round((lsdDueDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
-    const lsdStatus = lsdDaysRemaining < 0 ? 'OVERDUE' : lsdDaysRemaining <= 14 ? 'BOOSTER_DUE' : 'UP_TO_DATE';
-
-    // Anthrax: 365 days interval
-    const anthraxDaysAgo = 210;
-    const anthraxAdminDate = new Date(now.getTime() - anthraxDaysAgo * 24 * 60 * 60 * 1000);
-    const anthraxDueDate = new Date(anthraxAdminDate.getTime() + 365 * 24 * 60 * 60 * 1000);
-    const anthraxDaysRemaining = Math.round((anthraxDueDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
-    const anthraxStatus = anthraxDaysRemaining < 0 ? 'OVERDUE' : anthraxDaysRemaining <= 14 ? 'BOOSTER_DUE' : 'UP_TO_DATE';
-
-    return [
-      {
-        disease: 'FMD',
-        diseaseNameMarathi: 'लाळ्या खुरकूत (FMD)',
-        lastDoseDate: fmdAdminDate.toISOString().split('T')[0],
-        nextBoosterDue: fmdDueDate.toISOString().split('T')[0],
-        daysRemaining: fmdDaysRemaining,
-        status: fmdStatus,
-        batchNumber: 'FMD-IVRI-2026-B1',
-      },
-      {
-        disease: 'LSD',
-        diseaseNameMarathi: 'लंपी त्वचा (LSD)',
-        lastDoseDate: lsdAdminDate.toISOString().split('T')[0],
-        nextBoosterDue: lsdDueDate.toISOString().split('T')[0],
-        daysRemaining: lsdDaysRemaining,
-        status: lsdStatus,
-        batchNumber: 'LSD-GOATPOX-442',
-      },
-      {
-        disease: 'ANTHRAX',
-        diseaseNameMarathi: 'काळपुळी (ॲन्थ्रॅक्स)',
-        lastDoseDate: anthraxAdminDate.toISOString().split('T')[0],
-        nextBoosterDue: anthraxDueDate.toISOString().split('T')[0],
-        daysRemaining: anthraxDaysRemaining,
-        status: anthraxStatus,
-        batchNumber: 'STERNE-34F2-89',
-      },
-    ];
+  async getVaccinationSchedule(tagNumber: string): Promise<VaccineRecord[]> {
+    const cleaned = tagNumber.replace(/\D/g, '');
+    if (!cleaned) return [];
+    try {
+      const res = await fetch(`${getApiUrl('animals')}/${cleaned}`);
+      if (res.ok) {
+        const animalData = await res.json();
+        if (animalData.vaccinations && animalData.vaccinations.length > 0) {
+          return animalData.vaccinations.map((v: any) => ({
+            disease: v.disease_code,
+            diseaseNameMarathi: v.disease_name_marathi || v.disease_code,
+            lastDoseDate: (v.administered_at || '').split('T')[0],
+            nextBoosterDue: (v.next_booster_due || '').split('T')[0],
+            daysRemaining: v.days_remaining ?? 0,
+            status: v.status || 'UP_TO_DATE',
+            batchNumber: v.batch_number || 'NA',
+          }));
+        }
+      }
+    } catch {
+      // offline: return empty if none recorded
+    }
+    return [];
   }
 }
 
 export const animalService = new AnimalService();
+

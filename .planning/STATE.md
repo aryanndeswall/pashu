@@ -48,6 +48,7 @@ Progress: [==========] 100%
 |------|---------|-------------|--------|--------------|
 | 2026-09-06 | `20260906-role-dashboards-and-english-i18n` | Role-specific dashboards (Doctor & Admin) and complete English localization across UI | complete ✓ | 30/30 Vitest suites (152 tests green), tsc green, browser verified |
 | 2026-09-13 | `20260913-fix-farmer-report-button` | Fix missing action/save button in Farmer syndromic report wizard (z-index & bottom bar conflict) | complete ✓ | tsc & vite build green, Capacitor synced, Gradle assembleDebug 0 errors, APK generated |
+| 2026-09-13 | `20260913-add-real-farmer-and-vet-users` | Add 4 real farmers and 4 real veterinarians with interactive 1-tap switcher, herd seeding, and backend persistence | complete ✓ | TypeScript build clean, 9 backend DB users verified, Gradle assembleDebug 0 errors, APK updated |
 
 ## Active Target: Phase 14
 - Goal: Connect cloud PostgreSQL 16 + PostGIS 3.4 database and Upstash Redis broker, stream live outbreak cluster events via WebSocket/SSE to Web-GIS command center, and bridge push containment notifications via FCM / SMS.
