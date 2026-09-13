@@ -45,7 +45,7 @@ async def test_verify_otp_and_token_flow(client: AsyncClient):
     assert "access_token" in auth_data
     assert auth_data["token_type"] == "bearer"
     user = auth_data["user"]
-    assert user["name"] == "Ramesh Patil"
+    assert user["name"] == "User 0412"
     assert user["role"] == "consumer"
     assert user["mobile_number_masked"] == "+91 9822X-XX412"
 
@@ -56,7 +56,7 @@ async def test_verify_otp_and_token_flow(client: AsyncClient):
     assert me_resp.status_code == 200
     me_data = me_resp.json()
     assert me_data["id"] == user["id"]
-    assert me_data["name"] == "Ramesh Patil"
+    assert me_data["name"] == "User 0412"
 
     # 3. Configure offline PIN
     pin_resp = await client.post(
@@ -82,7 +82,7 @@ async def test_doctor_and_admin_persona_provisioning(client: AsyncClient):
     )
     assert doc_resp.status_code == 200
     doc_data = doc_resp.json()
-    assert doc_data["user"]["name"] == "Dr. Anjali Deshmukh"
+    assert doc_data["user"]["name"] == "User 0819"
     assert doc_data["user"]["role"] == "doctor"
     assert doc_data["user"]["license_or_id"] == "MH-VET-2024-8819"
 
@@ -93,5 +93,11 @@ async def test_doctor_and_admin_persona_provisioning(client: AsyncClient):
     )
     assert admin_resp.status_code == 200
     admin_data = admin_resp.json()
-    assert admin_data["user"]["name"] == "Dr. S. K. Kulkarni"
+    assert admin_data["user"]["name"] == "User 0001"
     assert admin_data["user"]["role"] == "admin"
+
+    # Test GET /doctors
+    docs_resp = await client.get("/api/v1/auth/doctors")
+    assert docs_resp.status_code == 200
+    docs = docs_resp.json()
+    assert any(d["role"] == "doctor" for d in docs)

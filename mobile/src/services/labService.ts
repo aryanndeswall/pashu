@@ -132,81 +132,8 @@ export function generateQrPayload(req: {
   });
 }
 
-// Pre-seeded Ahmednagar district requisitions
-function getInitialRequisitions(): LabRequisition[] {
-  const now = new Date();
-  const collected16hAgo = new Date(now.getTime() - 16 * 3600 * 1000).toISOString();
-  const dispatched15hAgo = new Date(now.getTime() - 15.5 * 3600 * 1000).toISOString();
-
-  const req1Id = 'LRF-20260904-0941';
-  const req1Metrics = calculateColdChainMetrics(collected16hAgo, 3.8);
-
-  const collected42hAgo = new Date(now.getTime() - 42 * 3600 * 1000).toISOString();
-  const req2Id = 'LRF-20260903-8124';
-  const req2Metrics = calculateColdChainMetrics(collected42hAgo, 7.2);
-
-  return [
-    {
-      requisitionId: req1Id,
-      animalTagId: '100293847561',
-      incidentId: 'INC-ASHWI-01',
-      clusterId: 'CL-SYN_VESICULAR-558301',
-      vetId: 'VET-MAH-4821',
-      villageName: 'Ashwi Budruk (राहुरी)',
-      districtName: 'Ahmednagar',
-      sampleType: 'Vesicular Swab (FMD Suspect)',
-      suspectedDisease: 'Foot-and-Mouth Disease (खुरकूत)',
-      preservative: '50% Glycerol Phosphate Buffered Saline (pH 7.4-7.6)',
-      destinationLab: 'District Diagnostic Lab (DDL), Pune',
-      status: 'IN_TRANSIT',
-      transitTempC: 3.8,
-      tempBreached: false,
-      collectedAt: collected16hAgo,
-      dispatchedAt: dispatched15hAgo,
-      qrPayload: generateQrPayload({
-        requisitionId: req1Id,
-        animalTagId: '100293847561',
-        suspectedDisease: 'FMD Suspect',
-        sampleType: 'Vesicular Swab',
-        destinationLab: 'DDL Pune',
-        collectedAt: collected16hAgo,
-      }),
-      coldChain: req1Metrics,
-    },
-    {
-      requisitionId: req2Id,
-      animalTagId: '100293847562',
-      incidentId: 'INC-RAHURI-02',
-      clusterId: 'CL-SYN_CUTANEOUS-558302',
-      vetId: 'VET-MAH-4821',
-      villageName: 'Rahuri Rural',
-      districtName: 'Ahmednagar',
-      sampleType: 'Skin Scab (LSD Suspect)',
-      suspectedDisease: 'Lumpy Skin Disease (लम्पी त्वचा रोग)',
-      preservative: 'Viral Transport Medium (VTM)',
-      destinationLab: 'State Disease Investigation Section (DIS), Pune',
-      status: 'TESTING',
-      transitTempC: 7.2,
-      tempBreached: false,
-      collectedAt: collected42hAgo,
-      dispatchedAt: collected42hAgo,
-      receivedAt: new Date(now.getTime() - 4 * 3600 * 1000).toISOString(),
-      testType: 'RT-PCR',
-      qrPayload: generateQrPayload({
-        requisitionId: req2Id,
-        animalTagId: '100293847562',
-        suspectedDisease: 'LSD Suspect',
-        sampleType: 'Skin Scab',
-        destinationLab: 'DIS Pune',
-        collectedAt: collected42hAgo,
-      }),
-      coldChain: req2Metrics,
-    },
-  ];
-}
-
 class MobileLabService {
-  private inMemoryRequisitions: LabRequisition[] = getInitialRequisitions();
+  private inMemoryRequisitions: LabRequisition[] = [];
   private isInitialized = false;
 
   async initDb(): Promise<void> {
@@ -251,6 +178,48 @@ class MobileLabService {
 
   async getRequisitions(): Promise<LabRequisition[]> {
     await this.initDb();
+
+    // Fetch from backend API
+    try {
+      const res = await fetch(getApiUrl('labs/requisitions'));
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          this.inMemoryRequisitions = data.map((item: any) => ({
+            requisitionId: item.requisition_id || item.requisitionId,
+            animalTagId: item.animal_tag_id || item.animalTagId,
+            incidentId: item.incident_id || item.incidentId,
+            clusterId: item.cluster_id || item.clusterId,
+            vetId: item.vet_id || item.vetId || '',
+            villageName: item.village_name || item.villageName || '',
+            districtName: item.district_name || item.districtName || '',
+            sampleType: item.sample_type || item.sampleType || '',
+            suspectedDisease: item.suspected_disease || item.suspectedDisease || '',
+            preservative: item.preservative,
+            destinationLab: item.destination_lab || item.destinationLab || '',
+            status: item.status || 'PENDING',
+            transitTempC: item.transit_temp_c ?? item.transitTempC ?? 4.0,
+            tempBreached: item.temp_breached ?? item.tempBreached ?? false,
+            collectedAt: item.collected_at || item.collectedAt || new Date().toISOString(),
+            dispatchedAt: item.dispatched_at || item.dispatchedAt || new Date().toISOString(),
+            receivedAt: item.received_at || item.receivedAt,
+            testType: item.test_type || item.testType,
+            testResult: item.test_result || item.testResult,
+            resultNotes: item.result_notes || item.resultNotes,
+            pathologistId: item.pathologist_id || item.pathologistId,
+            confirmedAt: item.confirmed_at || item.confirmedAt,
+            qrPayload: item.qr_payload || item.qrPayload,
+            coldChain: calculateColdChainMetrics(
+              item.collected_at || item.collectedAt || new Date().toISOString(),
+              item.transit_temp_c ?? item.transitTempC ?? 4.0
+            ),
+          }));
+        }
+      }
+    } catch (err) {
+      console.warn('Could not sync lab requisitions from cloud:', err);
+    }
+
     // Recompute cold chain metrics for real-time accuracy
     return this.inMemoryRequisitions.map((req) => ({
       ...req,
@@ -396,7 +365,7 @@ class MobileLabService {
   }
 
   clearStore(): void {
-    this.inMemoryRequisitions = getInitialRequisitions();
+    this.inMemoryRequisitions = [];
   }
 }
 

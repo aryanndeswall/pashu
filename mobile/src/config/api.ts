@@ -99,6 +99,10 @@ export function getAuthPinEndpoint(): string {
   return getApiUrl('auth/pin');
 }
 
+export function getDoctorsEndpoint(): string {
+  return getApiUrl('auth/doctors');
+}
+
 /**
  * WebSocket endpoint for real-time biosecurity outbreak cluster streaming
  */

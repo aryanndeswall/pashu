@@ -95,6 +95,7 @@ export const RealtimeAlertBanner: React.FC = () => {
             <button
               type="button"
               onClick={handleViewCommandMap}
+              aria-label="Command Map"
               className="text-white font-bold underline flex items-center gap-0.5 hover:text-rose-200 transition-colors"
             >
               <span>{t('viewMap', 'Command Map')}</span>

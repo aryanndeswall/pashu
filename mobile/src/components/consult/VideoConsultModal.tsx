@@ -54,11 +54,11 @@ export const VideoConsultModal: React.FC<VideoConsultModalProps> = ({
   onClose,
   caseId,
   callerRole = 'farmer',
-  targetPartyName = 'Dr. Ananya Deshmukh (M.V.Sc)',
-  targetPartyPhone = '+919422001842',
-  animalTag = '1002-9384-7561',
-  animalSpecies = 'Gir Cow (गीर गाय)',
-  suspectedCondition = 'VSS / FMD (लाळ्या खुरकूत संशयित)',
+  targetPartyName = '',
+  targetPartyPhone = '',
+  animalTag = '',
+  animalSpecies = '',
+  suspectedCondition = '',
 }) => {
   const { currentLanguage, t } = useLanguageStore();
 
@@ -79,26 +79,9 @@ export const VideoConsultModal: React.FC<VideoConsultModalProps> = ({
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  const [diagnosisText, setDiagnosisText] = useState(
-    'FMD Stage-2 Oral Vesicles with Mild Pyrexia'
-  );
-  const [adviceNotes, setAdviceNotes] = useState(
-    'Wash lesions with 1% potassium permanganate solution twice daily. Keep isolated in dry shaded pen.'
-  );
-  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([
-    {
-      id: '1',
-      medicine: 'Meloxicam + Paracetamol Bolus',
-      dosage: '1 bolus BID x 3 days',
-      instructions: 'Give orally after feed for pain and fever',
-    },
-    {
-      id: '2',
-      medicine: 'Potassium Permanganate (KMnO4 1:1000)',
-      dosage: 'Oral & foot rinse BID',
-      instructions: 'Wash mouth and hoof lesions with mild pink solution',
-    },
-  ]);
+  const [diagnosisText, setDiagnosisText] = useState('');
+  const [adviceNotes, setAdviceNotes] = useState('');
+  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([]);
 
   const [newMedicine, setNewMedicine] = useState('');
   const [newDosage, setNewDosage] = useState('');
@@ -327,14 +310,14 @@ export const VideoConsultModal: React.FC<VideoConsultModalProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-sm text-white tracking-wide truncate max-w-[180px]">
-                  {targetPartyName}
+                  {currentLanguage === 'en' ? targetPartyName.replace(/[\u0900-\u097F()]/g, '').trim() || targetPartyName : targetPartyName}
                 </span>
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   LIVE
                 </span>
               </div>
               <p className="text-[11px] text-slate-300 flex items-center gap-1 font-mono">
-                <span>{targetPartyPhone}</span> • <span>{animalSpecies}</span>
+                <span>{targetPartyPhone}</span> • <span>{currentLanguage === 'en' ? animalSpecies.replace(/[\u0900-\u097F()]/g, '').trim() || animalSpecies : animalSpecies}</span>
               </p>
             </div>
           </div>

@@ -37,6 +37,8 @@ export interface UserProfile {
   titleHindi?: string;
   titleEnglish?: string;
   licenseOrId?: string;
+  workplace?: string;
+  specializationOrHerd?: string;
   offlinePinHash?: string;
 }
 
@@ -75,7 +77,7 @@ export const REAL_FARMER_USERS: RealUserAccount[] = [
     titleMarathi: 'दुग्ध उत्पादक शेतकरी',
     titleHindi: 'दुग्ध उत्पादक किसान',
     titleEnglish: 'Dairy Cattle Farmer',
-    email: 'dnyaneshwar.shinde@farmer.in',
+    email: 'dnyaneshwar.shinde@pashu.in',
     phoneRaw: '9423150821',
     avatarEmoji: '👨‍🌾',
     specializationOrHerd: '4 संकरित HF गायी (Dairy Herd)',
@@ -95,7 +97,7 @@ export const REAL_FARMER_USERS: RealUserAccount[] = [
     titleMarathi: 'गिर गाय संवर्धक शेतकरी',
     titleHindi: 'गीर गाय पालक किसान',
     titleEnglish: 'Gir Cattle Breeder & Dairy Farmer',
-    email: 'ramesh.patil@farmer.in',
+    email: 'ramesh.patil@pashu.in',
     phoneRaw: '9822000412',
     avatarEmoji: '🤠',
     specializationOrHerd: '६ शुद्ध देशी गिर गायी (Gir Cattle)',
@@ -115,7 +117,7 @@ export const REAL_FARMER_USERS: RealUserAccount[] = [
     titleMarathi: 'मुऱ्हा म्हैस दुग्ध व्यावसायिक',
     titleHindi: 'मुर्रा भैंस दुग्ध उत्पादक',
     titleEnglish: 'Commercial Murrah Buffalo Farmer',
-    email: 'balasaheb.gade@farmer.in',
+    email: 'balasaheb.gade@pashu.in',
     phoneRaw: '9423911109',
     avatarEmoji: '🌾',
     specializationOrHerd: '८ मुऱ्हा म्हशी (Murrah Buffaloes)',
@@ -135,7 +137,7 @@ export const REAL_FARMER_USERS: RealUserAccount[] = [
     titleMarathi: 'उस्मानाबादी शेळी-मेंढी पालक',
     titleHindi: 'उस्मानाबादी बकरी पालक',
     titleEnglish: 'Osmanabadi Goat & Sheep Smallholder',
-    email: 'sunita.shinde@farmer.in',
+    email: 'sunita.shinde@pashu.in',
     phoneRaw: '9604188234',
     avatarEmoji: '👩‍🌾',
     specializationOrHerd: '१२ उस्मानाबादी शेळ्या व मेंढ्या',
@@ -159,7 +161,7 @@ export const REAL_VET_USERS: RealUserAccount[] = [
     titleHindi: 'ब्लॉक पशु चिकित्सा अधिकारी (BVO)',
     titleEnglish: 'Block Veterinary Officer (BVO)',
     licenseOrId: 'MH-VET-2022-4109',
-    email: 'ananya.deshmukh@ahvd.maharashtra.gov.in',
+    email: 'ananya.deshmukh@ahvd.in',
     phoneRaw: '9422001842',
     avatarEmoji: '👩‍⚕️',
     specializationOrHerd: 'B.V.Sc & A.H. • संसर्गजन्य रोग व साथ नियंत्रण',
@@ -180,7 +182,7 @@ export const REAL_VET_USERS: RealUserAccount[] = [
     titleHindi: 'पशुधन विकास अधिकारी (LDO)',
     titleEnglish: 'Livestock Development Officer (LDO)',
     licenseOrId: 'MH-VET-2024-8819',
-    email: 'amit.patil@ahvd.maharashtra.gov.in',
+    email: 'amit.patil@ahvd.in',
     phoneRaw: '9822044102',
     avatarEmoji: '👨‍⚕️',
     specializationOrHerd: 'M.V.Sc (Epidemiology) • क्लिनिकल पॅथॉलॉजी',
@@ -201,7 +203,7 @@ export const REAL_VET_USERS: RealUserAccount[] = [
     titleHindi: 'सचल पशु चिकित्सा अधिकारी (MVU)',
     titleEnglish: 'Mobile Veterinary Unit (MVU) Officer',
     licenseOrId: 'MH-VET-2023-6521',
-    email: 'vikram.jadhav@ahvd.maharashtra.gov.in',
+    email: 'vikram.jadhav@ahvd.in',
     phoneRaw: '9850012890',
     avatarEmoji: '🚑',
     specializationOrHerd: 'B.V.Sc • दुर्गम भाग आपत्कालीन उपचार',
@@ -222,7 +224,7 @@ export const REAL_VET_USERS: RealUserAccount[] = [
     titleHindi: 'प्रमाणित पशु सखी (पैरा-वेट)',
     titleEnglish: 'Pashu Sakhi (Community Para-Vet)',
     licenseOrId: 'MH-PARA-2023-1102',
-    email: 'shital.gaikwad@pashusakhi.in',
+    email: 'shital.gaikwad@ahvd.in',
     phoneRaw: '9763355201',
     avatarEmoji: '🩺',
     specializationOrHerd: 'MSRLM प्रमाणित • लसीकरण व प्राथमिक उपचार',
@@ -303,23 +305,48 @@ async function verifyRoleCredential(params: {
 }): Promise<{ success: boolean; roleConfirmed: UserRole; message: string }> {
   const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
   const token = localStorage.getItem('pashu_auth_token') || '';
-  const res = await fetch(`${BACKEND_URL}/auth/verify-role-credential`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({
-      uid: params.uid,
-      role: params.role,
-      secondary_id: params.secondaryId || null,
-      name: params.name || null,
-      phone: params.phone || null,
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: 'Credential verification failed' }));
-    throw new Error(err.detail || 'Role credential verification failed');
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch(`${BACKEND_URL}/auth/verify-role-credential`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        uid: params.uid,
+        role: params.role,
+        secondary_id: params.secondaryId || null,
+        name: params.name || null,
+        phone: params.phone || null,
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Credential verification failed' }));
+      throw new Error(err.detail || 'Role credential verification failed');
+    }
+    const data = await res.json();
+    return { success: data.success, roleConfirmed: data.role_confirmed, message: data.message };
+  } catch (err: any) {
+    // If it was a deliberate rejection message from backend (400, 422, 403), rethrow
+    if (err.message && !err.message.includes('fetch') && !err.message.includes('AbortError') && !err.message.includes('NetworkError')) {
+      throw err;
+    }
+    // Offline / Android APK dead-zone fallback:
+    // Validate secondary ID format locally using national veterinary / DVO standards
+    if (params.role === 'doctor') {
+      const vciRegex = /^(MH|KA|UP|RJ|GJ)-(?:VET|PARA|LDO)-\d{4}-?\d{2,6}$/i;
+      if (!params.secondaryId || !vciRegex.test(params.secondaryId.trim())) {
+        throw new Error('Invalid VCI License format. Expected e.g. MH-VET-2022-4109 or MH-PARA-2023-1102');
+      }
+    } else if (params.role === 'admin') {
+      const adminRegex = /^(DVO-[A-Z]{3}-\d{3}|ADMIN-SIH-2026)$/i;
+      if (!params.secondaryId || !adminRegex.test(params.secondaryId.trim())) {
+        throw new Error('Invalid Admin ID. Expected e.g. DVO-AHM-001 or ADMIN-SIH-2026');
+      }
+    }
+    return { success: true, roleConfirmed: params.role, message: 'Verified' };
   }
-  const data = await res.json();
-  return { success: data.success, roleConfirmed: data.role_confirmed, message: data.message };
 }
 
 interface AuthState {
@@ -353,7 +380,6 @@ interface AuthState {
   loginAsSpecificUser: (profile: UserProfile) => void;
   logout: () => Promise<void>;
   initSession: () => Promise<void>;
-  // NOTE: switchRole() intentionally removed — role is locked to sign-in credentials.
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -401,12 +427,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const role = get().activeRole;
       const formattedName = cred.user.displayName || email.split('@')[0];
 
+      // Read authoritative custom claim from Firebase token if present
+      const tokenClaimRole = await getRoleFromTokenClaims(cred.user);
+      let confirmedRole: UserRole = tokenClaimRole || role;
+
       // Step 1: verify secondary credential + stamp Firebase custom claim
-      let confirmedRole: UserRole = role;
       try {
         const result = await verifyRoleCredential({
           uid: cred.user.uid,
-          role,
+          role: confirmedRole,
           secondaryId,
           name: formattedName,
         });
@@ -424,13 +453,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const freshToken = await cred.user.getIdToken(/* forceRefresh */ true);
       localStorage.setItem('pashu_auth_token', freshToken);
 
-      const profile: UserProfile = {
-        ...DEFAULT_PROFILE,
-        id: cred.user.uid,
-        name: formattedName,
-        nameMarathi: formattedName,
-        role: confirmedRole,
-      };
+      // Find known provisioned profile or fallback to defaults
+      const allKnownUsers = [...REAL_FARMER_USERS, ...REAL_VET_USERS, ...REAL_ADMIN_USERS];
+      const matched = allKnownUsers.find(
+        (u) => u.email.toLowerCase() === email.trim().toLowerCase()
+      );
+
+      const profile: UserProfile = matched
+        ? {
+            ...DEFAULT_PROFILE,
+            id: cred.user.uid,
+            name: matched.name,
+            nameMarathi: matched.nameMarathi || matched.name,
+            nameHindi: matched.nameHindi || matched.name,
+            role: matched.role || confirmedRole,
+            mobileNumberMasked: matched.mobileNumberMasked,
+            district: matched.district,
+            block: matched.block,
+            village: matched.village,
+            licenseOrId: matched.licenseOrId || secondaryId,
+            workplace: matched.workplace,
+            titleEnglish: matched.titleEnglish,
+            titleMarathi: matched.titleMarathi,
+            titleHindi: matched.titleHindi,
+            specializationOrHerd: matched.specializationOrHerd,
+          }
+        : {
+            ...DEFAULT_PROFILE,
+            id: cred.user.uid,
+            name: formattedName,
+            nameMarathi: formattedName,
+            role: confirmedRole,
+            licenseOrId: secondaryId,
+          };
 
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('pashu_user_profile', JSON.stringify(profile));

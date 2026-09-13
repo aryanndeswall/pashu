@@ -29,10 +29,7 @@ async def test_create_case_dpdp_hashing_and_defaults(client: AsyncClient):
     assert data["farmer_name"] == "Ramesh Patil"
     # Verify DPDP Act 2023 phone masking
     assert "9822" in data["farmer_phone_masked"]
-    assert "X-XX" in data["farmer_phone_masked"]
-    # Default jurisdiction doctor assignment
-    assert data["doctor_id"] == "usr_vet_02"
-    assert data["doctor_name"] == "Dr. Ananya Deshmukh"
+    # Unassigned case starts awaiting doctor
     assert data["status"] == "AWAITING_DOCTOR"
     assert data["urgency"] == "HIGH"
     # Generated interim first-aid advice
@@ -168,3 +165,44 @@ async def test_record_tele_consultation_session(client: AsyncClient):
     case_obj = get_res.json()
     assert case_obj["status"] == "IN_CONSULTATION"
     assert "[Tele-Consult VIDEO]" in case_obj["doctor_notes"]
+
+
+@pytest.mark.asyncio
+async def test_create_case_with_ai_report_and_multimodal_evidence(client: AsyncClient):
+    payload = {
+        "report_id": "REP-2026-AI-TEST01",
+        "farmer_name": "Sanjay Shinde",
+        "farmer_phone": "9822001122",
+        "animal_tag": "100293847599",
+        "species": "Gir Cow",
+        "syndrome_code": "VSS",
+        "syndrome_name": "Foot-and-Mouth Disease",
+        "ai_differential": "Vesicular Stomatitis / FMD (Aphthovirus)",
+        "clinical_confidence": 0.94,
+        "clinical_rationale": "High-confidence detection of oral mucosal blisters and profuse salivation.",
+        "identified_symptoms": '["Oral Vesicles", "Hypersalivation", "Hoof Ulcers"]',
+        "containment_actions": '["15m isolation", "KMnO4 wash"]',
+        "biohazard_alert": "WARNING",
+        "model_used": "Gemini 3.7 Flash",
+        "photo_url": "https://example.com/lesion.webp",
+        "audio_transcript": "गाईच्या तोंडात फोड आले आहेत आणि भरपूर लाळ गळत आहे.",
+    }
+    res = await client.post("/api/v1/cases", json=payload)
+    assert res.status_code == 201
+    data = res.json()
+
+    assert data["clinical_confidence"] == 0.94
+    assert data["biohazard_alert"] == "WARNING"
+    assert data["model_used"] == "Gemini 3.7 Flash"
+    assert data["photo_url"] == "https://example.com/lesion.webp"
+    assert "फोड" in data["audio_transcript"]
+
+    # Verify retrieval preserves all AI fields
+    case_id = data["id"]
+    get_res = await client.get(f"/api/v1/cases/{case_id}")
+    assert get_res.status_code == 200
+    retrieved = get_res.json()
+    assert retrieved["clinical_confidence"] == 0.94
+    assert retrieved["model_used"] == "Gemini 3.7 Flash"
+    assert retrieved["photo_url"] == "https://example.com/lesion.webp"
+

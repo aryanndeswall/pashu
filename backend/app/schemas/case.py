@@ -23,6 +23,18 @@ class CaseCreate(BaseModel):
     ai_differential: Optional[str] = Field(default=None, description="AI triage diagnostic differential")
     urgency: Optional[str] = Field(default="HIGH", description="NORMAL, HIGH, CRITICAL")
     interim_advice: Optional[str] = Field(default=None, description="Interim first-aid advice while awaiting doctor")
+
+    # Multimodal AI Metadata
+    photo_url: Optional[str] = Field(default=None, description="URL or WebP image string of the lesion")
+    audio_url: Optional[str] = Field(default=None, description="URL or base64 of the audio recording")
+    audio_transcript: Optional[str] = Field(default=None, description="Vernacular voice transcript")
+    clinical_confidence: Optional[float] = Field(default=None, description="Gemini confidence score 0.0 - 1.0")
+    clinical_rationale: Optional[str] = Field(default=None, description="Detailed epidemiological rationale")
+    identified_symptoms: Optional[str] = Field(default=None, description="JSON or comma-separated symptom tags")
+    containment_actions: Optional[str] = Field(default=None, description="JSON or text containment directives")
+    biohazard_alert: Optional[str] = Field(default=None, description="Biohazard alert level")
+    model_used: Optional[str] = Field(default=None, description="Inference model e.g. Gemini 3.7 Flash")
+    ai_report_json: Optional[str] = Field(default=None, description="Full raw TriageResponse JSON")
     
     village_name: Optional[str] = Field(default="Ashwi Budruk", description="Village name")
     block_name: Optional[str] = Field(default="Rahuri", description="Taluka / Block name")
@@ -41,6 +53,7 @@ class CaseUpdate(BaseModel):
     doctor_notes: Optional[str] = Field(default=None, description="Clinical notes from doctor examination")
     prescription: Optional[str] = Field(default=None, description="Medical prescription & supportive care")
     visit_eta: Optional[str] = Field(default=None, description="Estimated time of arrival for field inspection")
+    ai_differential: Optional[str] = Field(default=None, description="Updated or confirmed differential")
 
     model_config = ConfigDict(extra="ignore")
 
@@ -72,6 +85,16 @@ class CaseResponse(BaseModel):
     doctor_notes: Optional[str] = None
     prescription: Optional[str] = None
     visit_eta: Optional[str] = None
+    photo_url: Optional[str] = None
+    audio_url: Optional[str] = None
+    audio_transcript: Optional[str] = None
+    clinical_confidence: Optional[float] = None
+    clinical_rationale: Optional[str] = None
+    identified_symptoms: Optional[str] = None
+    containment_actions: Optional[str] = None
+    biohazard_alert: Optional[str] = None
+    model_used: Optional[str] = None
+    ai_report_json: Optional[str] = None
     village_name: str
     block_name: str
     district_name: str

@@ -3,6 +3,7 @@ import { DecisionTreeResult } from '../../types/syndromes';
 import { useAuthStore } from '../../store/authStore';
 import { useLanguageStore } from '../../store/languageStore';
 import { Stethoscope, ShieldAlert, PhoneCall, AlertTriangle, FileText } from 'lucide-react';
+import { localizeInterimAdvice } from '../../utils/clinicalLocalization';
 
 interface ClinicalGuidanceCardProps {
   result: DecisionTreeResult;
@@ -111,7 +112,9 @@ export const ClinicalGuidanceCard: React.FC<ClinicalGuidanceCardProps> = ({ resu
 
       <p className={`text-xs text-emerald-900 dark:text-emerald-200 leading-relaxed ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
         {currentLanguage === 'en'
-          ? (result.farmerAdvisoryEnglish || result.primaryDifferential.recommendedAction || result.farmerAdvisory)
+          ? (result.farmerAdvisoryEnglish || result.primaryDifferential.recommendedAction || localizeInterimAdvice(result.farmerAdvisory, 'en', result.primaryDifferential.icd11OrOieCode))
+          : currentLanguage === 'hi'
+          ? (result.farmerAdvisoryHindi || localizeInterimAdvice(result.farmerAdvisory, 'hi', result.primaryDifferential.icd11OrOieCode))
           : result.farmerAdvisory}
       </p>
 

@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { ShieldCheck, Wifi, WifiOff, Sun, Moon, CheckCircle2, ArrowRight, RefreshCw, Clock, Languages, User } from 'lucide-react';
+import React from 'react';
+import { ShieldCheck, Wifi, WifiOff, Sun, Moon, CheckCircle2, RefreshCw, Clock, Languages, User } from 'lucide-react';
 import { useNavigationStore } from '../../store/navigationStore';
-import { useAuthStore, UserRole, DEMO_PERSONAS } from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 import { useSyncStore } from '../../store/syncStore';
 import { useLanguageStore, SUPPORTED_LANGUAGES } from '../../store/languageStore';
 import { hapticsService } from '../../services/hapticsService';
-import { FluidDrawer } from '../animations/FluidDrawer';
 import { LanguageSelectorModal } from './LanguageSelectorModal';
 
 interface HeaderBarProps {
@@ -15,11 +14,10 @@ interface HeaderBarProps {
 export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenProfile }) => {
   const isDarkMode = useNavigationStore((state) => state.isDarkMode);
   const toggleDarkMode = useNavigationStore((state) => state.toggleDarkMode);
-  const { activeRole, switchRole } = useAuthStore();
+  const { activeRole, userProfile } = useAuthStore();
   const { networkTier, pendingCount, isSyncing, setDrawerOpen } = useSyncStore();
   const isOnline = networkTier !== 'OFFLINE';
   const { currentLanguage, setSelectorOpen, t } = useLanguageStore();
-  const [isRoleDrawerOpen, setIsRoleDrawerOpen] = useState(false);
 
   const activeLanguage =
     SUPPORTED_LANGUAGES.find((l) => l.code === currentLanguage) ?? SUPPORTED_LANGUAGES[0];
@@ -33,65 +31,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenProfile }) => {
     await hapticsService.hapticLight();
     toggleDarkMode();
   };
-
-  const handleOpenRoleDrawer = async () => {
-    await hapticsService.hapticLight();
-    setIsRoleDrawerOpen(true);
-  };
-
-  const handleSwitchRole = (role: UserRole) => {
-    switchRole(role);
-    setIsRoleDrawerOpen(false);
-  };
-
-  const getRolePill = () => {
-    switch (activeRole) {
-      case 'consumer':
-        return {
-          label: `👨‍🌾 ${t('roleConsumer', 'Farmer')}`,
-          badgeClass: 'bg-emerald-800/80 text-emerald-100 border-emerald-600/70 hover:bg-emerald-800',
-        };
-      case 'doctor':
-        return {
-          label: `🩺 ${t('roleDoctor', 'Veterinarian')}`,
-          badgeClass: 'bg-blue-900/80 text-blue-100 border-blue-600/70 hover:bg-blue-800',
-        };
-      case 'admin':
-        return {
-          label: `🏛️ ${t('roleAdmin', 'Officer')}`,
-          badgeClass: 'bg-purple-900/80 text-purple-100 border-purple-600/70 hover:bg-purple-800',
-        };
-    }
-  };
-
-  const currentPill = getRolePill();
-
-  const roleOptions: { role: UserRole; title: string; titleEnglish: string; subtitle: string; icon: string; bg: string }[] = [
-    {
-      role: 'consumer',
-      title: currentLanguage === 'en' ? 'Livestock Owner / Farmer' : currentLanguage === 'hi' ? 'पशुपालक (किसान)' : 'पशुपालक (Farmer / Consumer)',
-      titleEnglish: 'Livestock Owner / Farmer',
-      subtitle: currentLanguage === 'en' ? `${DEMO_PERSONAS.consumer.name} • ${DEMO_PERSONAS.consumer.block}` : `${DEMO_PERSONAS.consumer.nameMarathi} • राहुरी खुर्द`,
-      icon: '👨‍🌾',
-      bg: 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20',
-    },
-    {
-      role: 'doctor',
-      title: currentLanguage === 'en' ? 'Field Veterinarian & Para-vet' : currentLanguage === 'hi' ? 'पशु चिकित्सक / पैरा-वेट' : 'पशुवैद्य (Veterinarian / Doctor)',
-      titleEnglish: 'Field Veterinarian & Para-vet',
-      subtitle: currentLanguage === 'en' ? `${DEMO_PERSONAS.doctor.name} • ${DEMO_PERSONAS.doctor.block}` : `${DEMO_PERSONAS.doctor.nameMarathi} • राहुरी व संगमनेर`,
-      icon: '🩺',
-      bg: 'border-blue-500/30 bg-blue-50/50 dark:bg-blue-950/20',
-    },
-    {
-      role: 'admin',
-      title: currentLanguage === 'en' ? 'District Animal Husbandry Officer' : currentLanguage === 'hi' ? 'जिला पशुपालन अधिकारी' : 'जिल्हा अधिकारी (District Admin)',
-      titleEnglish: 'District Animal Husbandry Officer',
-      subtitle: currentLanguage === 'en' ? `${DEMO_PERSONAS.admin.name} • ${DEMO_PERSONAS.admin.district}` : `${DEMO_PERSONAS.admin.nameMarathi} • अहमदनगर`,
-      icon: '🏛️',
-      bg: 'border-purple-500/30 bg-purple-50/50 dark:bg-purple-950/20',
-    },
-  ];
 
   return (
     <>
@@ -115,18 +54,27 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenProfile }) => {
             </div>
           </div>
 
-          {/* Header Controls: Role Switcher Pill + Offline Status + Theme Toggle */}
+          {/* Header Controls: Role Indicator Pill + Offline Status + Theme Toggle */}
           <div className="flex items-center gap-1.5">
-            {/* SIH Demo 1-Click Role Switcher Pill */}
-            <button
-              type="button"
-              onClick={handleOpenRoleDrawer}
-              aria-label="Open Demo Role Switcher"
-              className={`field-touch-target flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border transition-all active:scale-95 shadow-xs ${currentPill.badgeClass}`}
+            {/* Read-only Role Indicator Pill (role is locked to login credentials) */}
+            <div
+              aria-label={`Current role: ${activeRole}`}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border select-none shadow-xs ${
+                activeRole === 'consumer'
+                  ? 'bg-emerald-800/80 text-emerald-100 border-emerald-600/70'
+                  : activeRole === 'doctor'
+                  ? 'bg-blue-900/80 text-blue-100 border-blue-600/70'
+                  : 'bg-purple-900/80 text-purple-100 border-purple-600/70'
+              }`}
             >
-              <span>{currentPill.label}</span>
-              <span className="text-[9px] opacity-70">▾</span>
-            </button>
+              <span>
+                {activeRole === 'consumer'
+                  ? `👨‍🌾 ${t('roleConsumer', 'Farmer')}`
+                  : activeRole === 'doctor'
+                  ? `🩺 ${t('roleDoctor', 'Veterinarian')}`
+                  : `🏛️ ${t('roleAdmin', 'Officer')}`}
+              </span>
+            </div>
 
             {/* Sync Queue Drawer Toggle Pill */}
             <button
@@ -232,68 +180,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenProfile }) => {
         </div>
       </header>
 
-      {/* SIH Demo Role Switcher Fluid Drawer */}
-      <FluidDrawer
-        isOpen={isRoleDrawerOpen}
-        onClose={() => setIsRoleDrawerOpen(false)}
-        title={currentLanguage === 'en' ? 'Switch Role (SIH Demo Role Switcher)' : currentLanguage === 'hi' ? 'भूमिका बदलें (SIH Demo Role Switcher)' : 'भूमिका बदला (SIH Demo Role Switcher)'}
-      >
-        <div className="space-y-3 pt-2">
-          <p className={`text-xs text-slate-500 dark:text-slate-400 ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-            {t('roleDemoInstruction', 'Switch roles instantly for live demo:')}
-          </p>
-
-          <div className="space-y-2.5">
-            {roleOptions.map((opt) => {
-              const isCurrent = activeRole === opt.role;
-
-              return (
-                <div
-                  key={opt.role}
-                  onClick={() => handleSwitchRole(opt.role)}
-                  className={`field-touch-target p-3 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
-                    isCurrent
-                      ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-500/20 shadow-xs'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{opt.icon}</span>
-                    <div>
-                      <h4 className={`text-xs font-bold text-slate-900 dark:text-white ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                        {opt.title}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                        {opt.subtitle}
-                      </p>
-                    </div>
-                  </div>
-
-                  {isCurrent ? (
-                    <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>{t('activeBadge', 'Active')}</span>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      aria-label={`Switch to ${opt.titleEnglish}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSwitchRole(opt.role);
-                      }}
-                      className="field-touch-target px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 flex items-center gap-1"
-                    >
-                      <span>{t('select', 'Select')}</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </FluidDrawer>
       <LanguageSelectorModal />
     </>
   );

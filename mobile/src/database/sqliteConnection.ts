@@ -268,6 +268,7 @@ class SQLiteDatabaseManager implements DatabaseService {
     if (lower.startsWith('insert or replace into clinical_cases') || lower.startsWith('insert into clinical_cases')) {
       let rows = this.memoryTables.get('clinical_cases') || [];
       const existingIdx = rows.findIndex((r: any) => r.id === values[0]);
+      const hasAiColumns = values.length >= 38;
       const caseRow = {
         id: values[0],
         report_id: values[1],
@@ -295,8 +296,18 @@ class SQLiteDatabaseManager implements DatabaseService {
         district_name: values[23],
         latitude: values[24],
         longitude: values[25],
-        created_at: values[26] ?? new Date().toISOString(),
-        updated_at: values[27] ?? new Date().toISOString(),
+        photo_url: hasAiColumns ? values[26] : (existingIdx >= 0 ? rows[existingIdx].photo_url : null),
+        audio_url: hasAiColumns ? values[27] : (existingIdx >= 0 ? rows[existingIdx].audio_url : null),
+        audio_transcript: hasAiColumns ? values[28] : (existingIdx >= 0 ? rows[existingIdx].audio_transcript : null),
+        clinical_confidence: hasAiColumns ? values[29] : (existingIdx >= 0 ? rows[existingIdx].clinical_confidence : null),
+        clinical_rationale: hasAiColumns ? values[30] : (existingIdx >= 0 ? rows[existingIdx].clinical_rationale : null),
+        identified_symptoms: hasAiColumns ? values[31] : (existingIdx >= 0 ? rows[existingIdx].identified_symptoms : null),
+        containment_actions: hasAiColumns ? values[32] : (existingIdx >= 0 ? rows[existingIdx].containment_actions : null),
+        biohazard_alert: hasAiColumns ? values[33] : (existingIdx >= 0 ? rows[existingIdx].biohazard_alert : null),
+        model_used: hasAiColumns ? values[34] : (existingIdx >= 0 ? rows[existingIdx].model_used : null),
+        ai_report_json: hasAiColumns ? values[35] : (existingIdx >= 0 ? rows[existingIdx].ai_report_json : null),
+        created_at: hasAiColumns ? (values[36] ?? new Date().toISOString()) : (values[26] ?? new Date().toISOString()),
+        updated_at: hasAiColumns ? (values[37] ?? new Date().toISOString()) : (values[27] ?? new Date().toISOString()),
       };
       if (existingIdx >= 0) {
         rows[existingIdx] = caseRow;

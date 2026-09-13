@@ -74,20 +74,39 @@ def test_api_create_requisition_success():
     assert data["cold_chain"]["cold_chain_status"] == "OPTIMAL"
 
 
+def _create_test_requisition(client: TestClient) -> str:
+    payload = {
+        "animal_tag_id": "100234567890",
+        "incident_id": "INC-TEST-01",
+        "cluster_id": "CL-SYN_VESICULAR-558301",
+        "vet_id": "VET-MAH-4821",
+        "village_name": "Rahuri",
+        "district_name": "Ahmednagar",
+        "sample_type": "Vesicular Swab",
+        "suspected_disease": "FMD Suspect",
+        "preservative": "50% Glycerol-PBS (pH 7.4-7.6)",
+        "destination_lab": "District Diagnostic Lab (DDL), Pune",
+        "initial_temp_c": 4.0,
+    }
+    resp = client.post("/api/v1/labs/requisitions", json=payload)
+    assert resp.status_code == 201
+    return resp.json()["requisition_id"]
+
+
 def test_api_get_requisition():
     client = TestClient(app)
-    # The default pre-seeded demo requisition is LRF-20260904-0941
-    resp = client.get("/api/v1/labs/requisitions/LRF-20260904-0941")
+    req_id = _create_test_requisition(client)
+    resp = client.get(f"/api/v1/labs/requisitions/{req_id}")
     assert resp.status_code == 200
     data = resp.json()
-    assert data["requisition_id"] == "LRF-20260904-0941"
-    assert data["village_name"] == "Ashwi Budruk"
+    assert data["requisition_id"] == req_id
     assert "cold_chain" in data
     assert data["cold_chain"]["remaining_hours"] > 0
 
 
 def test_api_log_temperature_checkpoint():
     client = TestClient(app)
+    req_id = _create_test_requisition(client)
 
     # 1. Log normal temperature
     temp_payload = {
@@ -95,7 +114,7 @@ def test_api_log_temperature_checkpoint():
         "location_checkpoint": "Rahuri Toll Plaza",
         "logged_by": "Courier-Ramesh",
     }
-    resp1 = client.post("/api/v1/labs/requisitions/LRF-20260904-0941/temperature", json=temp_payload)
+    resp1 = client.post(f"/api/v1/labs/requisitions/{req_id}/temperature", json=temp_payload)
     assert resp1.status_code == 200
     data1 = resp1.json()
     assert data1["transit_temp_c"] == 5.2
@@ -108,7 +127,7 @@ def test_api_log_temperature_checkpoint():
         "location_checkpoint": "Wagholi Transit Hub",
         "logged_by": "Courier-Ramesh",
     }
-    resp2 = client.post("/api/v1/labs/requisitions/LRF-20260904-0941/temperature", json=breach_payload)
+    resp2 = client.post(f"/api/v1/labs/requisitions/{req_id}/temperature", json=breach_payload)
     assert resp2.status_code == 200
     data2 = resp2.json()
     assert data2["transit_temp_c"] == 14.8
@@ -118,6 +137,7 @@ def test_api_log_temperature_checkpoint():
 
 def test_api_submit_lab_result_positive_escalation():
     client = TestClient(app)
+    req_id = _create_test_requisition(client)
     result_payload = {
         "test_type": "RT-PCR",
         "test_result": "POSITIVE",
@@ -125,7 +145,7 @@ def test_api_submit_lab_result_positive_escalation():
         "notes": "Strong amplification of FMDV VP1 serotype O detected (Ct: 21.4)",
     }
 
-    resp = client.post("/api/v1/labs/requisitions/LRF-20260904-0941/result", json=result_payload)
+    resp = client.post(f"/api/v1/labs/requisitions/{req_id}/result", json=result_payload)
     assert resp.status_code == 200
     data = resp.json()
 
@@ -138,6 +158,7 @@ def test_api_submit_lab_result_positive_escalation():
 
 def test_api_submit_lab_result_negative():
     client = TestClient(app)
+    req_id = _create_test_requisition(client)
     result_payload = {
         "test_type": "Sandwich ELISA",
         "test_result": "NEGATIVE",
@@ -145,7 +166,7 @@ def test_api_submit_lab_result_negative():
         "notes": "No viral antigen detected",
     }
 
-    resp = client.post("/api/v1/labs/requisitions/LRF-20260904-0941/result", json=result_payload)
+    resp = client.post(f"/api/v1/labs/requisitions/{req_id}/result", json=result_payload)
     assert resp.status_code == 200
     data = resp.json()
 

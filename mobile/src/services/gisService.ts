@@ -1,3 +1,5 @@
+import { getApiUrl } from '../config/api';
+
 export interface EpiCurvePoint {
   date: string;
   dayIndex: number;
@@ -50,23 +52,6 @@ export interface SimulationStepState {
   metrics: Record<string, any>;
   metricsEnglish?: Record<string, any>;
 }
-
-export const AHMEDNAGAR_EPI_DATA: EpiCurvePoint[] = [
-  { date: '2026-08-22', dayIndex: 1, suspectedCases: 1, confirmedCases: 0, mortalityCount: 0, reproductionNumber: 1.2 },
-  { date: '2026-08-23', dayIndex: 2, suspectedCases: 2, confirmedCases: 0, mortalityCount: 0, reproductionNumber: 1.55 },
-  { date: '2026-08-24', dayIndex: 3, suspectedCases: 5, confirmedCases: 1, mortalityCount: 0, reproductionNumber: 2.1 },
-  { date: '2026-08-25', dayIndex: 4, suspectedCases: 9, confirmedCases: 3, mortalityCount: 0, reproductionNumber: 2.45 },
-  { date: '2026-08-26', dayIndex: 5, suspectedCases: 16, confirmedCases: 7, mortalityCount: 1, reproductionNumber: 2.7 },
-  { date: '2026-08-27', dayIndex: 6, suspectedCases: 28, confirmedCases: 14, mortalityCount: 1, reproductionNumber: 2.85 },
-  { date: '2026-08-28', dayIndex: 7, suspectedCases: 34, confirmedCases: 22, mortalityCount: 2, reproductionNumber: 2.6 },
-  { date: '2026-08-29', dayIndex: 8, suspectedCases: 24, confirmedCases: 18, mortalityCount: 1, reproductionNumber: 1.8 },
-  { date: '2026-08-30', dayIndex: 9, suspectedCases: 15, confirmedCases: 12, mortalityCount: 0, reproductionNumber: 1.3 },
-  { date: '2026-08-31', dayIndex: 10, suspectedCases: 9, confirmedCases: 8, mortalityCount: 0, reproductionNumber: 0.95 },
-  { date: '2026-09-01', dayIndex: 11, suspectedCases: 5, confirmedCases: 4, mortalityCount: 0, reproductionNumber: 0.8 },
-  { date: '2026-09-02', dayIndex: 12, suspectedCases: 3, confirmedCases: 2, mortalityCount: 0, reproductionNumber: 0.72 },
-  { date: '2026-09-03', dayIndex: 13, suspectedCases: 2, confirmedCases: 1, mortalityCount: 0, reproductionNumber: 0.68 },
-  { date: '2026-09-04', dayIndex: 14, suspectedCases: 1, confirmedCases: 1, mortalityCount: 0, reproductionNumber: 0.65 },
-];
 
 export const AHMEDNAGAR_SIMULATION_STEPS: SimulationStepState[] = [
   {
@@ -203,20 +188,49 @@ export const AHMEDNAGAR_SIMULATION_STEPS: SimulationStepState[] = [
 ];
 
 class GisService {
-  async getEpiCurve(_district: string = 'Ahmednagar'): Promise<EpiCurveResponse> {
-    const totalSuspected = AHMEDNAGAR_EPI_DATA.reduce((acc, p) => acc + p.suspectedCases, 0);
-    const totalConfirmed = AHMEDNAGAR_EPI_DATA.reduce((acc, p) => acc + p.confirmedCases, 0);
-    const totalDeaths = AHMEDNAGAR_EPI_DATA.reduce((acc, p) => acc + p.mortalityCount, 0);
+  async getEpiCurve(district: string = 'Ahmednagar', syndrome?: string): Promise<EpiCurveResponse> {
+    try {
+      let url = getApiUrl('gis/epi-curve');
+      const params = new URLSearchParams();
+      if (district) params.set('district', district);
+      if (syndrome) params.set('syndrome', syndrome);
+      const queryStr = params.toString();
+      if (queryStr) url += `?${queryStr}`;
+
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          districtName: data.district_name || district,
+          syndromeCode: data.syndrome_code || syndrome || 'SYN_VESICULAR',
+          totalSuspected: data.total_suspected || 0,
+          totalConfirmed: data.total_confirmed || 0,
+          totalDeaths: data.total_deaths || 0,
+          peakDay: data.peak_day || '',
+          currentRt: data.current_rt || 0.0,
+          points: (data.points || []).map((p: any) => ({
+            date: p.date,
+            dayIndex: p.day_index || p.dayIndex || 1,
+            suspectedCases: p.suspected_cases ?? p.suspectedCases ?? 0,
+            confirmedCases: p.confirmed_cases ?? p.confirmedCases ?? 0,
+            mortalityCount: p.mortality_count ?? p.mortalityCount ?? 0,
+            reproductionNumber: p.reproduction_number ?? p.reproductionNumber ?? 0.0,
+          })),
+        };
+      }
+    } catch (err) {
+      console.warn('Failed to fetch real epi-curve from backend:', err);
+    }
 
     return {
-      districtName: 'Ahmednagar',
-      syndromeCode: 'SYN_VESICULAR',
-      totalSuspected,
-      totalConfirmed,
-      totalDeaths,
-      peakDay: '2026-08-28',
-      currentRt: 0.65,
-      points: AHMEDNAGAR_EPI_DATA,
+      districtName: district,
+      syndromeCode: syndrome || 'ALL',
+      totalSuspected: 0,
+      totalConfirmed: 0,
+      totalDeaths: 0,
+      peakDay: '',
+      currentRt: 0.0,
+      points: [],
     };
   }
 

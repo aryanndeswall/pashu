@@ -76,48 +76,10 @@ class LabService:
 
     def __init__(self):
         self._store: Dict[str, Dict[str, Any]] = {}
-        self._seed_default_requisitions()
-
-    def _seed_default_requisitions(self):
-        """Pre-seeds standard Ahmednagar demo requisitions."""
-        base_time = utc_now() - timedelta(hours=16)
-        demo_id = "LRF-20260904-0941"
-        self._store[demo_id] = {
-            "requisition_id": demo_id,
-            "animal_tag_id": "100234567890",
-            "incident_id": "INC-ASHWI-01",
-            "cluster_id": "CL-SYN_VESICULAR-558301",
-            "vet_id": "VET-MAH-4821",
-            "village_name": "Ashwi Budruk",
-            "district_name": "Ahmednagar",
-            "sample_type": "Vesicular Epithelium",
-            "suspected_disease": "FMD Suspect",
-            "preservative": "50% Glycerol Phosphate Buffered Saline (pH 7.4-7.6)",
-            "destination_lab": "District Diagnostic Lab (DDL), Pune",
-            "status": "IN_TRANSIT",
-            "transit_temp_c": 3.8,
-            "temp_breached": False,
-            "collected_at": base_time,
-            "dispatched_at": base_time + timedelta(minutes=30),
-            "received_at": None,
-            "test_type": None,
-            "test_result": None,
-            "result_notes": None,
-            "pathologist_id": None,
-            "confirmed_at": None,
-            "qr_payload": json.dumps({
-                "req_id": demo_id,
-                "tag": "100234567890",
-                "disease": "FMD Suspect",
-                "sample": "Vesicular Epithelium",
-                "lab": "DDL Pune",
-            }),
-        }
 
     def clear_store(self):
         """Resets in-memory store for isolated unit tests."""
         self._store.clear()
-        self._seed_default_requisitions()
 
     def generate_requisition_id(self) -> str:
         date_str = datetime.now(timezone.utc).strftime("%Y%m%d")

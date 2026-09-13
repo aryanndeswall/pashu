@@ -454,6 +454,68 @@ export const UI_TRANSLATIONS: Record<string, Record<SupportedLanguage, string>> 
     en: 'Enter the 12-digit RFID number from the yellow ear tag.',
   },
 
+  // Step 3 Interim AI Triage & Provisional Care Card
+  instantAIFinding: {
+    mr: 'तात्काळ AI निष्कर्ष',
+    hi: 'तत्काल AI निष्कर्ष',
+    en: 'Instant AI Finding',
+  },
+  aiAccuracy: {
+    mr: 'अचूकता',
+    hi: 'सटीकता',
+    en: 'Confidence',
+  },
+  doctorCoordination: {
+    mr: 'डॉक्टर समन्वय',
+    hi: 'डॉक्टर समन्वय',
+    en: 'Doctor Coordination',
+  },
+  provisionalCareTitle: {
+    mr: 'डॉक्टर येईपर्यंत तात्पुरते प्रथमोपचार (Provisional Care):',
+    hi: 'डॉक्टर के आने तक प्राथमिक देखभाल (Provisional Care):',
+    en: 'Provisional First-Aid (Until Doctor Arrives):',
+  },
+  doctorSyncNotice: {
+    mr: 'हा अहवाल थेट स्थानिक पशुवैद्यकाकडे (डॉ. अनन्या देशमुख) समक्रमित केला जाईल',
+    hi: 'यह रिपोर्ट सीधे स्थानीय पशु चिकित्सक (डॉ. अनन्या देशमुख) को सिंक की जाएगी',
+    en: 'This report will be synced directly to the local veterinarian (Dr. Ananya Deshmukh)',
+  },
+  aiTriageAnalyzing: {
+    mr: 'AI लक्षणे, फोटो व व्हॉइस विश्लेषण करत आहे (Multimodal Triage Processing)...',
+    hi: 'AI लक्षणों, फोटो व आवाज का विश्लेषण कर रहा है (Multimodal Triage Processing)...',
+    en: 'AI is analyzing symptoms, photo & voice evidence (Multimodal Triage Processing)...',
+  },
+  aiTriageAnalyzingSub: {
+    mr: 'Gemini 3.7 Flash • उप-सेकंद क्लिनिकल विश्लेषण',
+    hi: 'Gemini 3.7 Flash • उप-सेकंड नैदानिक विश्लेषण',
+    en: 'Gemini 3.7 Flash • Sub-second Clinical Inference',
+  },
+  doctorSyncedDistance: {
+    mr: 'डॉ. अनन्या देशमुख (राहुरी दवाखाना • २.४ किमी) कडे समक्रमित',
+    hi: 'डॉ. अनन्या देशमुख (राहुरी क्लिनिक • २.४ किमी) को सिंक किया गया',
+    en: 'Synced to Dr. Ananya Deshmukh (Rahuri Clinic • 2.4 km)',
+  },
+  callAssignedVet: {
+    mr: 'नियुक्त पशुवैद्यकास कॉल करा (+91 94220 01842)',
+    hi: 'नियुक्त पशु चिकित्सक को कॉल करें (+91 94220 01842)',
+    en: 'Call Assigned Veterinarian (+91 94220 01842)',
+  },
+  viewAllDoctors: {
+    mr: 'सर्व डॉक्टर पहा',
+    hi: 'सभी डॉक्टर देखें',
+    en: 'View All Doctors',
+  },
+  goToDashboard: {
+    mr: 'डॅशबोर्डवर जा',
+    hi: 'डैशबोर्ड पर जाएं',
+    en: 'Go to Dashboard',
+  },
+  errorSavingReport: {
+    mr: 'अहवाल जतन करण्यात त्रुटी आली. कृपया पुन्हा प्रयत्न करा.',
+    hi: 'रिपोर्ट सहेजने में त्रुटि आई। कृपया पुनः प्रयास करें।',
+    en: 'Error saving offline report. Please try again.',
+  },
+
   // Secondary Symptoms
   selectObservedSymptoms: {
     mr: 'तपशीलवार लक्षणे निवडा (Select Observed Symptoms):',
@@ -495,9 +557,9 @@ export const UI_TRANSLATIONS: Record<string, Record<SupportedLanguage, string>> 
     en: 'Report Saved Successfully!',
   },
   reportSuccessSubtitle: {
-    mr: 'स्थानिक SQLite रांगेमध्ये अहवाल सुरक्षित ठेवण्यात आला आहे.',
-    hi: 'स्थानीय SQLite कतार में रिपोर्ट सुरक्षित रूप से सहेजी गई है।',
-    en: 'Securely enqueued in offline SQLite sync queue.',
+    mr: 'स्थानिक SQLite मध्ये सुरक्षित ठेवून तालुका पशुवैद्यकाकडे (डॉ. अनन्या देशमुख) थेट पाठवला आहे.',
+    hi: 'स्थानीय SQLite में सुरक्षित रूप से सहेजकर ब्लॉक पशु चिकित्सक (डॉ. अनन्या देशमुख) को सीधे भेजा गया है।',
+    en: 'Secured in local SQLite and dispatched directly to Block Veterinary Officer (Dr. Ananya Deshmukh).',
   },
   syndromeLabel: {
     mr: 'लक्षण',
@@ -1464,15 +1526,15 @@ export const UI_TRANSLATIONS: Record<string, Record<SupportedLanguage, string>> 
     hi: 'आपातकालीन वीडियो परामर्श (Tele-Consult)',
     en: 'Emergency Video Tele-Consult',
   },
-  teleConsultDoctorDesc: {
-    mr: 'डॉ. अनन्या देशमुख (M.V.Sc) यांच्याशी थेट संपर्क',
-    hi: 'डॉ. अनन्या देशमुख (M.V.Sc) से सीधा संपर्क',
-    en: 'Direct line with Dr. Ananya Deshmukh (M.V.Sc)',
-  },
-  connectDoctorBtn: {
+  teleConnectDoctorBtn: {
     mr: 'डॉक्टरांना कॉल करा',
     hi: 'डॉक्टर को कॉल करें',
     en: 'Call Doctor',
+  },
+  viewMap: {
+    mr: 'नकाशा पहा',
+    hi: 'मानचित्र देखें',
+    en: 'Command Map',
   },
 };
 
@@ -1497,8 +1559,8 @@ const getInitialLanguage = (): SupportedLanguage => {
   if (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test') {
     return 'mr';
   }
-  // Default to Hindi (hi) as national language for browser/user sessions
-  return 'hi';
+  // Default to English for browser/demo sessions
+  return 'en';
 };
 
 export const useLanguageStore = create<LanguageState>((set, get) => ({
@@ -1522,6 +1584,22 @@ export const useLanguageStore = create<LanguageState>((set, get) => ({
     const translation = UI_TRANSLATIONS[key];
     if (translation && translation[lang]) {
       return translation[lang];
+    }
+    if (lang === 'en' && defaultText) {
+      // If defaultText has English inside parentheses, e.g. "रद्द करा (Cancel)" -> "Cancel"
+      const match = defaultText.match(/\(([^)]+)\)/);
+      if (match && /[a-zA-Z]/.test(match[1])) {
+        return match[1].trim();
+      }
+      // If defaultText has English words and Devanagari, extract the English portion
+      if (/[a-zA-Z]/.test(defaultText) && /[\u0900-\u097F]/.test(defaultText)) {
+        const cleaned = defaultText
+          .replace(/[\u0900-\u097F]/g, '')
+          .replace(/[()\/:]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (cleaned.length > 1) return cleaned;
+      }
     }
     return defaultText ?? key;
   },

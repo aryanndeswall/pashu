@@ -1,81 +1,106 @@
-import React, { useState } from 'react';
-import {
-  MapPin,
-  Shield,
-  Layers,
-  Radio,
-  AlertTriangle,
-  Info,
-  Car,
-  ChevronRight,
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Radio, MapPin } from 'lucide-react';
 import { useLanguageStore } from '../../store/languageStore';
+import Map, { Source, Layer, Marker, Popup, ViewState } from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import * as turf from '@turf/turf';
+import { getApiUrl } from '../../config/api';
 
-interface VillagePin {
+export interface VillagePin {
   id: string;
   name: string;
   nameMr: string;
   bovineCount: number;
   cases: number;
-  x: number; // percentage in SVG viewBox
-  y: number;
+  longitude: number;
+  latitude: number;
   zone: 'INFECTED' | 'RING_VAC' | 'SURVEILLANCE';
 }
 
-const DEMO_VILLAGES: VillagePin[] = [
-  {
-    id: '558301',
-    name: 'Ashwi Budruk',
-    nameMr: 'आश्वी बुद्रुक (केंद्र)',
-    bovineCount: 1450,
-    cases: 40,
-    x: 50,
-    y: 50,
-    zone: 'INFECTED',
-  },
-  {
-    id: '558302',
-    name: 'Rahuri Rural',
-    nameMr: 'राहुरी ग्रामीण',
-    bovineCount: 2100,
-    cases: 8,
-    x: 62,
-    y: 42,
-    zone: 'RING_VAC',
-  },
-  {
-    id: '558303',
-    name: 'Sangamner Khurd',
-    nameMr: 'संगमनेर खुर्द',
-    bovineCount: 1800,
-    cases: 2,
-    x: 32,
-    y: 65,
-    zone: 'SURVEILLANCE',
-  },
-  {
-    id: '558304',
-    name: 'Kopargaon Rural',
-    nameMr: 'कोपरगाव ग्रामीण',
-    bovineCount: 2400,
-    cases: 0,
-    x: 74,
-    y: 72,
-    zone: 'SURVEILLANCE',
-  },
-];
-
-const CHECKPOINTS = [
-  { name: 'SH-10 Rahuri Barrier', x: 68, y: 35 },
-  { name: 'NH-160 Shirdi Barrier', x: 26, y: 55 },
-];
+export interface ActiveCluster {
+  id: string;
+  syndrome_code: string;
+  primary_disease: string;
+  centroid_lat: number;
+  centroid_lon: number;
+  cases_count: number;
+  containment_radius_km: number;
+  containment_zones?: {
+    infected_zone_radius_km: number;
+    surveillance_zone_radius_km: number;
+    buffer_zone_radius_km: number;
+  };
+  district?: string;
+  taluka?: string;
+}
 
 export const CommandMapView: React.FC = () => {
   const { currentLanguage, t } = useLanguageStore();
   const [showBuffers, setShowBuffers] = useState(true);
   const [showVillages, setShowVillages] = useState(true);
-  const [showCheckpoints, setShowCheckpoints] = useState(true);
-  const [selectedVillage, setSelectedVillage] = useState<VillagePin | null>(DEMO_VILLAGES[0]);
+  const [selectedVillage, setSelectedVillage] = useState<VillagePin | null>(null);
+  const [clusters, setClusters] = useState<ActiveCluster[]>([]);
+  const [, setIsLoading] = useState(true);
+
+  const [viewState, setViewState] = useState<Partial<ViewState>>({
+    longitude: 74.64,
+    latitude: 19.38,
+    zoom: 9.5,
+    pitch: 0,
+    bearing: 0,
+  });
+
+  useEffect(() => {
+    let active = true;
+    async function loadClusters() {
+      try {
+        const res = await fetch(getApiUrl('clusters/active'));
+        if (res.ok) {
+          const data = await res.json();
+          if (active && Array.isArray(data)) {
+            setClusters(data);
+            if (data.length > 0 && data[0].centroid_lon && data[0].centroid_lat) {
+              setViewState((prev) => ({
+                ...prev,
+                longitude: data[0].centroid_lon,
+                latitude: data[0].centroid_lat,
+              }));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load active clusters for map:', err);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    }
+    loadClusters();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Generate true geodetic buffers using Turf.js only for real clusters
+  const bufferGeoJSON = useMemo(() => {
+    if (clusters.length === 0) {
+      return { type: 'FeatureCollection', features: [] };
+    }
+    const features: any[] = [];
+    clusters.forEach((cluster) => {
+      const lon = cluster.centroid_lon || 74.64;
+      const lat = cluster.centroid_lat || 19.38;
+      const center = turf.point([lon, lat]);
+      const rad10 = cluster.containment_zones?.buffer_zone_radius_km || 10;
+      const rad5 = cluster.containment_zones?.surveillance_zone_radius_km || 5;
+      const rad1 = cluster.containment_zones?.infected_zone_radius_km || 1;
+
+      features.push({ ...turf.buffer(center, rad10, { units: 'kilometers' }), properties: { type: '10km' } });
+      features.push({ ...turf.buffer(center, rad5, { units: 'kilometers' }), properties: { type: '5km' } });
+      features.push({ ...turf.buffer(center, rad1, { units: 'kilometers' }), properties: { type: '1km' } });
+    });
+
+    return { type: 'FeatureCollection', features };
+  }, [clusters]);
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-md space-y-3">
@@ -91,229 +116,157 @@ export const CommandMapView: React.FC = () => {
                 {currentLanguage === 'en'
                   ? 'Web-GIS Outbreak Cluster Map'
                   : currentLanguage === 'hi'
-                  ? 'स्थानिक वेब-जीआईएस प्रकोप मानचित्र (Web-GIS Map)'
+                  ? 'स्थानिक प्रकोप मानचित्र (Web-GIS Map)'
                   : 'स्थानिक वेब-जीआयएस नकाशा (Web-GIS Outbreak Map)'}
               </span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-100 text-rose-700 font-mono font-black">
-                OPS 0.84
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold ${
+                  clusters.length > 0
+                    ? 'bg-rose-100 text-rose-700'
+                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                }`}
+              >
+                {clusters.length > 0
+                  ? `${clusters.length} ACTIVE CLUSTER`
+                  : currentLanguage === 'en'
+                  ? 'NO ACTIVE OUTBREAKS'
+                  : 'प्रादुर्भाव नाही'}
               </span>
             </h3>
-            <p className="text-[10px] text-slate-400">
-              Ahmednagar Cluster CL-SYN_VESICULAR-558301
-            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-1 text-[10px] font-bold">
           <button
-            type="button"
             onClick={() => setShowBuffers(!showBuffers)}
             className={`px-2 py-1 rounded-lg border transition-colors ${
               showBuffers
-                ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-800'
+                ? 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800'
                 : 'text-slate-400 border-slate-200 dark:border-slate-700'
             }`}
           >
             {t('bufferToggle', 'बफर')}
           </button>
           <button
-            type="button"
             onClick={() => setShowVillages(!showVillages)}
             className={`px-2 py-1 rounded-lg border transition-colors ${
               showVillages
-                ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-800'
+                ? 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800'
                 : 'text-slate-400 border-slate-200 dark:border-slate-700'
             }`}
           >
             {t('villagesToggle', 'गावे')}
           </button>
-          <button
-            type="button"
-            onClick={() => setShowCheckpoints(!showCheckpoints)}
-            className={`px-2 py-1 rounded-lg border transition-colors ${
-              showCheckpoints
-                ? 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-800'
-                : 'text-slate-400 border-slate-200 dark:border-slate-700'
-            }`}
-          >
-            {t('checkpointsToggle', 'नाके')}
-          </button>
         </div>
       </div>
 
-      {/* SVG GIS Vector Map Canvas */}
-      <div className="relative w-full aspect-[4/3] bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
-        {/* Subtle Map Grid Background */}
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#64748b_1px,transparent_1px)] [background-size:16px_16px]" />
-
-        <svg viewBox="0 0 100 100" className="w-full h-full relative z-10">
-          {/* 10 km Surveillance Perimeter (Cyan) */}
-          {showBuffers && (
-            <circle
-              cx="50"
-              cy="50"
-              r="44"
-              fill="#06b6d4"
-              fillOpacity="0.12"
-              stroke="#06b6d4"
-              strokeWidth="0.8"
-              strokeDasharray="2 1.5"
-            />
-          )}
-
-          {/* 5 km Ring Vaccination Target (Amber) */}
-          {showBuffers && (
-            <circle
-              cx="50"
-              cy="50"
-              r="25"
-              fill="#f59e0b"
-              fillOpacity="0.18"
-              stroke="#f59e0b"
-              strokeWidth="0.9"
-              strokeDasharray="3 1.5"
-            />
-          )}
-
-          {/* 1 km Infected Movement Freeze Zone (Red) */}
-          {showBuffers && (
-            <circle
-              cx="50"
-              cy="50"
-              r="10"
-              fill="#dc2626"
-              fillOpacity="0.32"
-              stroke="#dc2626"
-              strokeWidth="1.2"
-            />
-          )}
-
-          {/* Epicenter Pulsating Target Marker */}
-          <circle cx="50" cy="50" r="2.5" fill="#dc2626" />
-          <circle
-            cx="50"
-            cy="50"
-            r="4.5"
-            fill="none"
-            stroke="#ef4444"
-            strokeWidth="0.6"
-            className="animate-ping"
-            style={{ transformOrigin: '50% 50%' }}
-          />
-
-          {/* Highway Quarantine Checkpoints */}
-          {showCheckpoints &&
-            CHECKPOINTS.map((cp, idx) => (
-              <g key={idx} transform={`translate(${cp.x}, ${cp.y})`}>
-                <rect
-                  x="-2"
-                  y="-2"
-                  width="4"
-                  height="4"
-                  rx="1"
-                  fill="#fbbf24"
-                  stroke="#78350f"
-                  strokeWidth="0.4"
-                />
-                <circle cx="0" cy="0" r="0.8" fill="#1e1b4b" />
-              </g>
-            ))}
-
-          {/* Village Pins */}
-          {showVillages &&
-            DEMO_VILLAGES.map((v) => {
-              const isSelected = selectedVillage?.id === v.id;
-              const color =
-                v.zone === 'INFECTED'
-                  ? '#ef4444'
-                  : v.zone === 'RING_VAC'
-                  ? '#f59e0b'
-                  : '#06b6d4';
-
-              return (
-                <g
-                  key={v.id}
-                  transform={`translate(${v.x}, ${v.y})`}
-                  className="cursor-pointer transition-transform hover:scale-125"
-                  onClick={() => setSelectedVillage(v)}
-                >
-                  <circle
-                    cx="0"
-                    cy="0"
-                    r={isSelected ? 3.0 : 2.0}
-                    fill={color}
-                    stroke="#ffffff"
-                    strokeWidth={isSelected ? 0.8 : 0.4}
-                  />
-                  <text
-                    x="0"
-                    y={v.y > 60 ? -3.5 : 4.5}
-                    textAnchor="middle"
-                    fill="#e2e8f0"
-                    fontSize="2.4"
-                    fontWeight="bold"
-                    className="select-none pointer-events-none drop-shadow"
-                  >
-                    {v.name}
-                  </text>
-                </g>
-              );
-            })}
-        </svg>
-
-        {/* Map Scale & North Arrow */}
-        <div className="absolute bottom-2 left-2 text-[9px] font-mono text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800">
-          Scale: 1:50,000 | 10 km radius
-        </div>
-      </div>
-
-      {/* Biosecurity Zone Legend */}
-      <div className="grid grid-cols-3 gap-2 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
-        <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
-          <span className="truncate">{t('zone1km', '१ किमी हालचाल बंदी')}</span>
-        </div>
-        <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
-          <span className="truncate">{t('zone5km', '५ किमी रिंग लस')}</span>
-        </div>
-        <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-900/60">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 shrink-0" />
-          <span className="truncate">{t('zone10km', '१० किमी पाळत क्षेत्र')}</span>
-        </div>
-      </div>
-
-      {/* Selected Village Detail Banner */}
-      {selectedVillage && (
-        <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
-              <MapPin className="w-3.5 h-3.5 text-purple-600" />
-              <span>{currentLanguage === 'en' ? selectedVillage.name : selectedVillage.nameMr}</span>
-              <span className="text-[10px] text-slate-400 font-mono">
-                (LGD {selectedVillage.id})
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              {t('livestockCensus', 'पशुधन जनगणना')}: <strong>{selectedVillage.bovineCount}</strong> | {t('reportedCases', 'नोंद रुग्ण')}:{' '}
-              <strong className="text-rose-600 dark:text-rose-400 font-bold">
-                {selectedVillage.cases}
-              </strong>
-            </p>
-          </div>
-          <span
-            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-              selectedVillage.zone === 'INFECTED'
-                ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                : selectedVillage.zone === 'RING_VAC'
-                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                : 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300'
-            }`}
-          >
-            {selectedVillage.zone}
+      {/* Outbreak Status Notice */}
+      {clusters.length === 0 && (
+        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 flex items-center gap-2">
+          <Radio className="w-3.5 h-3.5 text-emerald-500 shrink-0 animate-pulse" />
+          <span>
+            {currentLanguage === 'en'
+              ? 'Zero active outbreak containment zones detected. District veterinary surveillance normal.'
+              : 'सध्या कार्यक्षेत्रात कोणताही संसर्गजन्य रोग प्रादुर्भाव किंवा कंटेनमेंट झोन नाही.'}
           </span>
         </div>
       )}
+
+      {/* MapLibre GL JS Vector Map Canvas */}
+      <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-inner">
+        <Map
+          {...viewState}
+          onMove={(evt: any) => setViewState(evt.viewState)}
+          mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+          attributionControl={false}
+        >
+          {/* Turf Buffer Layers */}
+          {showBuffers && bufferGeoJSON.features.length > 0 && (
+            <Source type="geojson" data={bufferGeoJSON as any}>
+              <Layer
+                id="10km-buffer"
+                type="fill"
+                filter={['==', 'type', '10km']}
+                paint={{ 'fill-color': '#06b6d4', 'fill-opacity': 0.12 }}
+              />
+              <Layer
+                id="10km-stroke"
+                type="line"
+                filter={['==', 'type', '10km']}
+                paint={{ 'line-color': '#06b6d4', 'line-width': 1, 'line-dasharray': [2, 2] }}
+              />
+
+              <Layer
+                id="5km-buffer"
+                type="fill"
+                filter={['==', 'type', '5km']}
+                paint={{ 'fill-color': '#f59e0b', 'fill-opacity': 0.18 }}
+              />
+              <Layer
+                id="5km-stroke"
+                type="line"
+                filter={['==', 'type', '5km']}
+                paint={{ 'line-color': '#f59e0b', 'line-width': 1, 'line-dasharray': [3, 3] }}
+              />
+
+              <Layer
+                id="1km-buffer"
+                type="fill"
+                filter={['==', 'type', '1km']}
+                paint={{ 'fill-color': '#dc2626', 'fill-opacity': 0.32 }}
+              />
+              <Layer
+                id="1km-stroke"
+                type="line"
+                filter={['==', 'type', '1km']}
+                paint={{ 'line-color': '#dc2626', 'line-width': 1.5 }}
+              />
+            </Source>
+          )}
+
+          {/* Active Cluster Center Markers */}
+          {clusters.map((c) => (
+            <Marker
+              key={c.id}
+              longitude={c.centroid_lon || 74.64}
+              latitude={c.centroid_lat || 19.38}
+              anchor="bottom"
+            >
+              <div className="cursor-pointer group flex flex-col items-center">
+                <div className="p-1.5 rounded-full shadow-lg border-2 bg-rose-600 border-white animate-bounce">
+                  <MapPin className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-[9px] font-bold bg-slate-900/80 text-white px-1.5 py-0.5 rounded shadow mt-0.5">
+                  {c.primary_disease || c.syndrome_code}
+                </span>
+              </div>
+            </Marker>
+          ))}
+
+          {/* Popup */}
+          {selectedVillage && (
+            <Popup
+              longitude={selectedVillage.longitude}
+              latitude={selectedVillage.latitude}
+              anchor="top"
+              closeButton={true}
+              closeOnClick={false}
+              onClose={() => setSelectedVillage(null)}
+              className="z-50"
+            >
+              <div className="p-2 text-slate-800">
+                <h4 className="font-bold text-sm mb-1">{selectedVillage.name}</h4>
+                <div className="text-xs text-slate-500 mb-1">{selectedVillage.nameMr}</div>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="font-semibold text-rose-600">{selectedVillage.cases} Cases</span>
+                  <span className="text-slate-400">•</span>
+                  <span>{selectedVillage.bovineCount} Bovines</span>
+                </div>
+              </div>
+            </Popup>
+          )}
+        </Map>
+      </div>
     </div>
   );
 };

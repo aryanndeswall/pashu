@@ -293,33 +293,35 @@ export const SyncQueueDrawer: React.FC = () => {
           )}
         </div>
 
-        {/* Primary Sync Now CTA */}
+        {/* Primary Sync Now CTA - Converted to Auto-Sync Status Indicator as requested by user */}
         <div className="pt-2">
-          <button
-            type="button"
-            disabled={networkTier === 'OFFLINE' || isSyncing}
-            onClick={triggerSync}
-            className={`field-touch-target w-full py-3.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all ${
-              networkTier === 'OFFLINE'
-                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                : 'bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white shadow-emerald-900/20'
-            }`}
-          >
-            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>
-              {isSyncing
-                ? currentLanguage === 'en'
-                  ? 'Syncing...'
-                  : 'समक्रमित करत आहे... (Syncing)'
-                : networkTier === 'OFFLINE'
-                ? currentLanguage === 'en'
-                  ? 'Offline: No Network'
-                  : 'ऑफलाइन: नेटवर्क उपलब्ध नाही'
-                : currentLanguage === 'en'
-                ? 'Sync All Now'
-                : 'आताच सर्व समक्रमित करा (Sync Now)'}
-            </span>
-          </button>
+          {networkTier !== 'OFFLINE' ? (
+            <div className="w-full py-3.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+              <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>
+                {isSyncing
+                  ? currentLanguage === 'en'
+                    ? 'Auto-Syncing in background...'
+                    : 'बॅकग्राउंडमध्ये सिंक करत आहे... (Auto-Syncing)'
+                  : pendingCount > 0
+                  ? currentLanguage === 'en'
+                    ? 'Auto-Sync starting...'
+                    : 'ऑटो-सिंक सुरू होत आहे...'
+                  : currentLanguage === 'en'
+                  ? 'Auto-Sync Active (Up to date)'
+                  : 'ऑटो-सिंक सक्रिय (अपडेटेड)'}
+              </span>
+            </div>
+          ) : (
+            <div className="w-full py-3.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 bg-slate-200 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700">
+              <CloudOff className="w-4 h-4" />
+              <span>
+                {currentLanguage === 'en'
+                  ? 'Offline: Auto-Sync Paused'
+                  : 'ऑफलाइन: ऑटो-सिंक थांबले आहे'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </FluidDrawer>

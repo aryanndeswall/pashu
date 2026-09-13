@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
-export type TabType = 'report' | 'dashboard' | 'animals' | 'labs' | 'doctors';
+export type TabType = 'report' | 'dashboard' | 'animals' | 'labs' | 'doctors' | 'triage';
+
 
 interface NavigationState {
   activeTab: TabType;

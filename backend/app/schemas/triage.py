@@ -96,7 +96,11 @@ class TriageResponse(BaseModel):
     identified_symptoms: List[str] = []
     immediate_advisory_marathi: str
     immediate_advisory_hindi: str
+    immediate_advisory_en: Optional[str] = None
     recommended_containment_actions: List[str] = []
+    recommended_containment_actions_en: Optional[List[str]] = None
+    suspected_disease_en: Optional[str] = None
+    clinical_rationale_en: Optional[str] = None
     inference_time_ms: int
     model_used: str
 

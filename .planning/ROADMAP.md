@@ -67,3 +67,13 @@ Plans:
 - [x] 14-01: Cloud PostgreSQL + PostGIS database connection, migration verification, and Redis pub/sub cluster streaming.
 - [x] 14-02: Firebase Cloud Messaging (FCM) / SMS push alert integration and Web-GIS live alert banner integration.
 
+
+### Phase 14.1: Production audit and functional stabilization (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 14
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 14.1 to break down)

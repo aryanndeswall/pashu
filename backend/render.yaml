@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: pashu-suraksha-backend
+    runtime: python
+    region: singapore
+    plan: free
+    branch: main
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: FIREBASE_STORAGE_BUCKET
+        value: pashu-f51a1.firebasestorage.app
+      - key: DPDP_PHONE_SALT
+        value: pashu_dpdp_secret_salt_2026
+      - key: FIREBASE_CREDENTIALS_PATH
+        value: ./firebase-service-account.json

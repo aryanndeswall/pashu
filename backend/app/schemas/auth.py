@@ -59,3 +59,42 @@ class OtpStatusResponse(BaseModel):
     phone_masked: str
     expires_in_seconds: int
     test_otp: Optional[str] = None  # Populated in non-production for instant verification
+
+
+# --- Role-Locked Auth Schemas ---
+
+class RoleCredentialRequest(BaseModel):
+    """Sent after Firebase sign-in to verify role-specific secondary credential and set custom claim."""
+    uid: str = Field(..., description="Firebase UID of the signed-in user")
+    role: str = Field(..., description="Requested role: consumer, doctor, admin")
+    secondary_id: Optional[str] = Field(
+        None,
+        description="VCI License ID for doctor, Employee/DVO ID for admin. Not required for consumer."
+    )
+    name: Optional[str] = Field(None, description="Display name to persist on first registration")
+    phone: Optional[str] = Field(None, description="Mobile number for consumer (masked + hashed)")
+
+
+class RoleCredentialResponse(BaseModel):
+    success: bool
+    role_confirmed: str
+    message: str
+    user: Optional[UserProfileResponse] = None
+
+
+class AdminProvisionRequest(BaseModel):
+    """Internal endpoint only — pre-seeds a DVO/Admin account. Requires X-Admin-Secret header."""
+    email: str = Field(..., description="Official government email address")
+    employee_id: str = Field(..., description="DVO Employee ID (e.g. DVO-AHM-001)")
+    name: str
+    name_marathi: Optional[str] = None
+    district: str
+    block: str = "District Headquarters"
+    password: str = Field(..., description="Temporary password — user must change on first login")
+
+
+class AdminProvisionResponse(BaseModel):
+    success: bool
+    uid: str
+    employee_id: str
+    message: str

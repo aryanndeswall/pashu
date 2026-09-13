@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Query, status, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.database import get_db
 from app.schemas.gis import (
     EpiCurveResponse,
     MarketClosureMemoRequest,
@@ -20,12 +22,13 @@ router = APIRouter()
 async def get_epi_curve(
     district: str = Query("Ahmednagar", description="Target district for time-series aggregation"),
     syndrome: str = Query("SYN_VESICULAR", description="Syndromic category code"),
+    db: AsyncSession = Depends(get_db),
 ) -> EpiCurveResponse:
     """
     Returns 14-day rolling epidemiological case counts, mortality figures, peak incidence day,
     and effective reproduction numbers (Rt) modeling post-containment drop.
     """
-    return gis_service.generate_14_day_epi_curve(district=district, syndrome=syndrome)
+    return await gis_service.generate_14_day_epi_curve(district=district, syndrome=syndrome, db=db)
 
 
 @router.post(

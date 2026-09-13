@@ -50,62 +50,80 @@ export const EpiCurveChart: React.FC = () => {
       </div>
 
       {/* SVG Bar & Line Chart Canvas */}
-      <div className="relative w-full aspect-[2/1] bg-slate-50 dark:bg-slate-950/80 rounded-2xl p-3 border border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-end">
-        {/* Intervention Vertical Divider (Day 7) */}
-        <div
-          className="absolute top-2 bottom-6 border-l-2 border-dashed border-rose-500 z-10 pointer-events-none"
-          style={{ left: `${(6.5 / 14) * 100}%` }}
-        >
-          <span className="absolute -top-1 left-1 text-[8px] font-bold bg-rose-500 text-white px-1.5 py-0.2 rounded shadow whitespace-nowrap">
-            {t('ringVacDay7', 'रिंग लसीकरण (Day 7)')}
-          </span>
-        </div>
+      <div className="relative w-full min-h-[140px] bg-slate-50 dark:bg-slate-950/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-center items-center">
+        {data.totalSuspected === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center py-2 space-y-1">
+            <ShieldCheck className="w-8 h-8 text-emerald-500 mb-1" />
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              {currentLanguage === 'en'
+                ? 'Baseline Normal — 0 Outbreak Cases in 14-Day Window'
+                : 'सामान्य स्थिती — मागील १४ दिवसांत ० संसर्ग रुग्ण नोंद'}
+            </p>
+            <p className="text-[10px] text-slate-400 max-w-xs">
+              {currentLanguage === 'en'
+                ? 'Routine syndromic surveillance active. Epidemic curves plot automatically upon cluster detection.'
+                : 'रोग नियंत्रण कक्ष सक्रिय. रुग्ण आढळल्यास वक्र आपोआप रेखाटला जाईल.'}
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Intervention Vertical Divider (Day 7) */}
+            <div
+              className="absolute top-2 bottom-6 border-l-2 border-dashed border-rose-500 z-10 pointer-events-none"
+              style={{ left: `${(6.5 / 14) * 100}%` }}
+            >
+              <span className="absolute -top-1 left-1 text-[8px] font-bold bg-rose-500 text-white px-1.5 py-0.2 rounded shadow whitespace-nowrap">
+                {t('ringVacDay7', 'रिंग लसीकरण (Day 7)')}
+              </span>
+            </div>
 
-        {/* 14-Day Bars */}
-        <div className="flex items-end justify-between h-32 w-full gap-1 pt-4">
-          {data.points.map((pt) => {
-            const heightPercent = (pt.suspectedCases / maxVal) * 100;
-            const isHovered = activePoint?.dayIndex === pt.dayIndex;
-            const isPeak = pt.date === data.peakDay;
+            {/* 14-Day Bars */}
+            <div className="flex items-end justify-between h-32 w-full gap-1 pt-4">
+              {data.points.map((pt) => {
+                const heightPercent = (pt.suspectedCases / maxVal) * 100;
+                const isHovered = activePoint?.dayIndex === pt.dayIndex;
+                const isPeak = pt.date === data.peakDay;
 
-            return (
-              <div
-                key={pt.dayIndex}
-                onClick={() => setActivePoint(pt)}
-                className="flex-1 flex flex-col items-center cursor-pointer group h-full justify-end"
-              >
-                {/* Bar */}
-                <div
-                  className={`w-full rounded-t-md transition-all duration-300 relative ${
-                    isPeak
-                      ? 'bg-rose-500 shadow-md shadow-rose-500/20'
-                      : pt.dayIndex > 7
-                      ? 'bg-emerald-500 dark:bg-emerald-600'
-                      : 'bg-amber-500 dark:bg-amber-600'
-                  } ${isHovered ? 'ring-2 ring-purple-600 scale-x-110' : 'opacity-85 group-hover:opacity-100'}`}
-                  style={{ height: `${Math.max(6, heightPercent)}%` }}
-                >
-                  {/* Confirmed overlay segment */}
-                  {pt.confirmedCases > 0 && (
+                return (
+                  <div
+                    key={pt.dayIndex}
+                    onClick={() => setActivePoint(pt)}
+                    className="flex-1 flex flex-col items-center cursor-pointer group h-full justify-end"
+                  >
+                    {/* Bar */}
                     <div
-                      className="w-full bg-purple-700/80 rounded-t-md absolute bottom-0 left-0"
-                      style={{ height: `${(pt.confirmedCases / pt.suspectedCases) * 100}%` }}
-                    />
-                  )}
-                </div>
+                      className={`w-full rounded-t-md transition-all duration-300 relative ${
+                        isPeak
+                          ? 'bg-rose-500 shadow-md shadow-rose-500/20'
+                          : pt.dayIndex > 7
+                          ? 'bg-emerald-500 dark:bg-emerald-600'
+                          : 'bg-amber-500 dark:bg-amber-600'
+                      } ${isHovered ? 'ring-2 ring-purple-600 scale-x-110' : 'opacity-85 group-hover:opacity-100'}`}
+                      style={{ height: `${Math.max(6, heightPercent)}%` }}
+                    >
+                      {/* Confirmed overlay segment */}
+                      {pt.confirmedCases > 0 && (
+                        <div
+                          className="w-full bg-purple-700/80 rounded-t-md absolute bottom-0 left-0"
+                          style={{ height: `${(pt.confirmedCases / pt.suspectedCases) * 100}%` }}
+                        />
+                      )}
+                    </div>
 
-                {/* Day label */}
-                <span className="text-[8px] font-mono text-slate-400 mt-1">
-                  D{pt.dayIndex}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+                    {/* Day label */}
+                    <span className="text-[8px] font-mono text-slate-400 mt-1">
+                      D{pt.dayIndex}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Point Detail Tooltip */}
-      {activePoint && (
+      {data.totalSuspected > 0 && activePoint && (
         <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs">
           <div className="space-y-0.5">
             <span className="font-mono text-[10px] text-slate-400">

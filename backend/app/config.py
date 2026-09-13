@@ -17,6 +17,8 @@ class Settings(BaseSettings):
 
     # Firebase Cloud Storage & Admin SDK
     FIREBASE_CREDENTIALS_PATH: Optional[str] = None
+    FIREBASE_CREDENTIALS_JSON: Optional[str] = None
+    FIREBASE_CREDENTIALS_BASE64: Optional[str] = None
     FIREBASE_STORAGE_BUCKET: Optional[str] = None
 
     # Redis Pub/Sub Live Alert Broker

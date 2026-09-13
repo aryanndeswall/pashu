@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
-import {
-  useAuthStore,
-  UserRole,
-  REAL_FARMER_USERS,
-  REAL_VET_USERS,
-  REAL_ADMIN_USERS,
-  RealUserAccount,
-} from '../../store/authStore';
+import React from 'react';
+import { useAuthStore, UserRole } from '../../store/authStore';
 import { useLanguageStore } from '../../store/languageStore';
 import {
   Shield,
@@ -15,15 +8,11 @@ import {
   Building2,
   ArrowRight,
   Globe,
-  MapPin,
-  Sparkles,
-  CheckCircle2,
 } from 'lucide-react';
 
 export const RolePortalView: React.FC = () => {
-  const { selectRoleAndProceed, loginAsSpecificUser } = useAuthStore();
+  const { selectRoleAndProceed } = useAuthStore();
   const { currentLanguage, setLanguage, t } = useLanguageStore();
-  const [activeUserTab, setActiveUserTab] = useState<'farmers' | 'vets' | 'admin'>('farmers');
 
   const personas = [
     {
@@ -43,7 +32,7 @@ export const RolePortalView: React.FC = () => {
         tag: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300',
       },
       tagKey: 'tagOtpLogin',
-      tagFallback: 'मोबाईल OTP लॉगिन',
+      tagFallback: 'मोबाईल OTP / पासवर्ड लॉगिन',
     },
     {
       role: 'doctor' as UserRole,
@@ -67,7 +56,7 @@ export const RolePortalView: React.FC = () => {
     {
       role: 'admin' as UserRole,
       titleMarathi: 'जिल्हा अधिकारी (DVO)',
-      titleHindi: 'जिला पशुपालन अधिकारी (DVO)',
+      titleHindi: 'जिला अधिकारी (DVO)',
       titleEnglish: 'District Animal Husbandry Officer',
       subtitleMarathi: 'जिल्हा पशुसंवर्धन विभाग व महामारी नियंत्रण केंद्र',
       subtitleHindi: 'जिला पशुपालन विभाग व महामारी नियंत्रण केंद्र',
@@ -120,116 +109,6 @@ export const RolePortalView: React.FC = () => {
             </button>
           );
         })}
-      </div>
-
-      {/* Real Field Users & 1-Tap Evaluation Switcher */}
-      <div className="p-3.5 bg-gradient-to-br from-slate-50 via-emerald-50/20 to-blue-50/20 dark:from-slate-900/90 dark:via-emerald-950/10 dark:to-blue-950/10 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {currentLanguage === 'en' ? 'Select Active Field User (Real Personas)' : 'प्रत्यक्ष क्षेत्रीय युजर्स (Real Users)'}
-            </span>
-          </div>
-          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-            1-Tap Login
-          </span>
-        </div>
-
-        {/* Tab Pills */}
-        <div className="flex bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl">
-          <button
-            type="button"
-            onClick={() => setActiveUserTab('farmers')}
-            className={`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all ${
-              activeUserTab === 'farmers'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            👨‍🌾 {currentLanguage === 'en' ? 'Farmers (4)' : 'शेतकरी (४)'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveUserTab('vets')}
-            className={`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all ${
-              activeUserTab === 'vets'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            👩‍⚕️ {currentLanguage === 'en' ? 'Doctors & Para (4)' : 'पशुवैद्य (४)'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveUserTab('admin')}
-            className={`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all ${
-              activeUserTab === 'admin'
-                ? 'bg-purple-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            🏛️ {currentLanguage === 'en' ? 'Admin' : 'प्रशासक'}
-          </button>
-        </div>
-
-        {/* User Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {(activeUserTab === 'farmers' ? REAL_FARMER_USERS : activeUserTab === 'vets' ? REAL_VET_USERS : REAL_ADMIN_USERS).map((user) => {
-            const displayName =
-              currentLanguage === 'en'
-                ? user.name
-                : currentLanguage === 'hi'
-                ? user.nameHindi || user.nameMarathi || user.name
-                : user.nameMarathi || user.name;
-            const displayTitle =
-              currentLanguage === 'en'
-                ? user.titleEnglish
-                : currentLanguage === 'hi'
-                ? user.titleHindi || user.titleMarathi
-                : user.titleMarathi;
-
-            return (
-              <button
-                key={user.id}
-                type="button"
-                onClick={() => loginAsSpecificUser(user)}
-                className="text-left p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 hover:border-emerald-500/60 dark:hover:border-emerald-500/60 transition-all hover:shadow-sm active:scale-95 flex items-start gap-2.5 group cursor-pointer"
-              >
-                <span className="text-2xl p-1 rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:scale-105 transition-transform shrink-0">
-                  {user.avatarEmoji}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <p className={`text-xs font-bold text-slate-900 dark:text-white truncate ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                      {displayName}
-                    </p>
-                    {user.licenseOrId && (
-                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0">
-                        {user.licenseOrId}
-                      </span>
-                    )}
-                  </div>
-                  <p className={`text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold truncate ${currentLanguage !== 'en' ? 'lang-devanagari' : ''}`}>
-                    {displayTitle}
-                  </p>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                    {user.specializationOrHerd}
-                  </p>
-                  <div className="flex items-center justify-between pt-1 mt-1 border-t border-slate-100 dark:border-slate-800/80 text-[10px] text-slate-400">
-                    <span className="flex items-center gap-0.5 truncate">
-                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                      <span className="truncate">{user.workplace}</span>
-                    </span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform flex items-center shrink-0">
-                      Login →
-                    </span>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* 3 Stakeholder Persona Cards */}

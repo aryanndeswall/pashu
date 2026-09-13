@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Activity, Shield, FlaskConical, Stethoscope } from 'lucide-react';
+import { FileText, Activity, Shield, FlaskConical, Stethoscope, ClipboardList } from 'lucide-react';
 import { useNavigationStore, TabType } from '../../store/navigationStore';
 import { useAuthStore, UserRole } from '../../store/authStore';
 import { useLanguageStore } from '../../store/languageStore';
@@ -69,11 +69,11 @@ export const BottomBar: React.FC = () => {
         return {
           left: [
             {
-              id: 'report',
-              labelMarathi: '८ लक्षणे',
-              labelHindi: '८ लक्षण',
-              labelEnglish: 'Triage',
-              icon: FileText,
+              id: 'triage',
+              labelMarathi: 'रांग',
+              labelHindi: 'क्यू',
+              labelEnglish: 'Queue',
+              icon: ClipboardList,
             },
             {
               id: 'dashboard',
